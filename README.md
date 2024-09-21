@@ -40,5 +40,6 @@ local guified = require("libs/guified")
 1) Guified works best with LOVE 11.5
 2) Please report bugs to help speed up developement
 3) **DO NOT declare love.run in main.lua as Guified uses it**
+4) The examples folder conatins some examples to help you get started
 
 # **PLEASE NOTE THAT GUIFIED IS IN VERY EARLY DEVELOPEMENT AND DOES NOT HAVE MANY UI ELEMENTS !**
