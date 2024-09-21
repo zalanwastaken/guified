@@ -4,12 +4,7 @@ local guifiedlocal = {
     enableupdate = true,
     enabledraw = true,
     internalregistry = {
-        drawstack = {
-            function(dt, i)
-                love.graphics.print("USING GUIFIED")
-                love.graphics.print(tostring(love.timer.getDelta()), love.graphics.getWidth() / 2, 0)
-            end
-        },
+        drawstack = {},
         updatestack = {},
         data = {}
     },
@@ -79,28 +74,65 @@ local guified = {
                             love.graphics.rectangle("line", argx, argy, w, h)
                             love.graphics.print(argtext, argx, argy)
                         end,
-                        update = function(dt)
+                        pressed = function()
                             local mouseX, mouseY = love.mouse.getPosition()
                             if love.mouse.isDown(1) then
                                 if mouseX >= argx and mouseX <= argx + w and mouseY >= argy and mouseY <= argy + h then
-                                    return({
-                                        x = argx,
-                                        y = argy,
-                                        text = "pressed !"
-                                    })
+                                    return(true)
                                 end
                             end
+                        end,
+                        text = function(text)
+                            argtext = text
+                        end,
+                        changePos = function(x, y)
+                            argx = x
+                            argy = y
                         end
                     })
                 end
+            },
+            textBox = {
+                new = function(argx, argy, text)
+                    return({
+                        name = "textBox",
+                        draw = function()
+                            love.graphics.print(text, argx, argy)
+                        end,
+                        text = function(argtext)
+                            text = argtext
+                        end,
+                        changePos = function(x, y)
+                            argx = x
+                            argy = y
+                        end
+                    })
+                end,
             }
         },
         register = function(element)
-            guifiedlocal.internalregistry.drawstack[#guifiedlocal.internalregistry.drawstack + 1] = element.draw
-            if element.update ~= nil then
-                guifiedlocal.internalregistry.updatestack[#guifiedlocal.internalregistry.drawstack] = element.update
+            if element ~= nil then
+                element.ourplace = #guifiedlocal.internalregistry.drawstack + 1
+                guifiedlocal.internalregistry.drawstack[#guifiedlocal.internalregistry.drawstack + 1] = element.draw
+                if element.update ~= nil then
+                    guifiedlocal.internalregistry.updatestack[#guifiedlocal.internalregistry.drawstack] = element.update
+                else
+                    print("No update function found for element "..element.name)
+                end
             else
-                print("No update function found for element "..element.name)
+                error("No element provided to register")
+            end
+        end,
+        remove = function(element)
+            if element ~= nil then
+                if element.ourplace ~= nil then
+                    table.remove(guifiedlocal.internalregistry.drawstack, element.ourplace)
+                    element.ourplace = nil
+                else
+                    print("element is not registered !")
+                end
+            else
+                error("No element provided to rmeove")
             end
         end
     },
