@@ -23,7 +23,7 @@ Guified is a lightweight GUI library for LÖVE (Love2D) that simplifies window m
 ## Setup
 ### 1) Clone the repo.
 ```BASH
-git clone --url here-- guified
+git clone https://github.com/zalanwastaken/guified.git guified
 cd guified
 ```
 ### 2) Copy guified to you project folder
