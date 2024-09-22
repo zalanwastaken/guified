@@ -1,3 +1,13 @@
+--? config
+local fontsize = 12
+--? all script funcs
+local function getScriptFolder()
+    return(debug.getinfo(1, "S").source:sub(2):match("(.*/)"))
+end
+--? init stuff
+local font = love.graphics.newFont(getScriptFolder().."Ubuntu-L.ttf")
+love.graphics.setFont(font, fontsize)
+love.graphics.setColor(1, 1, 1, 1)
 --? local stuff
 local guifiedlocal = {
     --? vars
@@ -13,9 +23,9 @@ local guifiedlocal = {
         local data = {}
         for i = 1, #updatestack, 1 do
             if updatestack[i] ~= nil then
-                data[i] = updatestack[i](dt, i) --? call the draw func
+                data[i] = updatestack[i](dt) --? call the draw func
             end
-        end
+        end 
         return(data)
     end,
     draw = function(drawstack, data)
@@ -72,7 +82,8 @@ local guified = {
                                 argtext = args.text or argtext
                             end
                             love.graphics.rectangle("line", argx, argy, w, h)
-                            love.graphics.print(argtext, argx, argy)
+                            local charWidth = fontsize / 2 --* Approx width of each character in a monospace font of size 12
+                            love.graphics.print(argtext, argx + (w / 2) - (#argtext * charWidth / 2), argy + (h / 2) - charWidth)
                         end,
                         pressed = function()
                             local mouseX, mouseY = love.mouse.getPosition()
@@ -108,6 +119,31 @@ local guified = {
                         end
                     })
                 end,
+            },
+            textInput = {
+                new = function(argx, argy, w, h, placeholder)
+                    local ret = {
+                        name = "textInput",
+                        active = true,
+                        draw = function(args)
+                            love.graphics.rectangle("line", argx, argy, w, h)
+                            local charWidth = fontsize / 2 --* Approx width of each character in a monospace font of size 12
+                            local oldr, oldg, oldb, olda = love.graphics.getColor()
+                            love.graphics.setColor(1, 1, 1, 0.75)
+                            love.graphics.print(placeholder, argx + (w / 2) - (#placeholder * charWidth / 2), argy + (h / 2) - charWidth)
+                            love.graphics.setColor(oldr, oldg, oldb, olda)
+                        end,
+                        update = function(self, dt)
+                            local mouseX, mouseY = love.mouse.getPosition()
+                            if love.mouse.isDown(1) then
+                                if mouseX >= argx and mouseX <= argx + w and mouseY >= argy and mouseY <= argy + h then
+                                    --TODO
+                                end
+                            end
+                        end
+                    }
+                    return(ret)
+                end
             }
         },
         register = function(element)
@@ -127,6 +163,9 @@ local guified = {
             if element ~= nil then
                 if element.ourplace ~= nil then
                     table.remove(guifiedlocal.internalregistry.drawstack, element.ourplace)
+                    if guifiedlocal.internalregistry.updatestack[element.ourplace] ~= nil then
+                        table.remove(guifiedlocal.internalregistry.updatestack, element.ourplace)
+                    end
                     element.ourplace = nil
                 else
                     print("element is not registered !")

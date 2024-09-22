@@ -34,7 +34,7 @@ cp -r guified <YOUR PROJECT FOLDER'S PATH>
 ```LUA
 local guified = require("libs/guified")
 ```
-### Doen ! have fun using guified !
+### Done ! have fun using guified !
 
 ## Notes
 1) Guified works best with LOVE 11.5
