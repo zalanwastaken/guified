@@ -1,13 +1,40 @@
 --? config
 local fontsize = 12
+local VK_CAPITAL = 0x14 -- Virtual-Key Code for Caps Lock
+--?FFI
+local ffi = require("ffi")
+ffi.cdef[[
+    //! C code
+    typedef void* HWND;
+    HWND FindWindowA(const char* lpClassName, const char* lpWindowName);
+    int SetWindowPos(HWND hWnd, HWND hWndInsertAfter, int X, int Y, int cx, int cy, unsigned int uFlags);
+    static const unsigned int SWP_NOSIZE = 0x0001;
+    static const unsigned int SWP_NOMOVE = 0x0002;
+    static const unsigned int SWP_SHOWWINDOW = 0x0040;
+    short GetKeyState(int nVirtKey);
+]]
 --? all script funcs
 local function getScriptFolder()
     return(debug.getinfo(1, "S").source:sub(2):match("(.*/)"))
+end
+local function isCapsLockOn()
+    -- GetKeyState returns a value where the lowest bit indicates the key's toggle state.
+    local state = ffi.C.GetKeyState(VK_CAPITAL)
+    return state ~= 0 and bit.band(state, 0x0001) ~= 0
+end
+local function idgen(length)
+    local chars = {"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m"}
+    local ret = ""
+    for i = 1, length, 1 do
+        ret = ret..chars[love.math.random(1, #chars)]
+    end
+    return(ret)
 end
 --? init stuff
 local font = love.graphics.newFont(getScriptFolder().."Ubuntu-L.ttf")
 love.graphics.setFont(font, fontsize)
 love.graphics.setColor(1, 1, 1, 1)
+love.math.setRandomSeed(os.time())
 --? local stuff
 local guifiedlocal = {
     --? vars
@@ -16,7 +43,8 @@ local guifiedlocal = {
     internalregistry = {
         drawstack = {},
         updatestack = {},
-        data = {}
+        data = {},
+        registrydata = {}
     },
     --?funcs
     update = function(dt, updatestack)
@@ -25,7 +53,7 @@ local guifiedlocal = {
             if updatestack[i] ~= nil then
                 data[i] = updatestack[i](dt) --? call the draw func
             end
-        end 
+        end
         return(data)
     end,
     draw = function(drawstack, data)
@@ -34,16 +62,6 @@ local guifiedlocal = {
         end
     end,
     setWindowToBeOnTop = function(title, noerr)
-        local ffi = require("ffi")
-        ffi.cdef[[
-            //! C code
-            typedef void* HWND;
-            HWND FindWindowA(const char* lpClassName, const char* lpWindowName);
-            int SetWindowPos(HWND hWnd, HWND hWndInsertAfter, int X, int Y, int cx, int cy, unsigned int uFlags);
-            static const unsigned int SWP_NOSIZE = 0x0001;
-            static const unsigned int SWP_NOMOVE = 0x0002;
-            static const unsigned int SWP_SHOWWINDOW = 0x0040;
-        ]]
         local HWND_TOPMOST = ffi.cast("HWND", -1)
         local HWND_NOTOPMOST = ffi.cast("HWND", -2)
         local hwnd = ffi.C.FindWindowA(nil, title)
@@ -96,9 +114,11 @@ local guified = {
                         text = function(text)
                             argtext = text
                         end,
-                        changePos = function(x, y)
+                        changePos = function(x, y, argw, argh)
                             argx = x
                             argy = y
+                            w = argw or w
+                            h = argh or h
                         end
                     })
                 end
@@ -121,35 +141,42 @@ local guified = {
                 end,
             },
             textInput = {
-                new = function(argx, argy, w, h, placeholder)
-                    local ret = {
+                new = function(argx, argy, w, h, placeholder, active)
+                    if not(active) then
+                        active = false
+                    end
+                    return({
                         name = "textInput",
-                        active = true,
                         draw = function(args)
                             love.graphics.rectangle("line", argx, argy, w, h)
                             local charWidth = fontsize / 2 --* Approx width of each character in a monospace font of size 12
                             local oldr, oldg, oldb, olda = love.graphics.getColor()
                             love.graphics.setColor(1, 1, 1, 0.75)
-                            love.graphics.print(placeholder, argx + (w / 2) - (#placeholder * charWidth / 2), argy + (h / 2) - charWidth)
+                            love.graphics.print(text or placeholder, argx + (w / 2) - (#placeholder * charWidth / 2), argy + (h / 2) - charWidth)
                             love.graphics.setColor(oldr, oldg, oldb, olda)
                         end,
                         update = function(self, dt)
                             local mouseX, mouseY = love.mouse.getPosition()
                             if love.mouse.isDown(1) then
                                 if mouseX >= argx and mouseX <= argx + w and mouseY >= argy and mouseY <= argy + h then
-                                    --TODO
+                                    active = true
+                                    love.timer.sleep(0.1)
+                                elseif active then
+                                    active = false
                                 end
                             end
                         end
-                    }
-                    return(ret)
+                    })
                 end
             }
         },
         register = function(element)
             if element ~= nil then
                 element.ourplace = #guifiedlocal.internalregistry.drawstack + 1
+                element.id = idgen(16)
                 guifiedlocal.internalregistry.drawstack[#guifiedlocal.internalregistry.drawstack + 1] = element.draw
+                guifiedlocal.internalregistry[element.id] = element.ourplace
+                print(element.id)
                 if element.update ~= nil then
                     guifiedlocal.internalregistry.updatestack[#guifiedlocal.internalregistry.drawstack] = element.update
                 else
@@ -166,12 +193,15 @@ local guified = {
                     if guifiedlocal.internalregistry.updatestack[element.ourplace] ~= nil then
                         table.remove(guifiedlocal.internalregistry.updatestack, element.ourplace)
                     end
+                    for i = element.ourplace, #guifiedlocal.internalregistry.drawstack, 1 do
+                        guifiedlocal.internalregistry.drawstack[i].ourplace = i
+                    end
                     element.ourplace = nil
                 else
                     print("element is not registered !")
                 end
             else
-                error("No element provided to rmeove")
+                error("No element provided to remove")
             end
         end
     },
@@ -213,7 +243,7 @@ function love.run()
 						return a or 0
 					end
 				end
-				love.handlers[name](a,b,c,d,e,f)
+				love.handlers[name](a, b, c, d, e, f)
 			end
 		end
 		-- Update dt, as we'll be passing it to update

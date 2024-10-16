@@ -41,5 +41,7 @@ local guified = require("libs/guified")
 2) Please report bugs to help speed up developement
 3) **DO NOT declare love.run in main.lua as Guified uses it**
 4) The examples folder conatins some examples to help you get started
+5) **There are not current plans to support MacOS**
+6) **FEATURES THAT USE FFI WILL NOT WORK ON LINUX**
 
 # **PLEASE NOTE THAT GUIFIED IS IN VERY EARLY DEVELOPEMENT AND DOES NOT HAVE MANY UI ELEMENTS !**
