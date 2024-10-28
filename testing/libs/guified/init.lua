@@ -22,8 +22,25 @@ local function isCapsLockOn()
     local state = ffi.C.GetKeyState(VK_CAPITAL)
     return state ~= 0 and bit.band(state, 0x0001) ~= 0
 end
+local function getIndex(table, val)
+    for i = 1, #table, 1 do
+        if table[i] == val then
+            return(i)
+        end
+    end
+    return(nil)
+end
 local function idgen(length)
-    local chars = {"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m"}
+    local chars = {
+        --* Small chars
+        "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", 
+        "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z",
+        --* Capital chars
+        "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", 
+        "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z",
+        --* Numbers
+        "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"
+    }
     local ret = ""
     for i = 1, length, 1 do
         ret = ret..chars[love.math.random(1, #chars)]
@@ -44,7 +61,7 @@ local guifiedlocal = {
         drawstack = {},
         updatestack = {},
         data = {},
-        registrydata = {}
+        ids = {}
     },
     --?funcs
     update = function(dt, updatestack)
@@ -86,11 +103,11 @@ local guifiedlocal = {
 --? lib stuff
 local guified = {
     --? vars
-    __VER__ = "INF-DEV",
+    __VER__ = "INF-DEV-1",
     registry = {
         elements = {
             button = {
-                new = function(argx, argy, w, h, argtext)
+                new = function(self, argx, argy, w, h, argtext)
                     return({
                         name = "button",
                         draw = function(args)
@@ -124,7 +141,7 @@ local guified = {
                 end
             },
             textBox = {
-                new = function(argx, argy, text)
+                new = function(self, argx, argy, text)
                     return({
                         name = "textBox",
                         draw = function()
@@ -140,63 +157,50 @@ local guified = {
                     })
                 end,
             },
-            textInput = {
-                new = function(argx, argy, w, h, placeholder, active)
+            textInput = { --TODO
+                new = function(self, argx, argy, w, h, placeholder, active)
                     if not(active) then
                         active = false
                     end
-                    return({
-                        name = "textInput",
-                        draw = function(args)
-                            love.graphics.rectangle("line", argx, argy, w, h)
-                            local charWidth = fontsize / 2 --* Approx width of each character in a monospace font of size 12
-                            local oldr, oldg, oldb, olda = love.graphics.getColor()
-                            love.graphics.setColor(1, 1, 1, 0.75)
-                            love.graphics.print(text or placeholder, argx + (w / 2) - (#placeholder * charWidth / 2), argy + (h / 2) - charWidth)
-                            love.graphics.setColor(oldr, oldg, oldb, olda)
+                    local ret = {
+                        text = "",
+                        draw = function()
+                            love.graphics.print(self.ret.text)
                         end,
-                        update = function(self, dt)
-                            local mouseX, mouseY = love.mouse.getPosition()
-                            if love.mouse.isDown(1) then
-                                if mouseX >= argx and mouseX <= argx + w and mouseY >= argy and mouseY <= argy + h then
-                                    active = true
-                                    love.timer.sleep(0.1)
-                                elseif active then
-                                    active = false
-                                end
-                            end
-                        end
-                    })
+                        update = function()
+                            
+                        end,
+                    }
                 end
             }
         },
-        register = function(element)
+        register = function(element) --? register an element
             if element ~= nil then
-                element.ourplace = #guifiedlocal.internalregistry.drawstack + 1
+                --element.ourplace = #guifiedlocal.internalregistry.drawstack + 1
+                local place = #guifiedlocal.internalregistry.drawstack + 1
                 element.id = idgen(16)
+                guifiedlocal.internalregistry.ids[place] = element.id
                 guifiedlocal.internalregistry.drawstack[#guifiedlocal.internalregistry.drawstack + 1] = element.draw
-                guifiedlocal.internalregistry[element.id] = element.ourplace
-                print(element.id)
                 if element.update ~= nil then
                     guifiedlocal.internalregistry.updatestack[#guifiedlocal.internalregistry.drawstack] = element.update
                 else
                     print("No update function found for element "..element.name)
                 end
+                print("registered element as "..element.id.." at place "..place)
             else
                 error("No element provided to register")
             end
         end,
-        remove = function(element)
+        remove = function(element) --? remove and element
             if element ~= nil then
-                if element.ourplace ~= nil then
-                    table.remove(guifiedlocal.internalregistry.drawstack, element.ourplace)
-                    if guifiedlocal.internalregistry.updatestack[element.ourplace] ~= nil then
-                        table.remove(guifiedlocal.internalregistry.updatestack, element.ourplace)
+                if element.id ~= nil then
+                    local place = getIndex(guifiedlocal.internalregistry.ids, element.id)
+                    table.remove(guifiedlocal.internalregistry.drawstack, place)
+                    if guifiedlocal.internalregistry.updatestack[place] ~= nil then
+                        table.remove(guifiedlocal.internalregistry.updatestack, place)
                     end
-                    for i = element.ourplace, #guifiedlocal.internalregistry.drawstack, 1 do
-                        guifiedlocal.internalregistry.drawstack[i].ourplace = i
-                    end
-                    element.ourplace = nil
+                    table.remove(guifiedlocal.internalregistry.ids, element.ourplace)
+                    --element.ourplace = nil
                 else
                     print("element is not registered !")
                 end
@@ -220,6 +224,9 @@ local guified = {
     end,
     getUpdateStatus = function()
         return(guifiedlocal.enableupdate)
+    end,
+    getIdTable = function()
+        return(guifiedlocal.internalregistry.ids)
     end
 }
 --? override stuff
@@ -227,14 +234,14 @@ function love.run()
 	if love.load then 
         love.load(love.arg.parseGameArguments(arg), arg) 
     end
-	-- We don't want the first frame's dt to include time taken by love.load.
+	--* We don't want the first frame's dt to include time taken by love.load.
 	if love.timer then 
         love.timer.step() 
     end
 	local dt = 0
-	-- Main loop time.
+	--* Main loop time.
 	return function()
-		-- Process events.
+		--* Process events.
 		if love.event then
 			love.event.pump()
 			for name, a,b,c,d,e,f in love.event.poll() do
@@ -246,7 +253,7 @@ function love.run()
 				love.handlers[name](a, b, c, d, e, f)
 			end
 		end
-		-- Update dt, as we'll be passing it to update
+		--* Update dt, as we'll be passing it to update
 		if love.timer then 
             dt = love.timer.step()
         end
