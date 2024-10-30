@@ -210,22 +210,22 @@ local guified = {
         end
     },
     --? gui funcs
-    setWindowToBeOnTop = function()
+    setWindowToBeOnTop = function() --* sets the Window set to always on top.
         guifiedlocal.setWindowToBeOnTop(love.window.getTitle())
     end,
-    toggleDraw = function()
+    toggleDraw = function() --* toggles draw
         guifiedlocal.enabledraw = not(guifiedlocal.enabledraw)
     end,
-    toggleUpdate = function()
+    toggleUpdate = function() --* toggles update
         guifiedlocal.enableupdate = not(guifiedlocal.enableupdate)
     end,
-    getDrawStatus = function()
+    getDrawStatus = function() --* returns the draw status
         return(guifiedlocal.enabledraw)
     end,
-    getUpdateStatus = function()
+    getUpdateStatus = function() --* returns the update status
         return(guifiedlocal.enableupdate)
     end,
-    getIdTable = function()
+    getIdTable = function() --* returns the table contaning ids 
         return(guifiedlocal.internalregistry.ids)
     end,
     filesystem = {
