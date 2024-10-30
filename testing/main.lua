@@ -1,4 +1,20 @@
-local guified = require("libs.guified")
+guified = require("libs.guified.init")
+require("libs.guified.frame")
 function love.load()
-    guified.registry.register(guified.registry.elements.textBox:new(love.graphics.getWidth() / 2, love.graphics.getHeight() / 2, "Hello, World !"))
+    movbox = guified.registry.elements.box:new(0, 0, 40, 40, "line")
+    frame = guified.frame.new({
+        guified.registry.elements.textBox:new(0, 0, guified.__VER__),
+        guified.registry.elements.textBox:new(love.graphics.getWidth() / 2, 0, "Hi !"),
+        guified.registry.elements.box:new(0, 1, love.graphics.getWidth() - 1, love.graphics.getHeight() - 1, "line"),
+        movbox
+    })
+    frame.load()
+end
+function love.update(dt)
+    movbox.changeSize(love.mouse.getX(), love.mouse.getY())
+end
+function love.keypressed(key)
+    if key == "u" then
+        frame.unload()
+    end
 end

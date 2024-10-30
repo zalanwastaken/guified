@@ -125,6 +125,8 @@ local guified = {
                             if love.mouse.isDown(1) then
                                 if mouseX >= argx and mouseX <= argx + w and mouseY >= argy and mouseY <= argy + h then
                                     return(true)
+                                else
+                                    return(false)
                                 end
                             end
                         end,
@@ -172,6 +174,38 @@ local guified = {
                         end,
                     }
                 end
+            },
+            box = {
+                new = function(self, x, y, w, h, mode)
+                    return({
+                        name = "box",
+                        draw = function()
+                            love.graphics.rectangle(mode, x, y, w, h)
+                        end,
+                        changeSize = function(argw, argh)
+                            h = argh
+                            w = argw
+                        end,
+                        changePos = function(argx, argy)
+                            x = argx
+                            y = argy
+                        end
+                    })
+                end
+            },
+            image = {
+                new = function(x, y, image)
+                    return({
+                        name = "image",
+                        draw = function()
+                            love.graphics.draw(image, x, y)
+                        end,
+                        changePos = function(argx, argy)
+                            x = argx
+                            y = argy
+                        end
+                    })
+                end
             }
         },
         register = function(element) --? register an element
@@ -183,10 +217,8 @@ local guified = {
                 guifiedlocal.internalregistry.drawstack[#guifiedlocal.internalregistry.drawstack + 1] = element.draw
                 if element.update ~= nil then
                     guifiedlocal.internalregistry.updatestack[#guifiedlocal.internalregistry.drawstack] = element.update
-                else
-                    print("No update function found for element "..element.name)
                 end
-                print("registered element as "..element.id.." at place "..place)
+                print("element "..element.name.." registered ID: "..element.id)
             else
                 error("No element provided to register")
             end
@@ -199,8 +231,9 @@ local guified = {
                     if guifiedlocal.internalregistry.updatestack[place] ~= nil then
                         table.remove(guifiedlocal.internalregistry.updatestack, place)
                     end
-                    table.remove(guifiedlocal.internalregistry.ids, element.ourplace)
-                    --element.ourplace = nil
+                    table.remove(guifiedlocal.internalregistry.ids, place)
+                    print("element "..element.name.." removed ID: "..element.id)
+                    element.id = nil
                 else
                     print("element is not registered !")
                 end
@@ -210,22 +243,22 @@ local guified = {
         end
     },
     --? gui funcs
-    setWindowToBeOnTop = function()
+    setWindowToBeOnTop = function() --* sets the Window set to always on top.
         guifiedlocal.setWindowToBeOnTop(love.window.getTitle())
     end,
-    toggleDraw = function()
+    toggleDraw = function() --* toggles draw
         guifiedlocal.enabledraw = not(guifiedlocal.enabledraw)
     end,
-    toggleUpdate = function()
+    toggleUpdate = function() --* toggles update
         guifiedlocal.enableupdate = not(guifiedlocal.enableupdate)
     end,
-    getDrawStatus = function()
+    getDrawStatus = function() --* returns the draw status
         return(guifiedlocal.enabledraw)
     end,
-    getUpdateStatus = function()
+    getUpdateStatus = function() --* returns the update status
         return(guifiedlocal.enableupdate)
     end,
-    getIdTable = function()
+    getIdTable = function() --* returns the table contaning ids 
         return(guifiedlocal.internalregistry.ids)
     end,
     filesystem = {
