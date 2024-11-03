@@ -1,5 +1,5 @@
 guified = require("libs.guified.init")
-require("libs.guified.frame")
+require("libs.guified.modules.frame")
 function love.load()
     movbox = guified.registry.elements.box:new(0, 0, 40, 40, "line")
     frame = guified.frame.new({
@@ -9,6 +9,10 @@ function love.load()
         movbox
     })
     frame.load()
+    local ids = guified.getIdTable()
+    for i = 1, #ids, 1 do
+        print(ids[i])
+    end
 end
 function love.update(dt)
     movbox.changeSize(love.mouse.getX(), love.mouse.getY())
