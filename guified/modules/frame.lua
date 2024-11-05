@@ -14,12 +14,6 @@ local frame = {
                 for i = 1, #elements, 1 do
                     guified.registry.remove(elements[i])
                 end
-            end,
-            flip = function()
-                --TODO
-                local tmp = {}
-                for i = 1, #elements, 1 do
-                end
             end
         })
     end

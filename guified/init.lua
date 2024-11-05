@@ -39,7 +39,10 @@ local function idgen(length)
         "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", 
         "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z",
         --* Numbers
-        "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"
+        "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
+        --* Special chars
+        "!", "@", "#", "$", "%", "^", "&", "*", "(", ")", "-", "_", "=", "+", 
+        "{", "}", "[", "]", ":", ";", "'", "<", ">", ",", ".", "?", "/"
     }
     local ret = ""
     for i = 1, length, 1 do
@@ -125,6 +128,8 @@ local guified = {
                             if love.mouse.isDown(1) then
                                 if mouseX >= argx and mouseX <= argx + w and mouseY >= argy and mouseY <= argy + h then
                                     return(true)
+                                else
+                                    return(false)
                                 end
                             end
                         end,
@@ -172,6 +177,38 @@ local guified = {
                         end,
                     }
                 end
+            },
+            box = {
+                new = function(self, x, y, w, h, mode)
+                    return({
+                        name = "box",
+                        draw = function()
+                            love.graphics.rectangle(mode, x, y, w, h)
+                        end,
+                        changeSize = function(argw, argh)
+                            h = argh
+                            w = argw
+                        end,
+                        changePos = function(argx, argy)
+                            x = argx
+                            y = argy
+                        end
+                    })
+                end
+            },
+            image = {
+                new = function(self, x, y, image)
+                    return({
+                        name = "image",
+                        draw = function()
+                            love.graphics.draw(image, x, y)
+                        end,
+                        changePos = function(argx, argy)
+                            x = argx
+                            y = argy
+                        end
+                    })
+                end
             }
         },
         register = function(element) --? register an element
@@ -183,10 +220,8 @@ local guified = {
                 guifiedlocal.internalregistry.drawstack[#guifiedlocal.internalregistry.drawstack + 1] = element.draw
                 if element.update ~= nil then
                     guifiedlocal.internalregistry.updatestack[#guifiedlocal.internalregistry.drawstack] = element.update
-                else
-                    print("No update function found for element "..element.name)
                 end
-                print("registered element as "..element.id.." at place "..place)
+                print("element "..element.name.." registered ID: "..element.id)
             else
                 error("No element provided to register")
             end
@@ -199,8 +234,9 @@ local guified = {
                     if guifiedlocal.internalregistry.updatestack[place] ~= nil then
                         table.remove(guifiedlocal.internalregistry.updatestack, place)
                     end
-                    table.remove(guifiedlocal.internalregistry.ids, element.ourplace)
-                    --element.ourplace = nil
+                    table.remove(guifiedlocal.internalregistry.ids, place)
+                    print("element "..element.name.." removed ID: "..element.id)
+                    element.id = nil
                 else
                     print("element is not registered !")
                 end
