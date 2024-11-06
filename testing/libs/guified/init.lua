@@ -58,6 +58,9 @@ love.math.setRandomSeed(os.time())
 if love.system.getOS():lower() == "linux" then
     love.window.showMessageBox("Warning", "Featurs that use FFI will not work on Linux !", "warning")
 end
+if love.system.getOS():lower() == "macos" then
+    love.window.showMessageBox("Warning", "MacOS is not suppoorted !", "warning")
+end
 --? local stuff
 local guifiedlocal = {
     --? vars
@@ -184,6 +187,9 @@ local guified = {
             },
             box = {
                 new = function(self, x, y, w, h, mode, clr)
+                    if clr == nil then
+                        clr = {1, 1, 1, 1}
+                    end
                     return({
                         name = "box",
                         draw = function()

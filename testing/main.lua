@@ -2,7 +2,7 @@ guified = require("libs.guified.init")
 require("libs.guified.modules.frame")
 local colors = require("libs.guified.modules.colors")
 function love.load()
-    guified.setWindowToBeOnTop()
+    --guified.setWindowToBeOnTop()
     movbox = guified.registry.elements.box:new(0, 0, 40, 40, "line", colors.electric_blue)
     frame = guified.frame.new({
         guified.registry.elements.textBox:new(0, 0, guified.__VER__),
@@ -10,13 +10,18 @@ function love.load()
         guified.registry.elements.box:new(0, 1, love.graphics.getWidth() - 1, love.graphics.getHeight() - 1, "line", colors.cyan),
         movbox
     })
-    frame.load()
+    frame:load()
+    print(frame:addSlider(30, 30).id)
+    mouseLoc = guified.registry.elements.textBox:new(love.mouse.getX(), love.mouse.getY(), tostring(love.mouse.getX().."\n"..tostring(love.mouse.getY())))
+    guified.registry.register(mouseLoc)
 end
 function love.update(dt)
     movbox.changeSize(love.mouse.getX(), love.mouse.getY())
+    mouseLoc.changePos(love.mouse.getX() + 10, love.mouse.getY())
+    mouseLoc.text("X:"..tostring(love.mouse.getX().."\nY:"..tostring(love.mouse.getY())))
 end
 function love.keypressed(key)
     if key == "u" then
-        frame.unload()
+        frame:unload()
     end
 end
