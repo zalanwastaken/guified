@@ -55,6 +55,12 @@ local font = love.graphics.newFont(getScriptFolder().."Ubuntu-L.ttf")
 love.graphics.setFont(font, fontsize)
 love.graphics.setColor(1, 1, 1, 1)
 love.math.setRandomSeed(os.time())
+if love.system.getOS():lower() == "linux" then
+    love.window.showMessageBox("Warning", "Featurs that use FFI will not work on Linux !", "warning")
+end
+if love.system.getOS():lower() == "macos" then
+    love.window.showMessageBox("Warning", "MacOS is not suppoorted !", "warning")
+end
 --? local stuff
 local guifiedlocal = {
     --? vars
@@ -78,6 +84,7 @@ local guifiedlocal = {
     end,
     draw = function(drawstack, data)
         for i = 1, #drawstack, 1 do
+            love.graphics.setColor(1, 1, 1, 1)
             drawstack[i](data[i]) --? call the draw func
         end
     end,
@@ -179,10 +186,14 @@ local guified = {
                 end
             },
             box = {
-                new = function(self, x, y, w, h, mode)
+                new = function(self, x, y, w, h, mode, clr)
+                    if clr == nil then
+                        clr = {1, 1, 1, 1}
+                    end
                     return({
                         name = "box",
                         draw = function()
+                            love.graphics.setColor(clr)
                             love.graphics.rectangle(mode, x, y, w, h)
                         end,
                         changeSize = function(argw, argh)
@@ -213,7 +224,6 @@ local guified = {
         },
         register = function(element) --? register an element
             if element ~= nil then
-                --element.ourplace = #guifiedlocal.internalregistry.drawstack + 1
                 local place = #guifiedlocal.internalregistry.drawstack + 1
                 element.id = idgen(16)
                 guifiedlocal.internalregistry.ids[place] = element.id
@@ -305,7 +315,7 @@ local guified = {
 --? override stuff
 function love.run()
 	if love.load then 
-        love.load(love.arg.parseGameArguments(arg), arg) 
+        love.load(love.arg.parseGameArguments(arg), arg)
     end
 	--* We don't want the first frame's dt to include time taken by love.load.
 	if love.timer then 
