@@ -1,6 +1,6 @@
 local guified = require("libs/guified")
 function love.load()
-    textbox = guified.registry.elements.textBox.new(love.graphics.getWidth() / 2, love.graphics.getHeight() / 2, "GUIFIED VER.INF_DEV")
+    textbox = guified.registry.elements.textBox:new(love.graphics.getWidth() / 2, love.graphics.getHeight() / 2, guified.__VER__)
     guified.registry.register(textbox)
 end
 function love.update(dt)
