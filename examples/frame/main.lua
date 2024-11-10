@@ -1,4 +1,4 @@
-guified = require("libs.guified.init") --? its is essencial that we load guified as a global
+guified = require("libs.guified.init") --? it is essencial that we load guified as a global
 require("libs.guified.modules.frame") --? Frame does not return anything it injects to guified as guified.frame
 function love.load()
     frame = guified.frame.new({
