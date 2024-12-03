@@ -1,3 +1,4 @@
+---@class Color
 local colors = {
     -- Standard Colors
     black = {0, 0, 0},                  -- Solid black

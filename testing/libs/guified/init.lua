@@ -1,3 +1,6 @@
+--* Type info
+---@alias element table
+---@alias image table to silence warnings
 --? config
 local fontsize = 12
 local VK_CAPITAL = 0x14 -- Virtual-Key Code for Caps Lock
@@ -14,14 +17,17 @@ ffi.cdef[[
     short GetKeyState(int nVirtKey);
 ]]
 --? all script funcs
+---@return string
 local function getScriptFolder()
     return(debug.getinfo(1, "S").source:sub(2):match("(.*/)"))
 end
+---@return boolean
 local function isCapsLockOn()
     -- GetKeyState returns a value where the lowest bit indicates the key's toggle state.
     local state = ffi.C.GetKeyState(VK_CAPITAL)
     return state ~= 0 and bit.band(state, 0x0001) ~= 0
 end
+---@return number|nil
 local function getIndex(table, val)
     for i = 1, #table, 1 do
         if table[i] == val then
@@ -30,6 +36,8 @@ local function getIndex(table, val)
     end
     return(nil)
 end
+---@param length number
+---@return string
 local function idgen(length)
     local chars = {
         --* Small chars
@@ -67,12 +75,17 @@ local guifiedlocal = {
     enableupdate = true,
     enabledraw = true,
     internalregistry = {
+        ---@class drawstack
         drawstack = {},
+        ---@class updatestack
         updatestack = {},
         data = {},
         ids = {}
     },
     --?funcs
+    ---@param dt number
+    ---@param updatestack updatestack
+    ---@return table returns the data prossesed by the updatestack
     update = function(dt, updatestack)
         local data = {}
         for i = 1, #updatestack, 1 do
@@ -82,12 +95,17 @@ local guifiedlocal = {
         end
         return(data)
     end,
+    ---@param drawstack drawstack
+    ---@param data table
     draw = function(drawstack, data)
         for i = 1, #drawstack, 1 do
             love.graphics.setColor(1, 1, 1, 1)
             drawstack[i](data[i]) --? call the draw func
         end
     end,
+    ---@param title string
+    ---@param noerr boolean
+    ---@return boolean|nil
     setWindowToBeOnTop = function(title, noerr)
         local HWND_TOPMOST = ffi.cast("HWND", -1)
         local HWND_NOTOPMOST = ffi.cast("HWND", -2)
@@ -117,6 +135,12 @@ local guified = {
     registry = {
         elements = {
             button = {
+                ---@param argtext string
+                ---@param h number
+                ---@param w number
+                ---@param argx number
+                ---@param argy number
+                ---@return element
                 new = function(self, argx, argy, w, h, argtext)
                     return({
                         name = "button",
@@ -146,13 +170,19 @@ local guified = {
                         changePos = function(x, y, argw, argh)
                             argx = x
                             argy = y
-                            w = argw or w
-                            h = argh or h
+                        end,
+                        changeSize = function(argw, argh)
+                            w = argw
+                            h = argh
                         end
                     })
                 end
             },
             textBox = {
+                ---@param argx number
+                ---@param argy number
+                ---@param text string
+                ---@return element
                 new = function(self, argx, argy, text)
                     return({
                         name = "textBox",
@@ -160,9 +190,15 @@ local guified = {
                             love.graphics.print(text, argx, argy)
                         end,
                         text = function(argtext)
+                            if argtext == nil then
+                                error("No text provided")
+                            end
                             text = argtext
                         end,
                         changePos = function(x, y)
+                            if x == nil or y == nil then
+                                error("x or y is nil")
+                            end
                             argx = x
                             argy = y
                         end
@@ -171,6 +207,7 @@ local guified = {
             },
             textInput = { --TODO
                 new = function(self, argx, argy, w, h, placeholder, active)
+                    error("This element in not implimented yet !")
                     if not(active) then
                         active = false
                     end
@@ -186,6 +223,13 @@ local guified = {
                 end
             },
             box = {
+                ---@param clr Color
+                ---@param h number
+                ---@param w number
+                ---@param mode string
+                ---@param x number
+                ---@param y number
+                ---@return element
                 new = function(self, x, y, w, h, mode, clr)
                     if clr == nil then
                         clr = {1, 1, 1, 1}
@@ -197,10 +241,16 @@ local guified = {
                             love.graphics.rectangle(mode, x, y, w, h)
                         end,
                         changeSize = function(argw, argh)
+                            if argw == nil or argh == nil then
+                                error("W or H is nil")
+                            end
                             h = argh
                             w = argw
                         end,
                         changePos = function(argx, argy)
+                            if argx == nil or argy == nil then
+                                error("x or y is nil")
+                            end
                             x = argx
                             y = argy
                         end
@@ -208,6 +258,9 @@ local guified = {
                 end
             },
             image = {
+                ---@param x number
+                ---@param y number
+                ---@param image image
                 new = function(self, x, y, image)
                     return({
                         name = "image",
@@ -222,10 +275,13 @@ local guified = {
                 end
             }
         },
-        register = function(element) --? register an element
+        ---@param element element
+        ---@param id_length number optional
+        ---@return nil
+        register = function(element, id_length) --? register an element
             if element ~= nil then
                 local place = #guifiedlocal.internalregistry.drawstack + 1
-                element.id = idgen(16)
+                element.id = idgen(id_length or 16)
                 guifiedlocal.internalregistry.ids[place] = element.id
                 guifiedlocal.internalregistry.drawstack[#guifiedlocal.internalregistry.drawstack + 1] = element.draw
                 if element.update ~= nil then
@@ -236,8 +292,14 @@ local guified = {
                 error("No element provided to register")
             end
         end,
-        remove = function(element) --? remove and element
+        ---@param element element
+        ---@return nil
+        remove = function(element) --? removes an element
             if element ~= nil then
+                if type(element) == "string" then
+                    local id = element
+                    element = {name = id, id = id}
+                end
                 if element.id ~= nil then
                     local place = getIndex(guifiedlocal.internalregistry.ids, element.id)
                     table.remove(guifiedlocal.internalregistry.drawstack, place)
@@ -273,44 +335,7 @@ local guified = {
     end,
     getIdTable = function() --* returns the table contaning ids 
         return(guifiedlocal.internalregistry.ids)
-    end,
-    filesystem = {
-        --TODO
-        read = function(file)
-            local fileobj = io.open(file, "r")
-            if not fileobj then
-                error("Could not open file for reading: " .. file)
-            end
-            local data = fileobj:read("*a")
-            fileobj:close()
-            return data
-        end,
-        write = function(file, data)
-            local fileobj = io.open(file, "w")
-            if not fileobj then
-                error("Could not open file for writing: " .. file)
-            end
-            fileobj:write(data)
-            fileobj:close()
-        end,
-        readBytes = function(file)
-            local fileobj = io.open(file, "rb")
-            if not fileobj then
-                error("Could not open file for reading bytes: " .. file)
-            end
-            local data = fileobj:read("*a")
-            fileobj:close()
-            return data
-        end,
-        append = function(file, data)
-            local fileobj = io.open(file, "a")
-            if not fileobj then
-                error("Could not open file for appending: " .. file)
-            end
-            fileobj:write(data)
-            fileobj:close()
-        end
-    }
+    end
 }
 --? override stuff
 function love.run()
@@ -445,6 +470,10 @@ function love.errorhandler(msg)
 	if love.system then
 		p = p .. "\n\nPress Ctrl+C or tap to copy this error"
 	end
+    local name = love.window.getTitle()
+    if #name == 0 or name == "Untitled" then 
+        love.window.setTitle("Guified error")
+    end
 	return function()
 		love.event.pump()
 		for e, a, b, c in love.event.poll() do
@@ -455,8 +484,6 @@ function love.errorhandler(msg)
 			elseif e == "keypressed" and a == "c" and love.keyboard.isDown("lctrl", "rctrl") then
 				copyToClipboard()
 			elseif e == "touchpressed" then
-				local name = love.window.getTitle()
-				if #name == 0 or name == "Untitled" then name = "Game" end
 				local buttons = {"OK", "Cancel"}
 				if love.system then
 					buttons[3] = "Copy to clipboard"
