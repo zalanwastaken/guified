@@ -11,7 +11,7 @@ function love.load()
         movbox
     })
     frame:load()
-    print(frame:addSlider(30, 30).id)
+    --print(frame:addSlider(30, 30).id)
     mouseLoc = guified.registry.elements.textBox:new(love.mouse.getX(), love.mouse.getY(), tostring(love.mouse.getX().."\n"..tostring(love.mouse.getY())))
     guified.registry.register(mouseLoc)
 end
@@ -19,9 +19,14 @@ function love.update(dt)
     movbox.changeSize(love.mouse.getX(), love.mouse.getY())
     mouseLoc.changePos(love.mouse.getX() + 10, love.mouse.getY())
     mouseLoc.text("X:"..tostring(love.mouse.getX().."\nY:"..tostring(love.mouse.getY())))
+    if love.keyboard.isDown("e") then
+        error("TEST")
+    end
 end
 function love.keypressed(key)
     if key == "u" then
         frame:unload()
+        guified.registry.remove(mouseLoc)
     end
 end
+--? All of that without ever touching love.draw

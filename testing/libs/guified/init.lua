@@ -2,8 +2,9 @@
 ---@alias element table
 ---@alias image table to silence warnings
 --? config
-local fontsize = 12
-local VK_CAPITAL = 0x14 -- Virtual-Key Code for Caps Lock
+local fontsize = 12 --* default font size
+local VK_CAPITAL = 0x14 --* Virtual-Key Code for Caps Lock
+local WARN = true --* Enable warnings ?
 --?FFI
 local ffi = require("ffi")
 ffi.cdef[[
@@ -16,7 +17,7 @@ ffi.cdef[[
     static const unsigned int SWP_SHOWWINDOW = 0x0040;
     short GetKeyState(int nVirtKey);
 ]]
---? all script funcs
+--? funcs
 ---@return string
 local function getScriptFolder()
     return(debug.getinfo(1, "S").source:sub(2):match("(.*/)"))
@@ -30,7 +31,7 @@ end
 ---@return number|nil
 local function getIndex(table, val)
     for i = 1, #table, 1 do
-        if table[i] == val then
+        if table[i] == val then                                     
             return(i)
         end
     end
@@ -39,6 +40,7 @@ end
 ---@param length number
 ---@return string
 local function idgen(length)
+    length = length or 16
     local chars = {
         --* Small chars
         "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", 
@@ -63,11 +65,13 @@ local font = love.graphics.newFont(getScriptFolder().."Ubuntu-L.ttf")
 love.graphics.setFont(font, fontsize)
 love.graphics.setColor(1, 1, 1, 1)
 love.math.setRandomSeed(os.time())
-if love.system.getOS():lower() == "linux" then
-    love.window.showMessageBox("Warning", "Featurs that use FFI will not work on Linux !", "warning")
-end
-if love.system.getOS():lower() == "macos" then
-    love.window.showMessageBox("Warning", "MacOS is not suppoorted !", "warning")
+if WARN then
+    if love.system.getOS():lower() == "linux" then
+        love.window.showMessageBox("Warning", "Features that use FFI will not work on Linux !", "warning")
+    end
+    if love.system.getOS():lower() == "macos" then
+        love.window.showMessageBox("Warning", "MacOS is not suppoorted !", "warning")
+    end
 end
 --? local stuff
 local guifiedlocal = {
@@ -131,7 +135,7 @@ local guifiedlocal = {
 --? lib stuff
 local guified = {
     --? vars
-    __VER__ = "INF-DEV-1",
+    __VER__ = "A-1.0.0",
     registry = {
         elements = {
             button = {

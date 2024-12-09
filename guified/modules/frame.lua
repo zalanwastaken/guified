@@ -13,8 +13,11 @@ local function createSlider(x, y)
     })
 end
 local frame = {
+    ---@param elements table
+    ---@return frame
     new = function(elements)
-        return({
+        ---@class frame
+        local frame = {
             elements = elements,
             loaded = false,
             load = function(self)
@@ -43,7 +46,8 @@ local frame = {
                     return(slider)
                 end
             end
-        })
+        }
+        return(frame)
     end
 }
 guified["frame"] = frame
