@@ -7,6 +7,7 @@ local VK_CAPITAL = 0x14 --* Virtual-Key Code for Caps Lock
 local WARN = true --* Enable warnings ?
 --?FFI
 local ffi = require("ffi")
+--[[
 ffi.cdef[[
     //! C code
     typedef void* HWND;
@@ -17,6 +18,8 @@ ffi.cdef[[
     static const unsigned int SWP_SHOWWINDOW = 0x0040;
     short GetKeyState(int nVirtKey);
 ]]
+--]]
+local OSinterop = require("libs.guified.os_interop")
 --? funcs
 ---@return string
 local function getScriptFolder()
@@ -110,32 +113,12 @@ local guifiedlocal = {
     ---@param title string
     ---@param noerr boolean
     ---@return boolean|nil
-    setWindowToBeOnTop = function(title, noerr)
-        local HWND_TOPMOST = ffi.cast("HWND", -1)
-        local HWND_NOTOPMOST = ffi.cast("HWND", -2)
-        local hwnd = ffi.C.FindWindowA(nil, title)
-        if hwnd == nil then
-            print("HWND not found!")
-            if noerr then
-                return(false)
-            else
-                error("HWND not found !")
-            end
-        else
-            print("Found window handle:", hwnd)
-            --* Set the window to always be on top
-            ffi.C.SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, ffi.C.SWP_NOSIZE + ffi.C.SWP_NOMOVE + ffi.C.SWP_SHOWWINDOW)
-            print("Window set to always on top.")
-            if noerr then
-                return(true)
-            end
-        end
-    end
+    setWindowToBeOnTop = OSinterop.setWindowToBeOnTop
 }
 --? lib stuff
 local guified = {
     --? vars
-    __VER__ = "A-1.0.0",
+    __VER__ = "A-1.0.1",
     registry = {
         elements = {
             button = {
@@ -209,7 +192,7 @@ local guified = {
                     })
                 end,
             },
-            textInput = { --TODO
+            textInput = { --TODO DELAYED
                 new = function(self, argx, argy, w, h, placeholder, active)
                     error("This element in not implimented yet !")
                     if not(active) then
@@ -235,9 +218,7 @@ local guified = {
                 ---@param y number
                 ---@return element
                 new = function(self, x, y, w, h, mode, clr)
-                    if clr == nil then
-                        clr = {1, 1, 1, 1}
-                    end
+                    clr = clr or {1, 1, 1, 1}
                     return({
                         name = "box",
                         draw = function()
@@ -281,28 +262,53 @@ local guified = {
         },
         ---@param element element
         ---@param id_length number optional
+        ---@param noerr boolean optional
         ---@return nil
-        register = function(element, id_length) --? register an element
+        register = function(element, id_length, noerr) --? register an element
+            if type(id_length):lower() == "boolean" then
+                noerr = id_length
+                id_length = nil
+            end
             if element ~= nil then
                 local place = #guifiedlocal.internalregistry.drawstack + 1
-                element.id = idgen(id_length or 16)
+                local id = idgen(id_length or 16)
+                for i = 1, #guifiedlocal.internalregistry.ids, 1 do
+                    if id == guifiedlocal.internalregistry.ids[i] then
+                        if noerr then
+                            return(false)
+                        else
+                            error("Failed to register element "..element.name.."\nID already exists")
+                        end
+                    end
+                end
+                element.id = id
                 guifiedlocal.internalregistry.ids[place] = element.id
                 guifiedlocal.internalregistry.drawstack[#guifiedlocal.internalregistry.drawstack + 1] = element.draw
                 if element.update ~= nil then
                     guifiedlocal.internalregistry.updatestack[#guifiedlocal.internalregistry.drawstack] = element.update
                 end
                 print("element "..element.name.." registered ID: "..element.id)
+                if noerr then
+                    return(true)
+                end
             else
-                error("No element provided to register")
+                if not(noerr) then
+                    error("No element provided to register")
+                else
+                    return(false)
+                end
             end
         end,
         ---@param element element
+        ---@param noerr boolean optional
         ---@return nil
-        remove = function(element) --? removes an element
+        remove = function(element, noerr) --? removes an element
             if element ~= nil then
+                noerr = noerr or false
                 if type(element) == "string" then
                     local id = element
                     element = {name = id, id = id}
+                    print("WARN: USING A ID TO REMOVE A ELEMENT IS NOT RECOMENED")
                 end
                 if element.id ~= nil then
                     local place = getIndex(guifiedlocal.internalregistry.ids, element.id)
@@ -313,11 +319,22 @@ local guified = {
                     table.remove(guifiedlocal.internalregistry.ids, place)
                     print("element "..element.name.." removed ID: "..element.id)
                     element.id = nil
+                    if noerr then
+                        return(true)
+                    end
                 else
-                    print("element is not registered !")
+                    if not(noerr) then
+                        error("Element "..element.name.." is not registed")
+                    else
+                        return(false)
+                    end
                 end
             else
-                error("No element provided to remove")
+                if not(noerr) then
+                    error("No element provided to remove")
+                else
+                    return(false)
+                end
             end
         end
     },
@@ -339,6 +356,13 @@ local guified = {
     end,
     getIdTable = function() --* returns the table contaning ids 
         return(guifiedlocal.internalregistry.ids)
+    end,
+    getFontSize = function()
+        return(fontsize)
+    end,
+    ---@param size number
+    setFontSize = function(size)
+        fontsize = size
     end
 }
 --? override stuff

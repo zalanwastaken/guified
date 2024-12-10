@@ -1,7 +1,7 @@
 if guified == nil then
     error("You need to load Guified as a global first")
 end
-local function createSlider(x, y)
+local function createSlider(x, y) --TODO
     return({
         name = "Slider", 
         draw = function()
@@ -13,6 +13,10 @@ local function createSlider(x, y)
     })
 end
 local frame = {
+    __VER__ = {
+        guified = "A-1.0.1", --* guified version
+        module = "A-1.0.0" --* module version
+    },
     ---@param elements table
     ---@return frame
     new = function(elements)
@@ -50,4 +54,4 @@ local frame = {
         return(frame)
     end
 }
-guified["frame"] = frame
+return(frame)
