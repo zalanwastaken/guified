@@ -5,25 +5,65 @@
 local fontsize = 12 --* default font size
 local VK_CAPITAL = 0x14 --* Virtual-Key Code for Caps Lock
 local WARN = true --* Enable warnings ?
---?FFI
 local ffi = require("ffi")
---[[
-ffi.cdef[[
-    //! C code
-    typedef void* HWND;
-    HWND FindWindowA(const char* lpClassName, const char* lpWindowName);
-    int SetWindowPos(HWND hWnd, HWND hWndInsertAfter, int X, int Y, int cx, int cy, unsigned int uFlags);
-    static const unsigned int SWP_NOSIZE = 0x0001;
-    static const unsigned int SWP_NOMOVE = 0x0002;
-    static const unsigned int SWP_SHOWWINDOW = 0x0040;
-    short GetKeyState(int nVirtKey);
-]]
---]]
-local OSinterop = require("libs.guified.os_interop")
---? funcs
+local OSinterop = require("libs.guified.os_interop") --? contains ffi now
+--? imp funcs
 ---@return string
 local function getScriptFolder()
     return(debug.getinfo(1, "S").source:sub(2):match("(.*/)"))
+end
+--? init stuff
+local font = love.graphics.newFont(getScriptFolder().."Ubuntu-L.ttf")
+love.graphics.setFont(font, fontsize)
+love.graphics.setColor(1, 1, 1, 1)
+love.math.setRandomSeed(os.time())
+if WARN then
+    if love.system.getOS():lower() == "linux" then
+        love.window.showMessageBox("Warning", "Features that use FFI will not work on Linux !", "warning")
+    end
+    if love.system.getOS():lower() == "macos" then
+        love.window.showMessageBox("Warning", "MacOS is not suppoorted !", "warning")
+    end
+end
+--? local stuff
+local guifiedlocal = {
+    --? vars
+    enableupdate = true,
+    enabledraw = true,
+    internalregistry = {
+        ---@class drawstack
+        drawstack = {},
+        ---@class updatestack
+        updatestack = {},
+        data = {},
+        ids = {},
+        warns = {}
+    },
+    --?funcs
+    ---@param dt number
+    ---@param updatestack updatestack
+    ---@return table returns the data prossesed by the updatestack
+    update = function(dt, updatestack)
+        local data = {}
+        for i = 1, #updatestack, 1 do
+            if updatestack[i] ~= nil then
+                data[i] = updatestack[i](dt) --? call the draw func
+            end
+        end
+        return(data)
+    end,
+    ---@param drawstack drawstack
+    ---@param data table
+    draw = function(drawstack, data)
+        for i = 1, #drawstack, 1 do
+            love.graphics.setColor(1, 1, 1, 1)
+            drawstack[i](data[i]) --? call the draw func
+        end
+    end
+}
+--* funcs
+local function warnf(warn)
+    guifiedlocal.internalregistry.warns[#guifiedlocal.internalregistry.warns + 1] = warn
 end
 ---@return boolean
 local function isCapsLockOn()
@@ -63,58 +103,6 @@ local function idgen(length)
     end
     return(ret)
 end
---? init stuff
-local font = love.graphics.newFont(getScriptFolder().."Ubuntu-L.ttf")
-love.graphics.setFont(font, fontsize)
-love.graphics.setColor(1, 1, 1, 1)
-love.math.setRandomSeed(os.time())
-if WARN then
-    if love.system.getOS():lower() == "linux" then
-        love.window.showMessageBox("Warning", "Features that use FFI will not work on Linux !", "warning")
-    end
-    if love.system.getOS():lower() == "macos" then
-        love.window.showMessageBox("Warning", "MacOS is not suppoorted !", "warning")
-    end
-end
---? local stuff
-local guifiedlocal = {
-    --? vars
-    enableupdate = true,
-    enabledraw = true,
-    internalregistry = {
-        ---@class drawstack
-        drawstack = {},
-        ---@class updatestack
-        updatestack = {},
-        data = {},
-        ids = {}
-    },
-    --?funcs
-    ---@param dt number
-    ---@param updatestack updatestack
-    ---@return table returns the data prossesed by the updatestack
-    update = function(dt, updatestack)
-        local data = {}
-        for i = 1, #updatestack, 1 do
-            if updatestack[i] ~= nil then
-                data[i] = updatestack[i](dt) --? call the draw func
-            end
-        end
-        return(data)
-    end,
-    ---@param drawstack drawstack
-    ---@param data table
-    draw = function(drawstack, data)
-        for i = 1, #drawstack, 1 do
-            love.graphics.setColor(1, 1, 1, 1)
-            drawstack[i](data[i]) --? call the draw func
-        end
-    end,
-    ---@param title string
-    ---@param noerr boolean
-    ---@return boolean|nil
-    setWindowToBeOnTop = OSinterop.setWindowToBeOnTop
-}
 --? lib stuff
 local guified = {
     --? vars
@@ -194,6 +182,7 @@ local guified = {
             },
             textInput = { --TODO DELAYED
                 new = function(self, argx, argy, w, h, placeholder, active)
+                    warnf("TextInput is a praceholder currently")
                     error("This element in not implimented yet !")
                     if not(active) then
                         active = false
@@ -270,6 +259,9 @@ local guified = {
                 id_length = nil
             end
             if element ~= nil then
+                if id_length or 16 < 6 then
+                    warnf("ID REG for "..element.name.." is too short")
+                end
                 local place = #guifiedlocal.internalregistry.drawstack + 1
                 local id = idgen(id_length or 16)
                 for i = 1, #guifiedlocal.internalregistry.ids, 1 do
@@ -308,7 +300,7 @@ local guified = {
                 if type(element) == "string" then
                     local id = element
                     element = {name = id, id = id}
-                    print("WARN: USING A ID TO REMOVE A ELEMENT IS NOT RECOMENED")
+                    warnf("USING A ID TO REMOVE A ELEMENT IS NOT RECOMENED")
                 end
                 if element.id ~= nil then
                     local place = getIndex(guifiedlocal.internalregistry.ids, element.id)
@@ -530,4 +522,20 @@ function love.errorhandler(msg)
 		end
 	end
 end
+--* post init
+guifiedlocal.setWindowToBeOnTop = OSinterop(warnf).setWindowToBeOnTop
+--* svc init
+guified.registry.register({
+    name = "warnSVC Guified internal",
+    draw = function()
+    end,
+    update = function()
+        for i = 1, #guifiedlocal.internalregistry.warns, 1 do
+            local warnelement = guified.registry.elements.textBox:new(0, love.graphics.getHeight() - ((i * fontsize * 2) - #guifiedlocal.internalregistry.warns), guifiedlocal.internalregistry.warns[i])
+            warnelement.name = "warnSVC Guified internal warning"
+            guified.registry.register(warnelement)
+            guifiedlocal.internalregistry.warns[i] = nil
+        end
+    end
+})
 return(guified)
