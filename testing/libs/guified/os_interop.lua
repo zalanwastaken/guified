@@ -41,6 +41,7 @@ local function init_interop(warnf)
                 end
             elseif os == "linux" then
                 warnf("FFI features on Linux are not supported")
+                return(false)
             end
         end
     }
