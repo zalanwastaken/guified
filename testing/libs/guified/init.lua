@@ -45,11 +45,12 @@ local guifiedlocal = {
     ---@param dt number
     ---@param updatestack updatestack
     ---@return table returns the data prossesed by the updatestack
-    update = function(dt, updatestack)
+    update = function(dt, updatestack, idtbl)
         local data = {}
-        for i = 1, #updatestack, 1 do
-            if updatestack[i] ~= nil then
-                data[i] = updatestack[i](dt) --? call the draw func
+        for i = 1, #idtbl, 1 do
+            --print(i, #updatestack)
+            if updatestack[idtbl[i]] ~= nil then
+                data[i] = updatestack[idtbl[i]](dt)
             end
         end
         return(data)
@@ -279,9 +280,12 @@ local guified = {
                 guifiedlocal.internalregistry.ids[place] = element.id
                 guifiedlocal.internalregistry.drawstack[#guifiedlocal.internalregistry.drawstack + 1] = element.draw
                 if element.update ~= nil then
-                    guifiedlocal.internalregistry.updatestack[#guifiedlocal.internalregistry.drawstack] = element.update
+                    --guifiedlocal.internalregistry.updatestack[#guifiedlocal.internalregistry.drawstack] = element.update
+                    guifiedlocal.internalregistry.updatestack[element.id] = element.update
+                    print(#guifiedlocal.internalregistry.drawstack)
+                    print("element "..element.name.." update registered ID: "..element.id)
                 end
-                print("element "..element.name.." registered ID: "..element.id)
+                print("element "..element.name.." draw registered ID: "..element.id)
                 if noerr then
                     return(true)
                 end
@@ -308,7 +312,7 @@ local guified = {
                     local place = getIndex(guifiedlocal.internalregistry.ids, element.id)
                     table.remove(guifiedlocal.internalregistry.drawstack, place)
                     if guifiedlocal.internalregistry.updatestack[place] ~= nil then
-                        table.remove(guifiedlocal.internalregistry.updatestack, place)
+                        guifiedlocal.internalregistry.updatestack[element.id] = nil
                     end
                     table.remove(guifiedlocal.internalregistry.ids, place)
                     print("element "..element.name.." removed ID: "..element.id)
@@ -393,7 +397,7 @@ function love.run()
         end
         --? guified code
         if guifiedlocal.update and guifiedlocal.enableupdate then
-            guifiedlocal.internalregistry.data = guifiedlocal.update(dt, guifiedlocal.internalregistry.updatestack)
+            guifiedlocal.internalregistry.data = guifiedlocal.update(dt, guifiedlocal.internalregistry.updatestack, guifiedlocal.internalregistry.ids)
         end
         --? guified code end
 		-- Call update and draw
