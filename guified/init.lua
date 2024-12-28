@@ -5,22 +5,68 @@
 local fontsize = 12 --* default font size
 local VK_CAPITAL = 0x14 --* Virtual-Key Code for Caps Lock
 local WARN = true --* Enable warnings ?
---?FFI
-local ffi = require("ffi")
-ffi.cdef[[
-    //! C code
-    typedef void* HWND;
-    HWND FindWindowA(const char* lpClassName, const char* lpWindowName);
-    int SetWindowPos(HWND hWnd, HWND hWndInsertAfter, int X, int Y, int cx, int cy, unsigned int uFlags);
-    static const unsigned int SWP_NOSIZE = 0x0001;
-    static const unsigned int SWP_NOMOVE = 0x0002;
-    static const unsigned int SWP_SHOWWINDOW = 0x0040;
-    short GetKeyState(int nVirtKey);
-]]
---? funcs
+--? imp funcs
 ---@return string
 local function getScriptFolder()
     return(debug.getinfo(1, "S").source:sub(2):match("(.*/)"))
+end
+--? requires
+local ffi = require("ffi")
+local OSinterop = require(getScriptFolder().."os_interop") --? contains ffi now
+require(getScriptFolder().."errorhandler") --* setup errorhandler
+--? init stuff
+local font = love.graphics.newFont(getScriptFolder().."Ubuntu-L.ttf")
+love.graphics.setFont(font, fontsize)
+love.graphics.setColor(1, 1, 1, 1)
+love.math.setRandomSeed(os.time())
+if WARN then
+    if love.system.getOS():lower() == "linux" then
+        love.window.showMessageBox("Warning", "Features that use FFI will not work on Linux !", "warning")
+    end
+    if love.system.getOS():lower() == "macos" then
+        love.window.showMessageBox("Warning", "MacOS is not suppoorted !", "warning")
+    end
+end
+--? local stuff
+local guifiedlocal = {
+    --? vars
+    enableupdate = true,
+    enabledraw = true,
+    internalregistry = {
+        ---@class drawstack
+        drawstack = {},
+        ---@class updatestack
+        updatestack = {},
+        data = {},
+        ids = {},
+        warns = {}
+    },
+    --?funcs
+    ---@param dt number
+    ---@param updatestack updatestack
+    ---@return table returns the data prossesed by the updatestack
+    update = function(dt, updatestack, idtbl)
+        local data = {}
+        for i = 1, #idtbl, 1 do
+            --print(i, #updatestack)
+            if updatestack[idtbl[i]] ~= nil then
+                data[i] = updatestack[idtbl[i]](dt)
+            end
+        end
+        return(data)
+    end,
+    ---@param drawstack drawstack
+    ---@param data table
+    draw = function(drawstack, data)
+        for i = 1, #drawstack, 1 do
+            love.graphics.setColor(1, 1, 1, 1)
+            drawstack[i](data[i]) --? call the draw func
+        end
+    end
+}
+--* funcs
+local function warnf(warn)
+    guifiedlocal.internalregistry.warns[#guifiedlocal.internalregistry.warns + 1] = warn
 end
 ---@return boolean
 local function isCapsLockOn()
@@ -60,82 +106,10 @@ local function idgen(length)
     end
     return(ret)
 end
---? init stuff
-local font = love.graphics.newFont(getScriptFolder().."Ubuntu-L.ttf")
-love.graphics.setFont(font, fontsize)
-love.graphics.setColor(1, 1, 1, 1)
-love.math.setRandomSeed(os.time())
-if WARN then
-    if love.system.getOS():lower() == "linux" then
-        love.window.showMessageBox("Warning", "Features that use FFI will not work on Linux !", "warning")
-    end
-    if love.system.getOS():lower() == "macos" then
-        love.window.showMessageBox("Warning", "MacOS is not suppoorted !", "warning")
-    end
-end
---? local stuff
-local guifiedlocal = {
-    --? vars
-    enableupdate = true,
-    enabledraw = true,
-    internalregistry = {
-        ---@class drawstack
-        drawstack = {},
-        ---@class updatestack
-        updatestack = {},
-        data = {},
-        ids = {}
-    },
-    --?funcs
-    ---@param dt number
-    ---@param updatestack updatestack
-    ---@return table returns the data prossesed by the updatestack
-    update = function(dt, updatestack)
-        local data = {}
-        for i = 1, #updatestack, 1 do
-            if updatestack[i] ~= nil then
-                data[i] = updatestack[i](dt) --? call the draw func
-            end
-        end
-        return(data)
-    end,
-    ---@param drawstack drawstack
-    ---@param data table
-    draw = function(drawstack, data)
-        for i = 1, #drawstack, 1 do
-            love.graphics.setColor(1, 1, 1, 1)
-            drawstack[i](data[i]) --? call the draw func
-        end
-    end,
-    ---@param title string
-    ---@param noerr boolean
-    ---@return boolean|nil
-    setWindowToBeOnTop = function(title, noerr)
-        local HWND_TOPMOST = ffi.cast("HWND", -1)
-        local HWND_NOTOPMOST = ffi.cast("HWND", -2)
-        local hwnd = ffi.C.FindWindowA(nil, title)
-        if hwnd == nil then
-            print("HWND not found!")
-            if noerr then
-                return(false)
-            else
-                error("HWND not found !")
-            end
-        else
-            print("Found window handle:", hwnd)
-            --* Set the window to always be on top
-            ffi.C.SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, ffi.C.SWP_NOSIZE + ffi.C.SWP_NOMOVE + ffi.C.SWP_SHOWWINDOW)
-            print("Window set to always on top.")
-            if noerr then
-                return(true)
-            end
-        end
-    end
-}
 --? lib stuff
 local guified = {
     --? vars
-    __VER__ = "A-1.0.0",
+    __VER__ = "A-1.0.1",
     registry = {
         elements = {
             button = {
@@ -209,9 +183,10 @@ local guified = {
                     })
                 end,
             },
-            textInput = { --TODO
+            textInput = { --TODO DELAYED
                 new = function(self, argx, argy, w, h, placeholder, active)
-                    error("This element in not implimented yet !")
+                    warnf("TextInput is a praceholder currently")
+                    --error("This element in not implimented yet !")
                     if not(active) then
                         active = false
                     end
@@ -235,9 +210,7 @@ local guified = {
                 ---@param y number
                 ---@return element
                 new = function(self, x, y, w, h, mode, clr)
-                    if clr == nil then
-                        clr = {1, 1, 1, 1}
-                    end
+                    clr = clr or {1, 1, 1, 1}
                     return({
                         name = "box",
                         draw = function()
@@ -281,43 +254,85 @@ local guified = {
         },
         ---@param element element
         ---@param id_length number optional
+        ---@param noerr boolean optional
         ---@return nil
-        register = function(element, id_length) --? register an element
+        register = function(element, id_length, noerr) --? register an element
+            if type(id_length):lower() == "boolean" then
+                noerr = id_length
+                id_length = nil
+            end
             if element ~= nil then
+                if id_length or 16 < 6 then
+                    warnf("ID REG for "..element.name.." is too short")
+                end
                 local place = #guifiedlocal.internalregistry.drawstack + 1
-                element.id = idgen(id_length or 16)
+                local id = idgen(id_length or 16)
+                for i = 1, #guifiedlocal.internalregistry.ids, 1 do
+                    if id == guifiedlocal.internalregistry.ids[i] then
+                        if noerr then
+                            return(false)
+                        else
+                            error("Failed to register element "..element.name.."\nID already exists")
+                        end
+                    end
+                end
+                element.id = id
                 guifiedlocal.internalregistry.ids[place] = element.id
                 guifiedlocal.internalregistry.drawstack[#guifiedlocal.internalregistry.drawstack + 1] = element.draw
                 if element.update ~= nil then
-                    guifiedlocal.internalregistry.updatestack[#guifiedlocal.internalregistry.drawstack] = element.update
+                    --guifiedlocal.internalregistry.updatestack[#guifiedlocal.internalregistry.drawstack] = element.update
+                    guifiedlocal.internalregistry.updatestack[element.id] = element.update
+                    print(#guifiedlocal.internalregistry.drawstack)
+                    print("element "..element.name.." update registered ID: "..element.id)
                 end
-                print("element "..element.name.." registered ID: "..element.id)
+                print("element "..element.name.." draw registered ID: "..element.id)
+                if noerr then
+                    return(true)
+                end
             else
-                error("No element provided to register")
+                if not(noerr) then
+                    error("No element provided to register")
+                else
+                    return(false)
+                end
             end
         end,
         ---@param element element
+        ---@param noerr boolean optional
         ---@return nil
-        remove = function(element) --? removes an element
+        remove = function(element, noerr) --? removes an element
             if element ~= nil then
+                noerr = noerr or false
                 if type(element) == "string" then
                     local id = element
                     element = {name = id, id = id}
+                    warnf("USING A ID TO REMOVE A ELEMENT IS NOT RECOMENED")
                 end
                 if element.id ~= nil then
                     local place = getIndex(guifiedlocal.internalregistry.ids, element.id)
                     table.remove(guifiedlocal.internalregistry.drawstack, place)
                     if guifiedlocal.internalregistry.updatestack[place] ~= nil then
-                        table.remove(guifiedlocal.internalregistry.updatestack, place)
+                        guifiedlocal.internalregistry.updatestack[element.id] = nil
                     end
                     table.remove(guifiedlocal.internalregistry.ids, place)
                     print("element "..element.name.." removed ID: "..element.id)
                     element.id = nil
+                    if noerr then
+                        return(true)
+                    end
                 else
-                    print("element is not registered !")
+                    if not(noerr) then
+                        error("Element "..element.name.." is not registed")
+                    else
+                        return(false)
+                    end
                 end
             else
-                error("No element provided to remove")
+                if not(noerr) then
+                    error("No element provided to remove")
+                else
+                    return(false)
+                end
             end
         end
     },
@@ -331,14 +346,25 @@ local guified = {
     toggleUpdate = function() --* toggles update
         guifiedlocal.enableupdate = not(guifiedlocal.enableupdate)
     end,
+    ---@return boolean
     getDrawStatus = function() --* returns the draw status
         return(guifiedlocal.enabledraw)
     end,
+    ---@return boolean
     getUpdateStatus = function() --* returns the update status
         return(guifiedlocal.enableupdate)
     end,
+    ---@return table
     getIdTable = function() --* returns the table contaning ids 
         return(guifiedlocal.internalregistry.ids)
+    end,
+    ---@return number
+    getFontSize = function() --* returns the font size
+        return(fontsize)
+    end,
+    ---@param size number
+    setFontSize = function(size) --* sets the font size
+        fontsize = size
     end
 }
 --? override stuff
@@ -371,7 +397,7 @@ function love.run()
         end
         --? guified code
         if guifiedlocal.update and guifiedlocal.enableupdate then
-            guifiedlocal.internalregistry.data = guifiedlocal.update(dt, guifiedlocal.internalregistry.updatestack)
+            guifiedlocal.internalregistry.data = guifiedlocal.update(dt, guifiedlocal.internalregistry.updatestack, guifiedlocal.internalregistry.ids)
         end
         --? guified code end
 		-- Call update and draw
@@ -396,114 +422,31 @@ function love.run()
         end
 	end
 end
---* Error handling
-local utf8 = require("utf8")
-local function error_printer(msg, layer)
-	print((debug.traceback("Error: " .. tostring(msg), 1+(layer or 1)):gsub("\n[^\n]+$", "")))
-end
-function love.errorhandler(msg)
-	msg = tostring(msg)
-	error_printer(msg, 2)
-	if not love.window or not love.graphics or not love.event then
-		return
-	end
-	if not love.graphics.isCreated() or not love.window.isOpen() then
-		local success, status = pcall(love.window.setMode, 800, 600)
-		if not success or not status then
-			return
-		end
-	end
-	-- Reset state.
-	if love.mouse then
-		love.mouse.setVisible(true)
-		love.mouse.setGrabbed(false)
-		love.mouse.setRelativeMode(false)
-		if love.mouse.isCursorSupported() then
-			love.mouse.setCursor()
-		end
-	end
-	if love.joystick then
-		-- Stop all joystick vibrations.
-		for i,v in ipairs(love.joystick.getJoysticks()) do
-			v:setVibration()
-		end
-	end
-	if love.audio then love.audio.stop() end
-	love.graphics.reset()
-	local font = love.graphics.setNewFont(14)
-    local largefont = love.graphics.newFont(44)
-	love.graphics.setColor(1, 1, 1)
-	local trace = debug.traceback()
-	love.graphics.origin()
-	local sanitizedmsg = {}
-	for char in msg:gmatch(utf8.charpattern) do
-		table.insert(sanitizedmsg, char)
-	end
-	sanitizedmsg = table.concat(sanitizedmsg)
-	local err = {}
-	table.insert(err, "Error\n")
-	table.insert(err, sanitizedmsg)
-	if #sanitizedmsg ~= #msg then
-		table.insert(err, "Invalid UTF-8 string in error message.")
-	end
-	table.insert(err, "\n")
-	for l in trace:gmatch("(.-)\n") do
-		if not l:match("boot.lua") then
-			l = l:gsub("stack traceback:", "Traceback\n")
-			table.insert(err, l)
-		end
-	end
-	local p = table.concat(err, "\n")
-	p = p:gsub("\t", "")
-	p = p:gsub("%[string \"(.-)\"%]", "%1")
-	local function draw()
-		if not love.graphics.isActive() then return end
-		love.graphics.clear(0/255, 183/255, 235/255)
-        love.graphics.setFont(largefont)
-        love.graphics.printf("GUIFIED", 0, 44, love.graphics.getWidth(), "center")
-        love.graphics.setFont(font)
-		love.graphics.printf(p, 0, love.graphics.getHeight() / 4, love.graphics.getWidth(), "center")
-		love.graphics.present()
-	end
-	local fullErrorText = p
-	local function copyToClipboard()
-		if not love.system then return end
-		love.system.setClipboardText(fullErrorText)
-		p = p .. "\nCopied to clipboard!"
-	end
-	if love.system then
-		p = p .. "\n\nPress Ctrl+C or tap to copy this error"
-	end
-    local name = love.window.getTitle()
-    if #name == 0 or name == "Untitled" then 
-        love.window.setTitle("Guified error")
+--* post init
+guifiedlocal.setWindowToBeOnTop = OSinterop(warnf).setWindowToBeOnTop
+--* svc init
+guified.registry.register({
+    name = "warnSVC Guified internal",
+    draw = function()
+    end,
+    update = function()
+        for i = 1, #guifiedlocal.internalregistry.warns, 1 do
+            local warnelement = guified.registry.elements.textBox:new(0, love.graphics.getHeight() - ((i * fontsize * 2) - #guifiedlocal.internalregistry.warns), guifiedlocal.internalregistry.warns[i])
+            warnelement.name = "warnSVC Guified internal warning"
+            guified.registry.register(warnelement)
+            guifiedlocal.internalregistry.warns[i] = nil
+        end
     end
-	return function()
-		love.event.pump()
-		for e, a, b, c in love.event.poll() do
-			if e == "quit" then
-				return 1
-			elseif e == "keypressed" and a == "escape" then
-				return 1
-			elseif e == "keypressed" and a == "c" and love.keyboard.isDown("lctrl", "rctrl") then
-				copyToClipboard()
-			elseif e == "touchpressed" then
-				local buttons = {"OK", "Cancel"}
-				if love.system then
-					buttons[3] = "Copy to clipboard"
-				end
-				local pressed = love.window.showMessageBox("Quit "..name.."?", "", buttons)
-				if pressed == 1 then
-					return 1
-				elseif pressed == 3 then
-					copyToClipboard()
-				end
-			end
-		end
-		draw()
-		if love.timer then
-			love.timer.sleep(0.1)
-		end
-	end
-end
+})
 return(guified)
+--[[
+* Made by Zalanwastaken with LÖVE and some 🎔
+! ________  ________  ___       ________  ________   ___       __   ________  ________  _________  ________  ___  __    _______   ________      
+!|\_____  \|\   __  \|\  \     |\   __  \|\   ___  \|\  \     |\  \|\   __  \|\   ____\|\___   ___\\   __  \|\  \|\  \ |\  ___ \ |\   ___  \    
+! \|___/  /\ \  \|\  \ \  \    \ \  \|\  \ \  \\ \  \ \  \    \ \  \ \  \|\  \ \  \___|\|___ \  \_\ \  \|\  \ \  \/  /|\ \   __/|\ \  \\ \  \   
+!     /  / /\ \   __  \ \  \    \ \   __  \ \  \\ \  \ \  \  __\ \  \ \   __  \ \_____  \   \ \  \ \ \   __  \ \   ___  \ \  \_|/_\ \  \\ \  \  
+!    /  /_/__\ \  \ \  \ \  \____\ \  \ \  \ \  \\ \  \ \  \|\__\_\  \ \  \ \  \|____|\  \   \ \  \ \ \  \ \  \ \  \\ \  \ \  \_|\ \ \  \\ \  \ 
+!   |\________\ \__\ \__\ \_______\ \__\ \__\ \__\\ \__\ \____________\ \__\ \__\____\_\  \   \ \__\ \ \__\ \__\ \__\\ \__\ \_______\ \__\\ \__\
+!    \|_______|\|__|\|__|\|_______|\|__|\|__|\|__| \|__|\|____________|\|__|\|__|\_________\   \|__|  \|__|\|__|\|__| \|__|\|_______|\|__| \|__|
+!                                                                                \|_________|                                                   
+--]]
