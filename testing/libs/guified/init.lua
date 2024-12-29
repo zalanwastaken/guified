@@ -282,7 +282,6 @@ local guified = {
                 if element.update ~= nil then
                     --guifiedlocal.internalregistry.updatestack[#guifiedlocal.internalregistry.drawstack] = element.update
                     guifiedlocal.internalregistry.updatestack[element.id] = element.update
-                    print(#guifiedlocal.internalregistry.drawstack)
                     print("element "..element.name.." update registered ID: "..element.id)
                 end
                 print("element "..element.name.." draw registered ID: "..element.id)
