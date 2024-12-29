@@ -13,10 +13,6 @@ local function createSlider(x, y) --TODO
     })
 end
 local frame = {
-    __VER__ = {
-        guified = "A-1.0.1", --* guified version
-        module = "A-1.0.0" --* module version
-    },
     ---@param elements table
     ---@return frame
     new = function(elements)
