@@ -39,7 +39,8 @@ local guifiedlocal = {
         updatestack = {},
         data = {},
         ids = {},
-        warns = {}
+        warns = {},
+        optional = true
     },
     --?funcs
     ---@param dt number
@@ -109,7 +110,7 @@ end
 --? lib stuff
 local guified = {
     --? vars
-    __VER__ = "A-1.0.1",
+    __VER__ = "A-1.1.0",
     registry = {
         elements = {
             button = {
@@ -335,6 +336,13 @@ local guified = {
             end
         end
     },
+    debug = {
+        warn = warnf,
+        --idgen = idgen,
+        disableOptional = function()
+            guifiedlocal.internalregistry.optional = false
+        end
+    },
     --? gui funcs
     setWindowToBeOnTop = function() --* sets the Window set to always on top.
         guifiedlocal.setWindowToBeOnTop(love.window.getTitle())
@@ -430,6 +438,9 @@ guified.registry.register({
     end,
     update = function()
         for i = 1, #guifiedlocal.internalregistry.warns, 1 do
+            if guifiedlocal.internalregistry.optional == false then
+                break
+            end
             local warnelement = guified.registry.elements.textBox:new(0, love.graphics.getHeight() - ((i * fontsize * 2) - #guifiedlocal.internalregistry.warns), guifiedlocal.internalregistry.warns[i])
             warnelement.name = "warnSVC Guified internal warning"
             guified.registry.register(warnelement)

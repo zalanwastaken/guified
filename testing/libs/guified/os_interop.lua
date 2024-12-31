@@ -1,17 +1,21 @@
+--[[
+    ! Before yesterday god and i knew how this code works now only god knows.
+    * TIP: Dont touch this code now
+--]]
 local function init_interop(warnf)
     local os = love.system.getOS():lower()
     local ffi = require("ffi")
     if os == "windows" then
         ffi.cdef [[
-        //! C code
-        typedef void* HWND;
-        HWND FindWindowA(const char* lpClassName, const char* lpWindowName);
-        int SetWindowPos(HWND hWnd, HWND hWndInsertAfter, int X, int Y, int cx, int cy, unsigned int uFlags);
-        static const unsigned int SWP_NOSIZE = 0x0001;
-        static const unsigned int SWP_NOMOVE = 0x0002;
-        static const unsigned int SWP_SHOWWINDOW = 0x0040;
-        short GetKeyState(int nVirtKey);
-]]
+            //! C code
+            typedef void* HWND;
+            HWND FindWindowA(const char* lpClassName, const char* lpWindowName);
+            int SetWindowPos(HWND hWnd, HWND hWndInsertAfter, int X, int Y, int cx, int cy, unsigned int uFlags);
+            static const unsigned int SWP_NOSIZE = 0x0001;
+            static const unsigned int SWP_NOMOVE = 0x0002;
+            static const unsigned int SWP_SHOWWINDOW = 0x0040;
+            short GetKeyState(int nVirtKey);
+        ]]
     elseif os == "linux" then
         warnf("FFI features on Linux are not supported")
     end
@@ -45,6 +49,6 @@ local function init_interop(warnf)
             end
         end
     }
-    return ret
+    return(ret)
 end
 return(init_interop)
