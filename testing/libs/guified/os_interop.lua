@@ -1,7 +1,5 @@
---[[
-    ! Before yesterday god and i knew how this code works now only god knows.
-    * TIP: Dont touch this code now
---]]
+---@param warnf function
+---@return table
 local function init_interop(warnf)
     local os = love.system.getOS():lower()
     local ffi = require("ffi")
@@ -19,10 +17,11 @@ local function init_interop(warnf)
     elseif os == "linux" then
         warnf("FFI features on Linux are not supported")
     end
-    local ret = {
-        -- Function to modify the existing window
-        setWindowToBeOnTop = function(title, noerr)
-            if os == "windows" then
+    local ret = {}
+    if os == "windows" then
+        ret = {
+            -- Function to modify the existing window
+            setWindowToBeOnTop = function(title, noerr)
                 local HWND_TOPMOST = ffi.cast("HWND", -1)
                 local HWND_NOTOPMOST = ffi.cast("HWND", -2)
                 local hwnd = ffi.C.FindWindowA(nil, title)
@@ -43,12 +42,16 @@ local function init_interop(warnf)
                         return (true)
                     end
                 end
-            elseif os == "linux" then
+            end
+        }
+    elseif os == "linux" then
+        ret = {
+            setWindowToBeOnTop = function() 
                 warnf("FFI features on Linux are not supported")
                 return(false)
             end
-        end
-    }
+        }
+    end
     return(ret)
 end
 return(init_interop)
