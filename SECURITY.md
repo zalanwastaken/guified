@@ -7,7 +7,7 @@ Use this section to tell people about which versions of your project are current
 | Version | Supported          |
 | ------- | ------------------ |
 | A-1.x.x   | :white_check_mark: |
-
+| U-A-1.x.x | :negative_squared_cross_mark: |
 ## Reporting a Vulnerability 🚨
 
 We take the security of Guified seriously. If you have discovered a security vulnerability in our project, please follow these steps to report it:
