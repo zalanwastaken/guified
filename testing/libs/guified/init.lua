@@ -124,6 +124,7 @@ local guified = {
                 ---@param argy number
                 ---@return element
                 new = function(self, argx, argy, w, h, argtext)
+                    local isPressed = false  -- Track if the button is currently pressed
                     return ({
                         name = "button",
                         draw = function(args)
@@ -133,7 +134,7 @@ local guified = {
                                 argtext = args.text or argtext
                             end
                             love.graphics.rectangle("line", argx, argy, w, h)
-                            local charWidth = fontsize / 2 -- * Approx width of each character in a monospace font of size 12
+                            local charWidth = fontsize / 2  -- Approx width of each character in a monospace font of size 12
                             love.graphics.print(argtext, argx + (w / 2) - (#argtext * charWidth / 2),
                                 argy + (h / 2) - charWidth)
                         end,
@@ -141,11 +142,18 @@ local guified = {
                             local mouseX, mouseY = love.mouse.getPosition()
                             if love.mouse.isDown(1) then
                                 if mouseX >= argx and mouseX <= argx + w and mouseY >= argy and mouseY <= argy + h then
-                                    return (true)
-                                else
-                                    return (false)
+                                    isPressed = true
+                                    return true
                                 end
                             end
+                            return false
+                        end,
+                        released = function()
+                            if isPressed and not love.mouse.isDown(1) then
+                                isPressed = false
+                                return true  -- Button was released
+                            end
+                            return false  -- No release detected
                         end,
                         text = function(text)
                             argtext = text
@@ -160,6 +168,7 @@ local guified = {
                         end
                     })
                 end
+                
             },
             textBox = {
                 ---@param argx number
@@ -395,7 +404,8 @@ local guified = {
         warn = warnf,
         -- idgen = idgen,
         disableOptional = function()
-            guifiedlocal.internalregistry.optional = false
+            --guifiedlocal.internalregistry.optional = false --? disabled
+            warnf("disableOptional has been temporarily disabled")
         end
     },
     extcalls = {
