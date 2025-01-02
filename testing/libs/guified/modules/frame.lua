@@ -1,6 +1,4 @@
-if guified == nil then
-    error("You need to load Guified as a global first")
-end
+local guified = require("libs.guified.init")
 local function createSlider(x, y) --TODO
     return({
         name = "Slider", 

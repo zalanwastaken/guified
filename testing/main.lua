@@ -1,4 +1,4 @@
-guified = require("libs.guified.init")
+local guified = require("libs.guified.init")
 local framemod = require("libs.guified.modules.frame")
 local colors = require("libs.guified.modules.colors")
 local tween = require("libs.guified.modules.tween")

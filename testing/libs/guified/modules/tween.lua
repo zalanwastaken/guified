@@ -1,7 +1,5 @@
 --! Tween module is still in testing
-if guified == nil then
-    error("You need to load Guified as a global first")
-end
+local guified = require("libs.guified.init")
 local tween = {
     newElementTween = function(element, x, y, sx, sy, time)
         if element.changePos ~= nil then
