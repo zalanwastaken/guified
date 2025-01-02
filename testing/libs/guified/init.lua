@@ -113,7 +113,7 @@ end
 -- ? lib stuff
 local guified = {
     -- ? vars
-    __VER__ = "A-1.1.0",
+    __VER__ = "A-1.2.0",
     registry = {
         elements = {
             button = {
