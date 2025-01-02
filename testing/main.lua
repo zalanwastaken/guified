@@ -3,13 +3,14 @@ local framemod = require("libs.guified.modules.frame")
 local colors = require("libs.guified.modules.colors")
 local tween = require("libs.guified.modules.tween")
 function love.load()
-    --guified.setWindowToBeOnTop()
+    guified.funcs.setWindowToBeOnTop()
     movbox = guified.registry.elements.box:new(0, 0, 40, 40, "line", colors.electric_blue)
     frame = framemod.new({
         guified.registry.elements.textBox:new(0, 0, guified.__VER__),
         guified.registry.elements.textBox:new(love.graphics.getWidth() / 2, 0, "Hi !"),
         guified.registry.elements.box:new(0, 1, love.graphics.getWidth() - 1, love.graphics.getHeight() - 1, "line", colors.cyan),
-        movbox
+        movbox,
+        guified.registry.elements.textInput:new(100, 100, 40, 40)
     })
     frame:load()
     --print(frame:addSlider(30, 30).id)
@@ -25,13 +26,14 @@ function love.update(dt)
     mouseLoc.changePos(love.mouse.getX() + 10, love.mouse.getY())
     mouseLoc.text("X:"..tostring(love.mouse.getX().."\nY:"..tostring(love.mouse.getY())))
     if love.keyboard.isDown("e") then
-        error("TEST")
+        --error("TEST")
     end
 end
 function love.keypressed(key)
     if key == "u" then
         frame:unload()
         guified.registry.remove(mouseLoc)
+        guified.debug.warn("TEST")
     end
 end
 --? All of that without ever touching love.draw

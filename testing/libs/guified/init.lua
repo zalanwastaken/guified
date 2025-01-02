@@ -37,6 +37,8 @@ local guifiedlocal = {
         drawstack = {},
         ---@class updatestack
         updatestack = {},
+        ---@class textinputstack
+        textinputstack = {},
         data = {},
         ids = {},
         warns = {},
@@ -49,7 +51,6 @@ local guifiedlocal = {
     update = function(dt, updatestack, idtbl)
         local data = {}
         for i = 1, #idtbl, 1 do
-            -- print(i, #updatestack)
             if updatestack[idtbl[i]] ~= nil then
                 data[i] = updatestack[idtbl[i]](dt)
             end
@@ -62,6 +63,13 @@ local guifiedlocal = {
         for i = 1, #drawstack, 1 do
             love.graphics.setColor(1, 1, 1, 1)
             drawstack[i](data[i]) -- ? call the draw func
+        end
+    end,
+    textinput = function(key, textinputstack, idtbl)
+        for i = 1, #idtbl, 1 do
+            if textinputstack[idtbl[i]] ~= nil then
+                textinputstack[idtbl[i]](key)
+            end
         end
     end
 }
@@ -180,22 +188,63 @@ local guified = {
                     })
                 end
             },
-            textInput = { -- TODO DELAYED
+            textInput = { -- * YAY !
                 new = function(self, argx, argy, w, h, placeholder, active)
-                    warnf("TextInput is a praceholder currently")
-                    -- error("This element in not implimented yet !")
-                    if not (active) then
-                        active = false
-                    end
+                    active = active or false
+                    placeholder = placeholder or "Type Away ~"
+                    local text = ""
+                    local box = {
+                        x = argx - w / 4,
+                        y = argy - (h / 2 - fontsize)
+                    }
+                    local backspaceact = false
                     local ret = {
-                        text = "",
-                        draw = function()
-                            love.graphics.print(self.ret.text)
+                        name = "Text Input",
+                        draw = function(data)
+                            love.graphics.rectangle("line", box.x, box.y, w, h)
+                            if #text > 0 then
+                                love.graphics.print(text, argx, argy)
+                            else
+                                love.graphics.print(placeholder, argx, argy)
+                            end
                         end,
-                        update = function()
-
+                        update = function(dt)
+                            local mx, my = love.mouse.getPosition() -- Get mouse position
+                            if mx >= box.x and mx <= box.x + w and my >= box.y and my <= box.y + h then
+                                if love.mouse.isDown(1) then
+                                    if not clicked then -- If it wasn't already clicked
+                                        clicked = true
+                                        active = true -- Set active to true when clicked inside the box
+                                    end
+                                end
+                            else
+                                if love.mouse.isDown(1) then
+                                    active = false -- Set active to false if clicked outside the box
+                                end
+                                clicked = false -- Reset click status when mouse is released or outside the box
+                            end
+                            if active and love.keyboard.isDown("backspace") then
+                                if backspaceact == false then
+                                    text = string.sub(text, 1, -2)
+                                    backspaceact = true
+                                end
+                            else
+                                backspaceact = false
+                            end
+                        end,
+                        textinput = function(key)
+                            if active then
+                                text = text .. key
+                            end
+                        end,
+                        getText = function()
+                            return(text)
+                        end,
+                        setText = function(argtext)
+                            text = argtext
                         end
                     }
+                    return (ret)
                 end
             },
             box = {
@@ -277,9 +326,12 @@ local guified = {
                 guifiedlocal.internalregistry.ids[place] = element.id
                 guifiedlocal.internalregistry.drawstack[#guifiedlocal.internalregistry.drawstack + 1] = element.draw
                 if element.update ~= nil then
-                    -- guifiedlocal.internalregistry.updatestack[#guifiedlocal.internalregistry.drawstack] = element.update
                     guifiedlocal.internalregistry.updatestack[element.id] = element.update
                     print("element " .. element.name .. " update registered ID: " .. element.id)
+                end
+                if element.textinput ~= nil then
+                    guifiedlocal.internalregistry.textinputstack[element.id] = element.textinput
+                    print("element " .. element.name .. " textinput registered ID: " .. element.id)
                 end
                 print("element " .. element.name .. " draw registered ID: " .. element.id)
                 if noerr then
@@ -310,8 +362,11 @@ local guified = {
                 if element.id ~= nil then
                     local place = getIndex(guifiedlocal.internalregistry.ids, element.id)
                     table.remove(guifiedlocal.internalregistry.drawstack, place)
-                    if guifiedlocal.internalregistry.updatestack[place] ~= nil then
+                    if guifiedlocal.internalregistry.updatestack[element.id] ~= nil then
                         guifiedlocal.internalregistry.updatestack[element.id] = nil
+                    end
+                    if guifiedlocal.internalregistry.textinputstack[element.id] ~= nil then
+                        guifiedlocal.internalregistry.textinputstack[element.id] = nil
                     end
                     table.remove(guifiedlocal.internalregistry.ids, place)
                     print("element " .. element.name .. " removed ID: " .. element.id)
@@ -336,21 +391,31 @@ local guified = {
         end
     },
     debug = {
+        -- TODO rework this
         warn = warnf,
         -- idgen = idgen,
         disableOptional = function()
-            -- TODO rework this
             guifiedlocal.internalregistry.optional = false
         end
     },
-    ext = {
-        drawf = guifiedlocal.draw,
-        updatef = guifiedlocal.update,
+    extcalls = {
+        drawf = function()
+            guifiedlocal.draw(guifiedlocal.internalregistry.drawstack, guifiedlocal.internalregistry.data)
+        end,
+        updatef = function()
+            guifiedlocal.update(love.timer.getAverageDelta(), guifiedlocal.internalregistry.updatestack, guifiedlocal.internalregistry.ids)
+        end,
+        textinputf = function(key)
+            guifiedlocal.textinput(key, guifiedlocal.internalregistry.textinputstack, guifiedlocal.internalregistry.ids)
+        end,
         getDrawStack = function()
             return (guifiedlocal.internalregistry.drawstack)
         end,
         getUpdateStack = function()
             return (guifiedlocal.internalregistry.updatestack)
+        end,
+        getTextIInputStack = function()
+            return (guifiedlocal.internalregistry.textinputstack)
         end
     },
     funcs = {
@@ -416,7 +481,8 @@ function love.run()
         end
         -- ? guified code
         if guifiedlocal.update and guifiedlocal.enableupdate then
-            guifiedlocal.internalregistry.data = guifiedlocal.update(dt, guifiedlocal.internalregistry.updatestack, guifiedlocal.internalregistry.ids)
+            guifiedlocal.internalregistry.data = guifiedlocal.update(dt, guifiedlocal.internalregistry.updatestack,
+                guifiedlocal.internalregistry.ids)
         end
         -- ? guified code end
         -- Call update and draw
@@ -441,6 +507,9 @@ function love.run()
         end
     end
 end
+function love.textinput(key)
+    guifiedlocal.textinput(key, guifiedlocal.internalregistry.textinputstack, guifiedlocal.internalregistry.ids)
+end
 -- * post init
 guifiedlocal.setWindowToBeOnTop = OSinterop(warnf).setWindowToBeOnTop
 -- * svc init
@@ -451,7 +520,8 @@ guified.registry.register({
     update = function()
         for i = 1, #guifiedlocal.internalregistry.warns, 1 do
             if guifiedlocal.internalregistry.optional == false then
-                break
+                -- break
+                -- ? disabled for now
             end
             local warnelement = guified.registry.elements.textBox:new(0, love.graphics.getHeight() -
                 ((i * fontsize * 2) - #guifiedlocal.internalregistry.warns), guifiedlocal.internalregistry.warns[i])
