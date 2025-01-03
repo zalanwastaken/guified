@@ -118,25 +118,31 @@ local guified = {
         elements = {
             button = {
                 ---@param argtext string
-                ---@param h number
-                ---@param w number
                 ---@param argx number
                 ---@param argy number
+                ---@param h number optional since A-1.2.0
+                ---@param w number optional since A-1.2.0
                 ---@return element
-                new = function(self, argx, argy, w, h, argtext)
-                    local isPressed = false  -- Track if the button is currently pressed
+                new = function(self, argx, argy, argtext, w, h)
+                    local isPressed = false -- Track if the button is currently pressed
+                    local autoctl = true
+                    if w ~= nil and h ~= nil then
+                        autoctl = false
+                    end
                     return ({
                         name = "button",
-                        draw = function(args)
-                            if args ~= nil then
-                                argx = args.x or argx
-                                argy = args.y or argy
-                                argtext = args.text or argtext
+                        draw = function()
+                            if autoctl then
+                                -- Adjust button size to fit text
+                                local charWidth = fontsize / 2 -- Approx width of each character in a monospace font
+                                w = #argtext * charWidth + 20 -- Add padding to the width
+                                h = fontsize + 10 -- Set height based on font size with padding
+                                love.graphics.print(argtext, argx + (w / 2) - (#argtext * charWidth / 2), argy + (h / 2) - (fontsize / 2))
+                            else
+                                love.graphics.print(argtext, argx, argy)
                             end
+                            -- Draw the button
                             love.graphics.rectangle("line", argx, argy, w, h)
-                            local charWidth = fontsize / 2  -- Approx width of each character in a monospace font of size 12
-                            love.graphics.print(argtext, argx + (w / 2) - (#argtext * charWidth / 2),
-                                argy + (h / 2) - charWidth)
                         end,
                         pressed = function()
                             local mouseX, mouseY = love.mouse.getPosition()
@@ -151,26 +157,21 @@ local guified = {
                         released = function()
                             if isPressed and not love.mouse.isDown(1) then
                                 isPressed = false
-                                return true  -- Button was released
+                                return true -- Button was released
                             end
-                            return false  -- No release detected
+                            return false -- No release detected
                         end,
                         text = function(text)
                             argtext = text
                         end,
-                        changePos = function(x, y, argw, argh)
+                        changePos = function(x, y)
                             argx = x
                             argy = y
-                        end,
-                        changeSize = function(argw, argh)
-                            w = argw
-                            h = argh
                         end
                     })
                 end
-                
             },
-            textBox = {
+            text = {
                 ---@param argx number
                 ---@param argy number
                 ---@param text string
@@ -247,7 +248,7 @@ local guified = {
                             end
                         end,
                         getText = function()
-                            return(text)
+                            return (text)
                         end,
                         setText = function(argtext)
                             text = argtext
@@ -404,7 +405,7 @@ local guified = {
         warn = warnf,
         -- idgen = idgen,
         disableOptional = function()
-            --guifiedlocal.internalregistry.optional = false --? disabled
+            -- guifiedlocal.internalregistry.optional = false --? disabled
             warnf("disableOptional has been temporarily disabled")
         end
     },
@@ -530,10 +531,9 @@ guified.registry.register({
     update = function()
         for i = 1, #guifiedlocal.internalregistry.warns, 1 do
             if guifiedlocal.internalregistry.optional == false then
-                -- break
-                -- ? disabled for now
+                -- break -- ? disabled for now
             end
-            local warnelement = guified.registry.elements.textBox:new(0, love.graphics.getHeight() -
+            local warnelement = guified.registry.elements.text:new(0, love.graphics.getHeight() -
                 ((i * fontsize * 2) - #guifiedlocal.internalregistry.warns), guifiedlocal.internalregistry.warns[i])
             warnelement.name = "warnSVC Guified internal warning"
             guified.registry.register(warnelement)
