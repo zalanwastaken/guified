@@ -1,24 +1,27 @@
+---@param warnf function
+---@return table
 local function init_interop(warnf)
     local os = love.system.getOS():lower()
     local ffi = require("ffi")
     if os == "windows" then
         ffi.cdef [[
-        //! C code
-        typedef void* HWND;
-        HWND FindWindowA(const char* lpClassName, const char* lpWindowName);
-        int SetWindowPos(HWND hWnd, HWND hWndInsertAfter, int X, int Y, int cx, int cy, unsigned int uFlags);
-        static const unsigned int SWP_NOSIZE = 0x0001;
-        static const unsigned int SWP_NOMOVE = 0x0002;
-        static const unsigned int SWP_SHOWWINDOW = 0x0040;
-        short GetKeyState(int nVirtKey);
-]]
+            //! C code
+            typedef void* HWND;
+            HWND FindWindowA(const char* lpClassName, const char* lpWindowName);
+            int SetWindowPos(HWND hWnd, HWND hWndInsertAfter, int X, int Y, int cx, int cy, unsigned int uFlags);
+            static const unsigned int SWP_NOSIZE = 0x0001;
+            static const unsigned int SWP_NOMOVE = 0x0002;
+            static const unsigned int SWP_SHOWWINDOW = 0x0040;
+            short GetKeyState(int nVirtKey);
+        ]]
     elseif os == "linux" then
         warnf("FFI features on Linux are not supported")
     end
-    local ret = {
-        -- Function to modify the existing window
-        setWindowToBeOnTop = function(title, noerr)
-            if os == "windows" then
+    local ret = {}
+    if os == "windows" then
+        ret = {
+            -- Function to modify the existing window
+            setWindowToBeOnTop = function(title, noerr)
                 local HWND_TOPMOST = ffi.cast("HWND", -1)
                 local HWND_NOTOPMOST = ffi.cast("HWND", -2)
                 local hwnd = ffi.C.FindWindowA(nil, title)
@@ -39,12 +42,16 @@ local function init_interop(warnf)
                         return (true)
                     end
                 end
-            elseif os == "linux" then
+            end
+        }
+    elseif os == "linux" then
+        ret = {
+            setWindowToBeOnTop = function() 
                 warnf("FFI features on Linux are not supported")
                 return(false)
             end
-        end
-    }
-    return ret
+        }
+    end
+    return(ret)
 end
 return(init_interop)

@@ -1,6 +1,20 @@
-if guified == nil then
-    error("You need to load Guified as a global first")
+---@return string
+local function getScriptFolder()
+    return (debug.getinfo(1, "S").source:sub(2):match("(.*/)"))
 end
+local function removeAfterLastSlash(str)
+    local lastSlashIndex = str:match(".*()/")  -- Find the position of the last slash
+    if lastSlashIndex then
+        return str:sub(1, lastSlashIndex - 1)  -- Return the string up to the last slash
+    else
+        return str  -- No slashes found, return the original string
+    end
+end
+local function replaceSlashWithDot(str)
+    return str:gsub("/", ".")  -- Replace all '/' with '.'
+end
+--local guified = require("libs.guified.init")
+local guified = require(replaceSlashWithDot(removeAfterLastSlash(removeAfterLastSlash(getScriptFolder()))..".init"))
 local function createSlider(x, y) --TODO
     return({
         name = "Slider", 
@@ -13,10 +27,6 @@ local function createSlider(x, y) --TODO
     })
 end
 local frame = {
-    __VER__ = {
-        guified = "A-1.0.1", --* guified version
-        module = "A-1.0.0" --* module version
-    },
     ---@param elements table
     ---@return frame
     new = function(elements)
