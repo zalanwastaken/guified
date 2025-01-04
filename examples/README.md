@@ -1,5 +1,5 @@
 # Guified Library Documentation 📚
-#### NOTE: This doc only contains info about the core guified functions not the modules
+#### NOTE: This doc only contains info about the core guified functions(A-1.2.0) not the modules
 ## GUI Elements 🖼️
 
 ### guified.registry.elements.button\:new(argx, argy, w, h, argtext) 🔘
