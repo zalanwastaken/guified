@@ -1,19 +1,23 @@
 -- * Type info
----@alias element table
+---@alias element table to silence warnings
 ---@alias image table to silence warnings
+
 -- ? config
 local fontsize = 12 -- * default font size
 local VK_CAPITAL = 0x14 -- * Virtual-Key Code for Caps Lock
 local WARN = true -- * Enable warnings ?
+
 -- ? requires
 local ffi = require("ffi")
 local OSinterop = require("libs.guified.os_interop") -- ? contains ffi now
 require("libs.guified.errorhandler") -- * setup errorhandler
+
 -- ? imp funcs
 ---@return string
 local function getScriptFolder()
     return (debug.getinfo(1, "S").source:sub(2):match("(.*/)"))
 end
+
 -- ? init stuff
 local font = love.graphics.newFont(getScriptFolder() .. "Ubuntu-L.ttf")
 love.graphics.setFont(font, fontsize)
@@ -27,7 +31,8 @@ if WARN then
         love.window.showMessageBox("Warning", "MacOS is not suppoorted !", "warning")
     end
 end
--- ? local stuff
+
+-- * internal stuff
 local guifiedlocal = {
     -- ? vars
     enableupdate = true,
@@ -44,7 +49,7 @@ local guifiedlocal = {
         warns = {},
         optional = true
     },
-    -- ?funcs
+    -- ? funcs
     ---@param dt number
     ---@param updatestack updatestack
     ---@return table returns the data prossesed by the updatestack
@@ -73,7 +78,10 @@ local guifiedlocal = {
         end
     end
 }
+
 -- * funcs
+
+---@param warn string
 local function warnf(warn)
     guifiedlocal.internalregistry.warns[#guifiedlocal.internalregistry.warns + 1] = "[WARNING] " .. warn
 end
@@ -110,11 +118,24 @@ local function idgen(length)
     end
     return (ret)
 end
--- ? lib stuff
+
+-- ? guified return table
 local guified = {
-    -- ? vars
-    __VER__ = "A-1.2.0",
+    __VER__ = "A-1.2.1", -- ? The version of Guified bruh
+    __LICENCE__ = [[
+Copyright (c) 2024 Zalanwastaken(Mudit Mishra)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+1. Redistributions of source code must retain the above copyright notice, this list of conditions, and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions, and the following disclaimer in the documentation and/or other materials provided with the distribution.
+3. Neither the name of the authors nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+]],
+    __AUTHOR__ = "Zalanwastaken",
     registry = {
+        -- * Contains the element constructor functions
         elements = {
             button = {
                 ---@param argtext string
@@ -137,7 +158,8 @@ local guified = {
                                 local charWidth = fontsize / 2 -- Approx width of each character in a monospace font
                                 w = #argtext * charWidth + 20 -- Add padding to the width
                                 h = fontsize + 10 -- Set height based on font size with padding
-                                love.graphics.print(argtext, argx + (w / 2) - (#argtext * charWidth / 2), argy + (h / 2) - (fontsize / 2))
+                                love.graphics.print(argtext, argx + (w / 2) - (#argtext * charWidth / 2),
+                                    argy + (h / 2) - (fontsize / 2))
                             else
                                 love.graphics.print(argtext, argx, argy)
                             end
@@ -171,6 +193,7 @@ local guified = {
                     })
                 end
             },
+
             text = {
                 ---@param argx number
                 ---@param argy number
@@ -198,7 +221,14 @@ local guified = {
                     })
                 end
             },
+
             textInput = { -- * YAY !
+                ---@param argx number
+                ---@param argy number
+                ---@param w number
+                ---@param h number
+                ---@param placeholder string
+                ---@param active boolean
                 new = function(self, argx, argy, w, h, placeholder, active)
                     active = active or false
                     placeholder = placeholder or "Type Away ~"
@@ -257,6 +287,7 @@ local guified = {
                     return (ret)
                 end
             },
+
             box = {
                 ---@param clr Color
                 ---@param h number
@@ -290,6 +321,7 @@ local guified = {
                     })
                 end
             },
+
             image = {
                 ---@param x number
                 ---@param y number
@@ -308,6 +340,7 @@ local guified = {
                 end
             }
         },
+
         ---@param element element
         ---@param id_length number optional
         ---@param noerr boolean optional
@@ -355,6 +388,7 @@ local guified = {
                 end
             end
         end,
+
         ---@param element element
         ---@param noerr boolean optional
         ---@return nil
@@ -400,6 +434,7 @@ local guified = {
             end
         end
     },
+
     debug = {
         -- TODO rework this
         warn = warnf,
@@ -409,60 +444,88 @@ local guified = {
             warnf("disableOptional has been temporarily disabled")
         end
     },
+
     extcalls = {
+        -- * Draw function that manages rendering.
+        -- * Calls the guifiedlocal.draw method to process all drawable elements
+        -- * from the drawstack in the internal registry.
         drawf = function()
             guifiedlocal.draw(guifiedlocal.internalregistry.drawstack, guifiedlocal.internalregistry.data)
         end,
+        -- * Update function that manages updating.
+        -- * Calls the guifiedlocal.update method with the average delta time and
+        -- * processes elements from the updatestack and associated ids in the internal registry.
         updatef = function()
-            guifiedlocal.update(love.timer.getAverageDelta(), guifiedlocal.internalregistry.updatestack, guifiedlocal.internalregistry.ids)
+            guifiedlocal.update(love.timer.getAverageDelta(), guifiedlocal.internalregistry.updatestack,
+                guifiedlocal.internalregistry.ids)
         end,
+        -- * Handles text input events.
+        ---@param key string The key argument from the love.textinput callback.
+        -- * Passes the input to the guifiedlocal.textinput method, which processes
+        -- * text input handlers from the textinputstack in the internal registry.
         textinputf = function(key)
             guifiedlocal.textinput(key, guifiedlocal.internalregistry.textinputstack, guifiedlocal.internalregistry.ids)
         end,
+        -- * Returns the current drawstack.
+        ---@return drawstack The table containing drawable elements.
         getDrawStack = function()
             return (guifiedlocal.internalregistry.drawstack)
         end,
+        -- * Returns the current updatestack.
+        ---@return updatestack The table containing updateable elements.
         getUpdateStack = function()
             return (guifiedlocal.internalregistry.updatestack)
         end,
+        -- * Returns the current textinputstack.
+        ---@return textinputstack The table containing text input handlers.
         getTextIInputStack = function()
             return (guifiedlocal.internalregistry.textinputstack)
         end
     },
+
     funcs = {
-        -- ? gui funcs
-        setWindowToBeOnTop = function() -- * sets the Window set to always on top.
+        -- * Sets the window to always be on top.
+        setWindowToBeOnTop = function()
             guifiedlocal.setWindowToBeOnTop(love.window.getTitle())
         end,
-        toggleDraw = function() -- * toggles draw
+        -- * Toggles the draw functionality on or off.
+        toggleDraw = function()
             guifiedlocal.enabledraw = not (guifiedlocal.enabledraw)
         end,
-        toggleUpdate = function() -- * toggles update
+        -- * Toggles the update functionality on or off.
+        toggleUpdate = function()
             guifiedlocal.enableupdate = not (guifiedlocal.enableupdate)
         end,
-        ---@return boolean
-        getDrawStatus = function() -- * returns the draw status
+        -- * Returns the current draw status.
+        ---@return boolean True if drawing is enabled, false otherwise.
+        getDrawStatus = function()
             return (guifiedlocal.enabledraw)
         end,
-        ---@return boolean
-        getUpdateStatus = function() -- * returns the update status
+        -- * Returns the current update status.
+        ---@return boolean True if updating is enabled, false otherwise.
+        getUpdateStatus = function()
             return (guifiedlocal.enableupdate)
         end,
-        ---@return table
-        getIdTable = function() -- * returns the table contaning ids 
+        -- * Returns the table containing IDs for registered elements.
+        ---@return table The table of IDs.
+        getIdTable = function()
             return (guifiedlocal.internalregistry.ids)
         end,
-        ---@return number
-        getFontSize = function() -- * returns the font size
+        -- * Returns the current font size.
+        ---@return number The size of the font.
+        getFontSize = function()
             return (fontsize)
         end,
-        ---@param size number
-        setFontSize = function(size) -- * sets the font size
+        -- * Sets a new font size.
+        ---@param size number The new font size to be set.
+        setFontSize = function(size)
             fontsize = size
         end
     }
 }
--- ? override stuff
+-- ? Love functions
+
+-- * main love loop
 function love.run()
     if love.load then
         love.load(love.arg.parseGameArguments(arg), arg)
@@ -518,12 +581,19 @@ function love.run()
         end
     end
 end
+
+-- * textinput event function
+---@param key any
 function love.textinput(key)
     guifiedlocal.textinput(key, guifiedlocal.internalregistry.textinputstack, guifiedlocal.internalregistry.ids)
 end
 -- * post init
-guifiedlocal.setWindowToBeOnTop = OSinterop(warnf).setWindowToBeOnTop
--- * svc init
+guifiedlocal.setWindowToBeOnTop = OSinterop(warnf).setWindowToBeOnTop -- ? requires ffi so added by OSinterop here after (almost) everything is done
+-- * SVC init
+
+-- ? The WARN SVC
+-- * Processes warnings and displays them
+-- TODO rework this in A-1.3.0
 guified.registry.register({
     name = "warnSVC Guified internal",
     draw = function()
@@ -542,6 +612,7 @@ guified.registry.register({
     end
 })
 return (guified)
+
 --[[
 * Made by Zalanwastaken with LÖVE and some 🎔
 ! ________  ________  ___       ________  ________   ___       __   ________  ________  _________  ________  ___  __    _______   ________      
