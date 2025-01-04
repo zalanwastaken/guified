@@ -41,8 +41,10 @@ local frame = {
                 self.loaded = true
             end,
             unload = function(self)
-                for i = 1, #elements, 1 do
-                    guified.registry.remove(elements[i])
+                if self.loaded then
+                    for i = 1, #elements, 1 do
+                        guified.registry.remove(elements[i])
+                    end
                 end
                 self.loaded = false
             end,

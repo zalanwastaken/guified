@@ -1,7 +1,7 @@
 guified = require("libs.guified.init")
-local button = guified.registry.elements.button:new(love.graphics.getWidth() / 2, love.graphics.getHeight() / 2, 40, 40, "Hi")
+local button = guified.registry.elements.button:new(love.graphics.getWidth() / 2, love.graphics.getHeight() / 2, "Hi")
 local pts = 0
-local ptscounter = guified.registry.elements.textBox:new(0, 0, pts)
+local ptscounter = guified.registry.elements.text:new(0, 0, pts)
 function love.load()
     guified.registry.register(button)
     guified.registry.register(ptscounter)
