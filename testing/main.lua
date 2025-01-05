@@ -29,7 +29,7 @@ function love.update(dt)
     mouseLoc.changePos(love.mouse.getX() + 10, love.mouse.getY())
     mouseLoc.text("X:"..tostring(love.mouse.getX().."\nY:"..tostring(love.mouse.getY())))
     if love.keyboard.isDown("e") then
-        --error("TEST")
+        error("TEST")
     end
 end
 function love.keypressed(key)

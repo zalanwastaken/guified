@@ -1,7 +1,9 @@
 --* Error handling
 local utf8 = require("utf8")
+local logger = require("libs.guified.dependencies.love2d-tools.modules.logger.init")
 local function error_printer(msg, layer)
-	print((debug.traceback("Error: " .. tostring(msg), 1+(layer or 1)):gsub("\n[^\n]+$", "")))
+	--print((debug.traceback("Error: " .. tostring(msg), 1+(layer or 1)):gsub("\n[^\n]+$", "")))
+	logger.fatal(debug.traceback("Error: " .. tostring(msg), 1+(layer or 1)):gsub("\n[^\n]+$", ""))
 end
 function love.errorhandler(msg)
 	msg = tostring(msg)

@@ -7,16 +7,18 @@ local fontsize = 12 -- * default font size
 local VK_CAPITAL = 0x14 -- * Virtual-Key Code for Caps Lock
 local WARN = true -- * Enable warnings ?
 
--- ? requires
-local ffi = require("ffi")
-local OSinterop = require("libs.guified.os_interop") -- ? contains ffi now
-require("libs.guified.errorhandler") -- * setup errorhandler
-
 -- ? imp funcs
 ---@return string
 local function getScriptFolder()
     return (debug.getinfo(1, "S").source:sub(2):match("(.*/)"))
 end
+
+-- ? requires
+local ffi = require("ffi")
+local OSinterop = require("libs.guified.os_interop") -- ? contains ffi now
+require("libs.guified.errorhandler") -- * setup errorhandler
+local messagebus = require("libs.guified.dependencies.love2d-tools.modules.messagebus")
+local logger = require("libs.guified.dependencies.love2d-tools.modules.logger.init")
 
 -- ? init stuff
 local font = love.graphics.newFont(getScriptFolder() .. "Ubuntu-L.ttf")
@@ -31,6 +33,8 @@ if WARN then
         love.window.showMessageBox("Warning", "MacOS is not suppoorted !", "warning")
     end
 end
+logger.init()
+logger.startSVC()
 
 -- * internal stuff
 local guifiedlocal = {
@@ -84,6 +88,7 @@ local guifiedlocal = {
 ---@param warn string
 local function warnf(warn)
     guifiedlocal.internalregistry.warns[#guifiedlocal.internalregistry.warns + 1] = "[WARNING] " .. warn
+    logger.warn(warn)
 end
 ---@return boolean
 local function isCapsLockOn()
@@ -201,7 +206,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
                 ---@return element
                 new = function(self, argx, argy, text)
                     return ({
-                        name = "textBox",
+                        name = "Text",
                         draw = function()
                             love.graphics.print(text, argx, argy)
                         end,
@@ -370,13 +375,16 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
                 guifiedlocal.internalregistry.drawstack[#guifiedlocal.internalregistry.drawstack + 1] = element.draw
                 if element.update ~= nil then
                     guifiedlocal.internalregistry.updatestack[element.id] = element.update
-                    print("element " .. element.name .. " update registered ID: " .. element.id)
+                    --print("element " .. element.name .. " update registered ID: " .. element.id)
+                    logger.info("element " .. element.name .. " update registered ID: " .. element.id)
                 end
                 if element.textinput ~= nil then
                     guifiedlocal.internalregistry.textinputstack[element.id] = element.textinput
-                    print("element " .. element.name .. " textinput registered ID: " .. element.id)
+                    --print("element " .. element.name .. " textinput registered ID: " .. element.id)
+                    logger.info("element " .. element.name .. " textinput registered ID: " .. element.id)
                 end
-                print("element " .. element.name .. " draw registered ID: " .. element.id)
+                --print("element " .. element.name .. " draw registered ID: " .. element.id)
+                logger.info("element " .. element.name .. " draw registered ID: " .. element.id)
                 if noerr then
                     return (true)
                 end
@@ -413,7 +421,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
                         guifiedlocal.internalregistry.textinputstack[element.id] = nil
                     end
                     table.remove(guifiedlocal.internalregistry.ids, place)
-                    print("element " .. element.name .. " removed ID: " .. element.id)
+                    --print("element " .. element.name .. " removed ID: " .. element.id)
+                    logger.info("element " .. element.name .. " removed ID: " .. element.id)
                     element.id = nil
                     if noerr then
                         return (true)
@@ -611,6 +620,7 @@ guified.registry.register({
         end
     end
 })
+logger.info("GUIFIED init done !")
 return (guified)
 
 --[[

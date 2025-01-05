@@ -16,7 +16,7 @@ local function replaceSlashWithDot(str)
     return str:gsub("/", ".")  -- Replace all '/' with '.'
 end
 --local guified = require("libs.guified.init")
-local guified = require(replaceSlashWithDot(removeAfterLastSlash(removeAfterLastSlash(getScriptFolder()))..".init"))
+local guified = require(replaceSlashWithDot(removeAfterLastSlash(removeAfterLastSlash(getScriptFolder()))..".init")) --TODO refactor
 local tween = {
     newElementTween = function(element, x, y, sx, sy, time)
         if element.changePos ~= nil then
