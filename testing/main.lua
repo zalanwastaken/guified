@@ -2,10 +2,13 @@ local guified = require("libs.guified.init")
 local framemod = require("libs.guified.modules.frame")
 local colors = require("libs.guified.modules.colors")
 local tween = require("libs.guified.modules.tween")
+
+local movbox = guified.registry.elements.box:new(0, 0, 40, 40, "line", colors.electric_blue)
+local mouseLoc = guified.registry.elements.text:new(love.mouse.getX(), love.mouse.getY(), tostring(love.mouse.getX().."\n"..tostring(love.mouse.getY())))
+guified.registry.register(mouseLoc)
 function love.load()
     print("Using guified version "..guified.__VER__)
     guified.funcs.setWindowToBeOnTop()
-    movbox = guified.registry.elements.box:new(0, 0, 40, 40, "line", colors.electric_blue)
     frame = framemod.new({
         guified.registry.elements.text:new(0, 0, guified.__VER__),
         guified.registry.elements.text:new(love.graphics.getWidth() / 2, 0, "Hi !"),
@@ -15,8 +18,6 @@ function love.load()
     })
     frame:load()
     --print(frame:addSlider(30, 30).id)
-    mouseLoc = guified.registry.elements.text:new(love.mouse.getX(), love.mouse.getY(), tostring(love.mouse.getX().."\n"..tostring(love.mouse.getY())))
-    guified.registry.register(mouseLoc)
     local box = guified.registry.elements.box:new(0, 0, 40, 40, "fill", colors.green)
     local tweenO = tween.newElementTween(box, 0, 0, love.graphics.getWidth() - 40, love.graphics.getHeight() / 2)
     guified.registry.register(tweenO)

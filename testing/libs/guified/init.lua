@@ -4,7 +4,7 @@
 
 -- ? config
 local fontsize = 12 -- * default font size
-local VK_CAPITAL = 0x14 -- * Virtual-Key Code for Caps Lock
+--local VK_CAPITAL = 0x14 -- * Virtual-Key Code for Caps Lock
 local WARN = true -- * Enable warnings ?
 
 -- ? imp funcs
@@ -41,6 +41,8 @@ local guifiedlocal = {
     -- ? vars
     enableupdate = true,
     enabledraw = true,
+
+    ---@class internalregistry
     internalregistry = {
         ---@class drawstack
         drawstack = {},
@@ -48,12 +50,17 @@ local guifiedlocal = {
         updatestack = {},
         ---@class textinputstack
         textinputstack = {},
+        ---@class dataholder
         data = {},
+        ---@class idholder
         ids = {},
+        ---@class warningholder
         warns = {},
-        optional = true
+        --optional = true
     },
+
     -- ? funcs
+
     ---@param dt number
     ---@param updatestack updatestack
     ---@return table returns the data prossesed by the updatestack
@@ -90,12 +97,14 @@ local function warnf(warn)
     guifiedlocal.internalregistry.warns[#guifiedlocal.internalregistry.warns + 1] = "[WARNING] " .. warn
     logger.warn(warn)
 end
+--[[
 ---@return boolean
 local function isCapsLockOn()
     -- GetKeyState returns a value where the lowest bit indicates the key's toggle state.
     local state = ffi.C.GetKeyState(VK_CAPITAL)
     return state ~= 0 and bit.band(state, 0x0001) ~= 0
 end
+--]]
 ---@return number|nil
 local function getIndex(table, val)
     for i = 1, #table, 1 do
