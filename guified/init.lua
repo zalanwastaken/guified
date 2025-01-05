@@ -5,15 +5,17 @@
 local fontsize = 12 -- * default font size
 local VK_CAPITAL = 0x14 -- * Virtual-Key Code for Caps Lock
 local WARN = true -- * Enable warnings ?
--- ? requires
-local ffi = require("ffi")
-local OSinterop = require("libs.guified.os_interop") -- ? contains ffi now
-require("libs.guified.errorhandler") -- * setup errorhandler
+
 -- ? imp funcs
 ---@return string
 local function getScriptFolder()
     return (debug.getinfo(1, "S").source:sub(2):match("(.*/)"))
 end
+-- ? requires
+local ffi = require("ffi")
+local OSinterop = require(getScriptFolder().."os_interop")
+require(getScriptFolder().."errorhandler")
+
 -- ? init stuff
 local font = love.graphics.newFont(getScriptFolder() .. "Ubuntu-L.ttf")
 love.graphics.setFont(font, fontsize)
@@ -113,7 +115,7 @@ end
 -- ? lib stuff
 local guified = {
     -- ? vars
-    __VER__ = "A-1.2.0",
+    __VER__ = "A-1.2.1",
     registry = {
         elements = {
             button = {
