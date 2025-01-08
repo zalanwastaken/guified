@@ -19,6 +19,7 @@ local OSinterop = require("libs.guified.os_interop") -- ? contains ffi now
 require("libs.guified.errorhandler") -- * setup errorhandler
 local messagebus = require("libs.guified.dependencies.love2d-tools.modules.messagebus")
 local logger = require("libs.guified.dependencies.love2d-tools.modules.logger.init")
+--local state = require("libs.guified.dependencies.love2d-tools.modules.state")
 
 -- ? init stuff
 local font = love.graphics.newFont(getScriptFolder() .. "Ubuntu-L.ttf")
@@ -135,7 +136,7 @@ end
 
 -- ? guified return table
 local guified = {
-    __VER__ = "A-1.2.1", -- ? The version of Guified bruh
+    __VER__ = "A-1.2.2", -- ? The version of Guified bruh
     __LICENCE__ = [[
 Copyright (c) 2024 Zalanwastaken(Mudit Mishra)
 
@@ -457,7 +458,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
         -- TODO rework this
         warn = warnf,
         -- idgen = idgen,
-        disableOptional = function()
+        disableOptional = function() --NOTE: this will be replaced by guified lite in B-1.0.0 or A-2.0.0
             -- guifiedlocal.internalregistry.optional = false --? disabled
             warnf("disableOptional has been temporarily disabled")
         end
@@ -474,8 +475,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
         -- * Calls the guifiedlocal.update method with the average delta time and
         -- * processes elements from the updatestack and associated ids in the internal registry.
         updatef = function()
-            guifiedlocal.update(love.timer.getAverageDelta(), guifiedlocal.internalregistry.updatestack,
-                guifiedlocal.internalregistry.ids)
+            guifiedlocal.update(love.timer.getAverageDelta(), guifiedlocal.internalregistry.updatestack, guifiedlocal.internalregistry.ids)
         end,
         -- * Handles text input events.
         ---@param key string The key argument from the love.textinput callback.
@@ -498,6 +498,9 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
         ---@return textinputstack The table containing text input handlers.
         getTextIInputStack = function()
             return (guifiedlocal.internalregistry.textinputstack)
+        end,
+        quit = function()
+            logger.stopSVC()
         end
     },
 
@@ -605,6 +608,13 @@ end
 function love.textinput(key)
     guifiedlocal.textinput(key, guifiedlocal.internalregistry.textinputstack, guifiedlocal.internalregistry.ids)
 end
+
+--* love quit function
+function love.quit()
+    logger.stopSVC()
+    return(false)
+end
+
 -- * post init
 guifiedlocal.setWindowToBeOnTop = OSinterop(warnf).setWindowToBeOnTop -- ? requires ffi so added by OSinterop here after (almost) everything is done
 -- * SVC init
