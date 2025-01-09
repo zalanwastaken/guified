@@ -5,6 +5,12 @@ local function getScriptFolder()
 	return (debug.getinfo(1, "S").source:sub(2):match("(.*/)"))
 end
 
+-- Internal logger state and thread management
+---@class loggerinternal
+local loggerinternal = {}
+loggerinternal.write = love.thread.newThread(getScriptFolder() .. "loggerthread.lua") -- Thread to handle logging operations.
+loggerinternal.datastack = love.thread.getChannel("loggerdata") -- Data channel for sending logs to the thread.
+
 -- Logger module
 ---@class logger
 ---@field regular function Regular message
@@ -37,15 +43,6 @@ local log_types = {
 	error = "\27[31m",
 	fatal = "\27[35m",
 }
-
----Initializes, call before startSVC
-function M.init()
-	-- Internal logger state and thread management
-	---@class loggerinternal
-	loggerinternal = {}
-	loggerinternal.write = love.thread.newThread(getScriptFolder() .. "loggerthread.lua") -- Thread to handle logging operations.
-	loggerinternal.datastack = love.thread.getChannel("loggerdata") -- Data channel for sending logs to the thread.
-end
 
 M._chained = {}
 M.chain_number = 1
