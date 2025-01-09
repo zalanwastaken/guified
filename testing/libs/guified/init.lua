@@ -8,11 +8,13 @@ local fontsize = 12 -- * default font size
 local WARN = true -- * Enable warnings ?
 
 -- ? imp funcs
+local function replaceSlashWithDot(str)
+    return str:gsub("/", ".")  -- Replace all '/' with '.'
+end
 ---@return string
 local function getScriptFolder()
     return (debug.getinfo(1, "S").source:sub(2):match("(.*/)"))
 end
-
 -- ? requires
 local ffi = require("ffi")
 local OSinterop = require("libs.guified.os_interop") -- ? contains ffi now
@@ -23,6 +25,7 @@ local logger = require("libs.guified.dependencies.love2d-tools.modules.logger.in
 
 -- ? init stuff
 local font = love.graphics.newFont(getScriptFolder() .. "Ubuntu-L.ttf")
+__GUIFIEDROOT__ = replaceSlashWithDot(getScriptFolder())
 love.graphics.setFont(font, fontsize)
 love.graphics.setColor(1, 1, 1, 1)
 love.math.setRandomSeed(os.time())
@@ -34,9 +37,9 @@ if WARN then
         love.window.showMessageBox("Warning", "MacOS is not suppoorted !", "warning")
     end
 end
-logger.init()
 logger.startSVC()
-
+logger.ok("Got guified root folder "..__GUIFIEDROOT__)
+logger.ok("init setup done")
 -- * internal stuff
 local guifiedlocal = {
     -- ? vars
@@ -90,6 +93,7 @@ local guifiedlocal = {
         end
     end
 }
+logger.ok("setting up internal table done")
 
 -- * funcs
 
@@ -544,6 +548,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
         end
     }
 }
+logger.ok("setting up main return table done")
+
 -- ? Love functions
 
 -- * main love loop
@@ -602,18 +608,21 @@ function love.run()
         end
     end
 end
+logger.ok("main loop setup done")
 
 -- * textinput event function
 ---@param key any
 function love.textinput(key)
     guifiedlocal.textinput(key, guifiedlocal.internalregistry.textinputstack, guifiedlocal.internalregistry.ids)
 end
+logger.ok("setting up textinput hook done")
 
 --* love quit function
 function love.quit()
     logger.stopSVC()
     return(false)
 end
+logger.ok("exit function setup done")
 
 -- * post init
 guifiedlocal.setWindowToBeOnTop = OSinterop(warnf).setWindowToBeOnTop -- ? requires ffi so added by OSinterop here after (almost) everything is done
@@ -639,7 +648,7 @@ guified.registry.register({
         end
     end
 })
-logger.info("GUIFIED init done !")
+logger.ok("GUIFIED init success !")
 return (guified)
 
 --[[

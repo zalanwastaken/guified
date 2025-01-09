@@ -66,8 +66,8 @@ end
 ---@return table Table For chaining
 function M.Select(tabl, i, j)
 	local selection = {}
-	for indx = i, j do
-		local curr = tabl[indx]
+	for i = i, j do
+		local curr = tabl[i]
 		if curr then
 			table.insert(selection, curr)
 		else

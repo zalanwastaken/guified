@@ -4,6 +4,8 @@ local logger = require("libs.guified.dependencies.love2d-tools.modules.logger.in
 local function error_printer(msg, layer)
 	--print((debug.traceback("Error: " .. tostring(msg), 1+(layer or 1)):gsub("\n[^\n]+$", "")))
 	logger.fatal(debug.traceback("Error: " .. tostring(msg), 1+(layer or 1)):gsub("\n[^\n]+$", ""))
+	logger.info("Found a bug ?\nPlease report it to the Guified repo as a issue !\nThanks !")
+	logger.stopSVC()
 end
 function love.errorhandler(msg)
 	msg = tostring(msg)

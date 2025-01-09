@@ -27,6 +27,7 @@ local function init_interop(warnf)
                 local HWND_TOPMOST = ffi.cast("HWND", -1)
                 local HWND_NOTOPMOST = ffi.cast("HWND", -2)
                 local hwnd = ffi.C.FindWindowA(nil, title)
+                logger.info("Attempting to get window HWND")
                 if hwnd == nil then
                     logger.error("HWND not found !")
                     return(false)
@@ -44,6 +45,7 @@ local function init_interop(warnf)
         ret = {
             setWindowToBeOnTop = function() 
                 warnf("FFI features on Linux are not supported")
+                logger.error("Attempt to access FFI feature on linux")
                 return(false)
             end
         }
