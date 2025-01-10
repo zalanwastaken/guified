@@ -1,6 +1,6 @@
 --! Tween module is still in testing
 
-local guified = require(__GUIFIEDROOT__.."init")
+local guified = require(__GUIFIEDGLOBAL__.rootfolder.."init")
 local tween = {
     newElementTween = function(element, x, y, sx, sy, time)
         if element.changePos ~= nil then

@@ -5,9 +5,10 @@
 -- ? config
 local fontsize = 12 -- * default font size
 --local VK_CAPITAL = 0x14 -- * Virtual-Key Code for Caps Lock
-local WARN = true -- * Enable warnings ?
 
 -- ? imp funcs
+---@param str string
+---@return string
 local function replaceSlashWithDot(str)
     return str:gsub("/", ".")  -- Replace all '/' with '.'
 end
@@ -15,31 +16,35 @@ end
 local function getScriptFolder()
     return (debug.getinfo(1, "S").source:sub(2):match("(.*/)"))
 end
+
 -- ? requires
 local ffi = require("ffi")
 local OSinterop = require("libs.guified.os_interop") -- ? contains ffi now
 require("libs.guified.errorhandler") -- * setup errorhandler
-local messagebus = require("libs.guified.dependencies.love2d-tools.modules.messagebus")
-local logger = require("libs.guified.dependencies.love2d-tools.modules.logger.init")
---local state = require("libs.guified.dependencies.love2d-tools.modules.state")
+local messagebus = require("libs.guified.dependencies.love2d-tools.modules.messagebus") --* message_bus
+local logger = require("libs.guified.dependencies.love2d-tools.modules.logger.init") --* logger module
+--local state = require("libs.guified.dependencies.love2d-tools.modules.state") --* state machine
 
 -- ? init stuff
 local font = love.graphics.newFont(getScriptFolder() .. "Ubuntu-L.ttf")
-__GUIFIEDROOT__ = replaceSlashWithDot(getScriptFolder())
+__GUIFIEDGLOBAL__ = {
+    rootfolder = replaceSlashWithDot(getScriptFolder())
+}
 love.graphics.setFont(font, fontsize)
 love.graphics.setColor(1, 1, 1, 1)
 love.math.setRandomSeed(os.time())
-if WARN then
-    if love.system.getOS():lower() == "linux" then
-        love.window.showMessageBox("Warning", "Features that use FFI will not work on Linux !", "warning")
-    end
-    if love.system.getOS():lower() == "macos" then
-        love.window.showMessageBox("Warning", "MacOS is not suppoorted !", "warning")
-    end
+if love.system.getOS():lower() == "linux" then
+    logger.warn("Features that use FFI will not work on Linux !")
+elseif love.system.getOS():lower() == "macos" then
+    --? If apple was not such a ass and let us run macOS on a vm this would have been supported
+    --? Like why even lock down something that much ? Too much effort according to me
+    --? Trust me i tired to run macOS on a vm but it just would not work. And im not buying a expensive piece of garbage computer
+    logger.warn("MacOS is not suppoorted !\nUse at your own caution")
 end
 logger.startSVC()
-logger.ok("Got guified root folder "..__GUIFIEDROOT__)
+logger.ok("Got guified root folder "..__GUIFIEDGLOBAL__.rootfolder)
 logger.ok("init setup done")
+
 -- * internal stuff
 local guifiedlocal = {
     -- ? vars
@@ -359,16 +364,13 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
                 end
             }
         },
-
-        ---@param element element
-        ---@param id_length number optional
-        ---@param noerr boolean optional
-        ---@return nil
-        register = function(element, id_length, noerr) -- ? register an element
-            if type(id_length):lower() == "boolean" then
-                noerr = id_length
-                id_length = nil
-            end
+        --* Registers an element with the internal registry.
+        --* Validates the element's ID length, generates a unique ID, and adds it to the appropriate stacks.
+        --* Logs errors if non-function types are found for required fields.
+        ---@param element element The element to register.
+        ---@param id_length number Optional length of the ID to be generated (default is 16).
+        ---@return boolean Returns true on success, false on failure.
+        register = function(element, id_length)
             if element ~= nil then
                 if id_length or 16 < 6 then
                     warnf("ID REG for " .. element.name .. " is too short")
@@ -386,37 +388,44 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
                 end
                 element.id = id
                 guifiedlocal.internalregistry.ids[place] = element.id
-                guifiedlocal.internalregistry.drawstack[#guifiedlocal.internalregistry.drawstack + 1] = element.draw
+                if type(element.draw):lower() == "function" then
+                    guifiedlocal.internalregistry.drawstack[#guifiedlocal.internalregistry.drawstack + 1] = element.draw
+                else
+                    logger.error("Non-function data type in function field for draw in element "..element.name)
+                    logger.error("Critical element function draw missing. Registering element "..element.name.." failed aborting")
+                    return(false)
+                end
                 if element.update ~= nil then
-                    guifiedlocal.internalregistry.updatestack[element.id] = element.update
-                    --print("element " .. element.name .. " update registered ID: " .. element.id)
-                    logger.info("element " .. element.name .. " update registered ID: " .. element.id)
+                    if type(element.update):lower() == "function" then
+                        guifiedlocal.internalregistry.updatestack[element.id] = element.update
+                        logger.info("element " .. element.name .. " update registered ID: " .. element.id)
+                    else
+                        logger.error("Non-function data type in function field for update in element "..element.name)
+                    end
                 end
                 if element.textinput ~= nil then
-                    guifiedlocal.internalregistry.textinputstack[element.id] = element.textinput
-                    --print("element " .. element.name .. " textinput registered ID: " .. element.id)
-                    logger.info("element " .. element.name .. " textinput registered ID: " .. element.id)
+                    if type(element.textinput):lower() == "function" then
+                        guifiedlocal.internalregistry.textinputstack[element.id] = element.textinput
+                        logger.info("element " .. element.name .. " textinput registered ID: " .. element.id)
+                    else
+                        logger.error("Non-function data type in function field for textinput in element "..element.name)
+                    end
                 end
-                --print("element " .. element.name .. " draw registered ID: " .. element.id)
                 logger.info("element " .. element.name .. " draw registered ID: " .. element.id)
-                if noerr then
-                    return (true)
-                end
+                return(true)
             else
-                if not (noerr) then
-                    error("No element provided to register")
-                else
-                    return (false)
-                end
+                logger.error("No element provided to register. Aborting")
+                return(false)
             end
         end,
 
-        ---@param element element
-        ---@param noerr boolean optional
-        ---@return nil
-        remove = function(element, noerr) -- ? removes an element
+        --* Removes an element from the internal registry.
+        --* Supports removing by element object or ID (using ID is discouraged).
+        --* Cleans up the element from all relevant stacks and logs the action.
+        ---@param element element The element or its ID to remove.
+        ---@return boolean Returns true on success, false on failure.
+        remove = function(element)
             if element ~= nil then
-                noerr = noerr or false
                 if type(element) == "string" then
                     local id = element
                     element = {
@@ -435,35 +444,27 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
                         guifiedlocal.internalregistry.textinputstack[element.id] = nil
                     end
                     table.remove(guifiedlocal.internalregistry.ids, place)
-                    --print("element " .. element.name .. " removed ID: " .. element.id)
                     logger.info("element " .. element.name .. " removed ID: " .. element.id)
                     element.id = nil
-                    if noerr then
-                        return (true)
-                    end
+                    return(true)
                 else
-                    if not (noerr) then
-                        error("Element " .. element.name .. " is not registed")
-                    else
-                        return (false)
-                    end
+                    logger.error("Element " .. element.name .. " is not registed. Aborting")
+                    return(false)
                 end
             else
-                if not (noerr) then
-                    error("No element provided to remove")
-                else
-                    return (false)
-                end
+                logger.error("No element provided to remove. Aborting")
+                return(false)
             end
         end
     },
 
     debug = {
-        -- TODO rework this
+        -- Logs a warning message using warnf.
         warn = warnf,
-        -- idgen = idgen,
-        disableOptional = function() --NOTE: this will be replaced by guified lite in B-1.0.0 or A-2.0.0
-            -- guifiedlocal.internalregistry.optional = false --? disabled
+        -- Temporarily disables optional features.
+        -- Logs a warning indicating this functionality is disabled.
+        ---@deprecated This function will be replaced by guified lite in B-1.0.0 or A-2.0.0.
+        disableOptional = function()
             warnf("disableOptional has been temporarily disabled")
         end
     },
