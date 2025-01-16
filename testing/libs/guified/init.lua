@@ -377,6 +377,10 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
         ---@return boolean Returns true on success, false on failure.
         register = function(element, id_length)
             if element ~= nil then
+                if element.name == nil then
+                    logger.error("Element name missing. Aborting")
+                    return(false)
+                end
                 if id_length or 16 < 6 then
                     warnf("ID REG for " .. element.name .. " is too short")
                 end
@@ -384,11 +388,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
                 local id = idgen(id_length or 16)
                 for i = 1, #guifiedlocal.internalregistry.ids, 1 do
                     if id == guifiedlocal.internalregistry.ids[i] then
-                        if noerr then
-                            return (false)
-                        else
-                            error("Failed to register element " .. element.name .. "\nID already exists")
-                        end
+                        logger.error("Failed to register element " .. element.name .. " ID already exists. Aborting")
+                        return (false)
                     end
                 end
                 element.id = id
@@ -397,7 +398,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
                     guifiedlocal.internalregistry.drawstack[#guifiedlocal.internalregistry.drawstack + 1] = element.draw
                 else
                     logger.error("Non-function data type in function field for draw in element "..element.name)
-                    logger.error("Critical element function draw missing. Registering element "..element.name.." failed aborting")
+                    logger.error("Critical element function draw missing. Registering element "..element.name.." failed. Aborting")
                     return(false)
                 end
                 if element.update ~= nil then
@@ -468,10 +469,11 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
         warn = warnf,
         -- Temporarily disables optional features.
         -- Logs a warning indicating this functionality is disabled.
-        ---@deprecated This function will be replaced by guified lite in B-1.0.0 or A-2.0.0.
+        ---@deprecated This function will be replaced by guified lite in B-1.0.0
         disableOptional = function()
             warnf("disableOptional has been temporarily disabled")
-        end
+        end,
+        logger = logger
     },
 
     extcalls = {
@@ -625,7 +627,7 @@ logger.ok("setting up textinput hook done")
 
 --* love quit function
 function love.quit()
-    guified.extcalls.quit()
+    logger.stopSVC()
     return(false)
 end
 logger.ok("exit function setup done")
@@ -633,11 +635,6 @@ logger.ok("exit function setup done")
 -- * post init
 
 guifiedlocal.setWindowToBeOnTop = OSinterop(warnf).setWindowToBeOnTop -- ? requires ffi so added by OSinterop here after (almost) everything is done
-local loggertoadd = logger
-loggertoadd.startSVC = nil
-loggertoadd.stopSVC = nil
-loggertoadd.log = loggertoadd.info
-guified.debug.logger = loggertoadd --? added later because requires some more processing(remove start and stop)
 
 -- * SVC init
 

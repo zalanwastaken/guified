@@ -4,7 +4,7 @@ local colors = require("libs.guified.modules.colors")
 local tween = require("libs.guified.modules.experimental.tween")
 ---@type logger
 local logger = guified.debug.logger
-logger.log("Hello World !")
+--logger.log("Hello World !")
 
 local movbox = guified.registry.elements.box:new(0, 0, 40, 40, "line", colors.electric_blue)
 local mouseLoc = guified.registry.elements.text:new(love.mouse.getX(), love.mouse.getY(), tostring(love.mouse.getX().."\n"..tostring(love.mouse.getY())))
@@ -29,6 +29,9 @@ function love.load()
     guified.registry.register(button)
     local txtinput2 = guified.registry.elements.textInput:new(100, 300, 40, 40)
     guified.registry.register(txtinput2)
+    guified.registry.register({
+        name = "error causer"
+    })
 end
 function love.update(dt)
     movbox.changeSize(love.mouse.getX(), love.mouse.getY())
