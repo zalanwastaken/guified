@@ -262,12 +262,17 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
                         y = argy - (h / 2 - fontsize)
                     }
                     local backspaceact = false
+                    local clicked = false
                     local ret = {
                         name = "Text Input",
                         draw = function(data)
                             love.graphics.rectangle("line", box.x, box.y, w, h)
                             if #text > 0 then
-                                love.graphics.print(text, argx, argy)
+                                if active then
+                                    love.graphics.print(text.."|", argx, argy)
+                                else
+                                    love.graphics.print(text, argx, argy)
+                                end
                             else
                                 love.graphics.print(placeholder, argx, argy)
                             end

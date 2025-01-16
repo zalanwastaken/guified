@@ -15,7 +15,7 @@ local frame = framemod.new({
 })
 function love.load()
     print("Using guified version "..guified.__VER__)
-    guified.funcs.setWindowToBeOnTop()
+    --guified.funcs.setWindowToBeOnTop()
     frame:load()
     --print(frame:addSlider(30, 30).id)
     local box = guified.registry.elements.box:new(0, 0, 40, 40, "fill", colors.green)
@@ -24,14 +24,8 @@ function love.load()
     tweenO.exec()
     local button = guified.registry.elements.button:new(love.graphics.getWidth() / 2, love.graphics.getHeight() / 2, "Hello World !")
     guified.registry.register(button)
-    guified.registry.register({
-        name = "error causer",
-        draw = function()
-            
-        end,
-        update = "",
-        textinput = ""
-    })
+    local txtinput2 = guified.registry.elements.textInput:new(100, 300, 40, 40)
+    guified.registry.register(txtinput2)
 end
 function love.update(dt)
     movbox.changeSize(love.mouse.getX(), love.mouse.getY())
