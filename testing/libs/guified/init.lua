@@ -625,13 +625,20 @@ logger.ok("setting up textinput hook done")
 
 --* love quit function
 function love.quit()
-    logger.stopSVC()
+    guified.extcalls.quit()
     return(false)
 end
 logger.ok("exit function setup done")
 
 -- * post init
+
 guifiedlocal.setWindowToBeOnTop = OSinterop(warnf).setWindowToBeOnTop -- ? requires ffi so added by OSinterop here after (almost) everything is done
+local loggertoadd = logger
+loggertoadd.startSVC = nil
+loggertoadd.stopSVC = nil
+loggertoadd.log = loggertoadd.info
+guified.debug.logger = loggertoadd --? added later because requires some more processing(remove start and stop)
+
 -- * SVC init
 
 -- ? The WARN SVC

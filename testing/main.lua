@@ -2,6 +2,9 @@ local guified = require("libs.guified.init")
 local framemod = require("libs.guified.modules.frame")
 local colors = require("libs.guified.modules.colors")
 local tween = require("libs.guified.modules.experimental.tween")
+---@type logger
+local logger = guified.debug.logger
+logger.log("Hello World !")
 
 local movbox = guified.registry.elements.box:new(0, 0, 40, 40, "line", colors.electric_blue)
 local mouseLoc = guified.registry.elements.text:new(love.mouse.getX(), love.mouse.getY(), tostring(love.mouse.getX().."\n"..tostring(love.mouse.getY())))
