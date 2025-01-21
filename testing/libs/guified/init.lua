@@ -20,9 +20,9 @@ end
 -- ? requires
 local ffi = require("ffi")
 local OSinterop = require("libs.guified.os_interop") -- ? contains ffi now
-require("libs.guified.errorhandler") -- * setup errorhandler
-local messagebus = require("libs.guified.dependencies.love2d-tools.modules.messagebus") --* message_bus
-local logger = require("libs.guified.dependencies.love2d-tools.modules.logger.init") --* logger module
+require(getScriptFolder().."errorhandler") -- * setup errorhandler
+--local messagebus = require("libs.guified.dependencies.love2d-tools.modules.messagebus") --* message_bus
+local logger = require(getScriptFolder().."dependencies.love2d-tools.modules.logger.init") --* logger module
 --local state = require("libs.guified.dependencies.love2d-tools.modules.state") --* state machine
 
 -- ? init stuff
