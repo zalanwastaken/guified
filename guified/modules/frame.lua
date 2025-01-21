@@ -1,20 +1,5 @@
----@return string
-local function getScriptFolder()
-    return (debug.getinfo(1, "S").source:sub(2):match("(.*/)"))
-end
-local function removeAfterLastSlash(str)
-    local lastSlashIndex = str:match(".*()/")  -- Find the position of the last slash
-    if lastSlashIndex then
-        return str:sub(1, lastSlashIndex - 1)  -- Return the string up to the last slash
-    else
-        return str  -- No slashes found, return the original string
-    end
-end
-local function replaceSlashWithDot(str)
-    return str:gsub("/", ".")  -- Replace all '/' with '.'
-end
---local guified = require("libs.guified.init")
-local guified = require(replaceSlashWithDot(removeAfterLastSlash(removeAfterLastSlash(getScriptFolder()))..".init"))
+local guified = require(__GUIFIEDGLOBAL__.rootfolder.."init")
+local logger = require(__GUIFIEDGLOBAL__.rootfolder.."dependencies.love2d-tools.modules.logger.init")
 local function createSlider(x, y) --TODO
     return({
         name = "Slider", 
@@ -35,14 +20,18 @@ local frame = {
             elements = elements,
             loaded = false,
             load = function(self)
-                for i = 1, #elements, 1 do
-                    guified.registry.register(elements[i])
+                if not(self.loaded) then
+                    for i = 1, #elements, 1 do
+                        guified.registry.register(elements[i])
+                    end
+                    self.loaded = true
                 end
-                self.loaded = true
             end,
             unload = function(self)
-                for i = 1, #elements, 1 do
-                    guified.registry.remove(elements[i])
+                if self.loaded then
+                    for i = 1, #elements, 1 do
+                        guified.registry.remove(elements[i])
+                    end
                 end
                 self.loaded = false
             end,
@@ -64,4 +53,5 @@ local frame = {
         return(frame)
     end
 }
+logger.ok("Frame module loaded")
 return(frame)

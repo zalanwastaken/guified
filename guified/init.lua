@@ -1,39 +1,57 @@
 -- * Type info
----@alias element table
+---@alias element table to silence warnings
 ---@alias image table to silence warnings
+
 -- ? config
 local fontsize = 12 -- * default font size
-local VK_CAPITAL = 0x14 -- * Virtual-Key Code for Caps Lock
-local WARN = true -- * Enable warnings ?
+--local VK_CAPITAL = 0x14 -- * Virtual-Key Code for Caps Lock
 
 -- ? imp funcs
+---@param str string
+---@return string
+local function replaceSlashWithDot(str)
+    return str:gsub("/", ".")  -- Replace all '/' with '.'
+end
 ---@return string
 local function getScriptFolder()
     return (debug.getinfo(1, "S").source:sub(2):match("(.*/)"))
 end
+
 -- ? requires
 local ffi = require("ffi")
-local OSinterop = require(getScriptFolder().."os_interop")
-require(getScriptFolder().."errorhandler")
+local OSinterop = require("libs.guified.os_interop") -- ? contains ffi now
+require("libs.guified.errorhandler") -- * setup errorhandler
+local messagebus = require("libs.guified.dependencies.love2d-tools.modules.messagebus") --* message_bus
+local logger = require("libs.guified.dependencies.love2d-tools.modules.logger.init") --* logger module
+--local state = require("libs.guified.dependencies.love2d-tools.modules.state") --* state machine
 
 -- ? init stuff
 local font = love.graphics.newFont(getScriptFolder() .. "Ubuntu-L.ttf")
+__GUIFIEDGLOBAL__ = {
+    rootfolder = replaceSlashWithDot(getScriptFolder())
+}
 love.graphics.setFont(font, fontsize)
 love.graphics.setColor(1, 1, 1, 1)
 love.math.setRandomSeed(os.time())
-if WARN then
-    if love.system.getOS():lower() == "linux" then
-        love.window.showMessageBox("Warning", "Features that use FFI will not work on Linux !", "warning")
-    end
-    if love.system.getOS():lower() == "macos" then
-        love.window.showMessageBox("Warning", "MacOS is not suppoorted !", "warning")
-    end
+if love.system.getOS():lower() == "linux" then
+    logger.warn("Features that use FFI will not work on Linux !")
+elseif love.system.getOS():lower() == "macos" then
+    --? If apple was not such a ass and let us run macOS on a vm this would have been supported
+    --? Like why even lock down something that much ? Too much effort according to me
+    --? Trust me i tired to run macOS on a vm but it just would not work. And im not buying a expensive piece of garbage computer
+    logger.warn("MacOS is not suppoorted !\nUse at your own caution")
 end
--- ? local stuff
+logger.startSVC()
+logger.ok("Got guified root folder "..__GUIFIEDGLOBAL__.rootfolder)
+logger.ok("init setup done")
+
+-- * internal stuff
 local guifiedlocal = {
     -- ? vars
     enableupdate = true,
     enabledraw = true,
+
+    ---@class internalregistry
     internalregistry = {
         ---@class drawstack
         drawstack = {},
@@ -41,12 +59,17 @@ local guifiedlocal = {
         updatestack = {},
         ---@class textinputstack
         textinputstack = {},
+        ---@class dataholder
         data = {},
+        ---@class idholder
         ids = {},
+        ---@class warningholder
         warns = {},
-        optional = true
+        --optional = true
     },
-    -- ?funcs
+
+    -- ? funcs
+
     ---@param dt number
     ---@param updatestack updatestack
     ---@return table returns the data prossesed by the updatestack
@@ -75,16 +98,23 @@ local guifiedlocal = {
         end
     end
 }
+logger.ok("setting up internal table done")
+
 -- * funcs
+
+---@param warn string
 local function warnf(warn)
     guifiedlocal.internalregistry.warns[#guifiedlocal.internalregistry.warns + 1] = "[WARNING] " .. warn
+    logger.warn(warn)
 end
+--[[
 ---@return boolean
 local function isCapsLockOn()
     -- GetKeyState returns a value where the lowest bit indicates the key's toggle state.
     local state = ffi.C.GetKeyState(VK_CAPITAL)
     return state ~= 0 and bit.band(state, 0x0001) ~= 0
 end
+--]]
 ---@return number|nil
 local function getIndex(table, val)
     for i = 1, #table, 1 do
@@ -112,11 +142,24 @@ local function idgen(length)
     end
     return (ret)
 end
--- ? lib stuff
+
+-- ? guified return table
 local guified = {
-    -- ? vars
-    __VER__ = "A-1.2.1",
+    __VER__ = "A-1.2.2", -- ? The version of Guified bruh
+    __LICENCE__ = [[
+Copyright (c) 2024 Zalanwastaken(Mudit Mishra)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+1. Redistributions of source code must retain the above copyright notice, this list of conditions, and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions, and the following disclaimer in the documentation and/or other materials provided with the distribution.
+3. Neither the name of the authors nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+]],
+    __AUTHOR__ = "Zalanwastaken",
     registry = {
+        -- * Contains the element constructor functions
         elements = {
             button = {
                 ---@param argtext string
@@ -139,7 +182,8 @@ local guified = {
                                 local charWidth = fontsize / 2 -- Approx width of each character in a monospace font
                                 w = #argtext * charWidth + 20 -- Add padding to the width
                                 h = fontsize + 10 -- Set height based on font size with padding
-                                love.graphics.print(argtext, argx + (w / 2) - (#argtext * charWidth / 2), argy + (h / 2) - (fontsize / 2))
+                                love.graphics.print(argtext, argx + (w / 2) - (#argtext * charWidth / 2),
+                                    argy + (h / 2) - (fontsize / 2))
                             else
                                 love.graphics.print(argtext, argx, argy)
                             end
@@ -173,6 +217,7 @@ local guified = {
                     })
                 end
             },
+
             text = {
                 ---@param argx number
                 ---@param argy number
@@ -180,7 +225,7 @@ local guified = {
                 ---@return element
                 new = function(self, argx, argy, text)
                     return ({
-                        name = "textBox",
+                        name = "Text",
                         draw = function()
                             love.graphics.print(text, argx, argy)
                         end,
@@ -200,7 +245,14 @@ local guified = {
                     })
                 end
             },
+
             textInput = { -- * YAY !
+                ---@param argx number
+                ---@param argy number
+                ---@param w number
+                ---@param h number
+                ---@param placeholder string
+                ---@param active boolean
                 new = function(self, argx, argy, w, h, placeholder, active)
                     active = active or false
                     placeholder = placeholder or "Type Away ~"
@@ -210,12 +262,17 @@ local guified = {
                         y = argy - (h / 2 - fontsize)
                     }
                     local backspaceact = false
+                    local clicked = false
                     local ret = {
                         name = "Text Input",
                         draw = function(data)
                             love.graphics.rectangle("line", box.x, box.y, w, h)
                             if #text > 0 then
-                                love.graphics.print(text, argx, argy)
+                                if active then
+                                    love.graphics.print(text.."|", argx, argy)
+                                else
+                                    love.graphics.print(text, argx, argy)
+                                end
                             else
                                 love.graphics.print(placeholder, argx, argy)
                             end
@@ -259,6 +316,7 @@ local guified = {
                     return (ret)
                 end
             },
+
             box = {
                 ---@param clr Color
                 ---@param h number
@@ -292,6 +350,7 @@ local guified = {
                     })
                 end
             },
+
             image = {
                 ---@param x number
                 ---@param y number
@@ -310,16 +369,18 @@ local guified = {
                 end
             }
         },
-        ---@param element element
-        ---@param id_length number optional
-        ---@param noerr boolean optional
-        ---@return nil
-        register = function(element, id_length, noerr) -- ? register an element
-            if type(id_length):lower() == "boolean" then
-                noerr = id_length
-                id_length = nil
-            end
+        --* Registers an element with the internal registry.
+        --* Validates the element's ID length, generates a unique ID, and adds it to the appropriate stacks.
+        --* Logs errors if non-function types are found for required fields.
+        ---@param element element The element to register.
+        ---@param id_length number Optional length of the ID to be generated (default is 16).
+        ---@return boolean Returns true on success, false on failure.
+        register = function(element, id_length)
             if element ~= nil then
+                if element.name == nil then
+                    logger.error("Element name missing. Aborting")
+                    return(false)
+                end
                 if id_length or 16 < 6 then
                     warnf("ID REG for " .. element.name .. " is too short")
                 end
@@ -327,42 +388,50 @@ local guified = {
                 local id = idgen(id_length or 16)
                 for i = 1, #guifiedlocal.internalregistry.ids, 1 do
                     if id == guifiedlocal.internalregistry.ids[i] then
-                        if noerr then
-                            return (false)
-                        else
-                            error("Failed to register element " .. element.name .. "\nID already exists")
-                        end
+                        logger.error("Failed to register element " .. element.name .. " ID already exists. Aborting")
+                        return (false)
                     end
                 end
                 element.id = id
                 guifiedlocal.internalregistry.ids[place] = element.id
-                guifiedlocal.internalregistry.drawstack[#guifiedlocal.internalregistry.drawstack + 1] = element.draw
+                if type(element.draw):lower() == "function" then
+                    guifiedlocal.internalregistry.drawstack[#guifiedlocal.internalregistry.drawstack + 1] = element.draw
+                else
+                    logger.error("Non-function data type in function field for draw in element "..element.name)
+                    logger.error("Critical element function draw missing. Registering element "..element.name.." failed. Aborting")
+                    return(false)
+                end
                 if element.update ~= nil then
-                    guifiedlocal.internalregistry.updatestack[element.id] = element.update
-                    print("element " .. element.name .. " update registered ID: " .. element.id)
+                    if type(element.update):lower() == "function" then
+                        guifiedlocal.internalregistry.updatestack[element.id] = element.update
+                        logger.info("element " .. element.name .. " update registered ID: " .. element.id)
+                    else
+                        logger.error("Non-function data type in function field for update in element "..element.name)
+                    end
                 end
                 if element.textinput ~= nil then
-                    guifiedlocal.internalregistry.textinputstack[element.id] = element.textinput
-                    print("element " .. element.name .. " textinput registered ID: " .. element.id)
+                    if type(element.textinput):lower() == "function" then
+                        guifiedlocal.internalregistry.textinputstack[element.id] = element.textinput
+                        logger.info("element " .. element.name .. " textinput registered ID: " .. element.id)
+                    else
+                        logger.error("Non-function data type in function field for textinput in element "..element.name)
+                    end
                 end
-                print("element " .. element.name .. " draw registered ID: " .. element.id)
-                if noerr then
-                    return (true)
-                end
+                logger.info("element " .. element.name .. " draw registered ID: " .. element.id)
+                return(true)
             else
-                if not (noerr) then
-                    error("No element provided to register")
-                else
-                    return (false)
-                end
+                logger.error("No element provided to register. Aborting")
+                return(false)
             end
         end,
-        ---@param element element
-        ---@param noerr boolean optional
-        ---@return nil
-        remove = function(element, noerr) -- ? removes an element
+
+        --* Removes an element from the internal registry.
+        --* Supports removing by element object or ID (using ID is discouraged).
+        --* Cleans up the element from all relevant stacks and logs the action.
+        ---@param element element The element or its ID to remove.
+        ---@return boolean Returns true on success, false on failure.
+        remove = function(element)
             if element ~= nil then
-                noerr = noerr or false
                 if type(element) == "string" then
                     local id = element
                     element = {
@@ -381,90 +450,112 @@ local guified = {
                         guifiedlocal.internalregistry.textinputstack[element.id] = nil
                     end
                     table.remove(guifiedlocal.internalregistry.ids, place)
-                    print("element " .. element.name .. " removed ID: " .. element.id)
+                    logger.info("element " .. element.name .. " removed ID: " .. element.id)
                     element.id = nil
-                    if noerr then
-                        return (true)
-                    end
+                    return(true)
                 else
-                    if not (noerr) then
-                        error("Element " .. element.name .. " is not registed")
-                    else
-                        return (false)
-                    end
+                    logger.error("Element " .. element.name .. " is not registed. Aborting")
+                    return(false)
                 end
             else
-                if not (noerr) then
-                    error("No element provided to remove")
-                else
-                    return (false)
-                end
+                logger.error("No element provided to remove. Aborting")
+                return(false)
             end
         end
     },
+
     debug = {
-        -- TODO rework this
+        --* Logs a warning message using warnf.
         warn = warnf,
-        -- idgen = idgen,
-        disableOptional = function()
-            -- guifiedlocal.internalregistry.optional = false --? disabled
-            warnf("disableOptional has been temporarily disabled")
-        end
+        --* provided by logger module of the love2d-tools lib
+        logger = logger
     },
+
     extcalls = {
+        -- * Draw function that manages rendering.
+        -- * Calls the guifiedlocal.draw method to process all drawable elements
+        -- * from the drawstack in the internal registry.
         drawf = function()
             guifiedlocal.draw(guifiedlocal.internalregistry.drawstack, guifiedlocal.internalregistry.data)
         end,
+        -- * Update function that manages updating.
+        -- * Calls the guifiedlocal.update method with the average delta time and
+        -- * processes elements from the updatestack and associated ids in the internal registry.
         updatef = function()
             guifiedlocal.update(love.timer.getAverageDelta(), guifiedlocal.internalregistry.updatestack, guifiedlocal.internalregistry.ids)
         end,
+        -- * Handles text input events.
+        ---@param key string The key argument from the love.textinput callback.
+        -- * Passes the input to the guifiedlocal.textinput method, which processes
+        -- * text input handlers from the textinputstack in the internal registry.
         textinputf = function(key)
             guifiedlocal.textinput(key, guifiedlocal.internalregistry.textinputstack, guifiedlocal.internalregistry.ids)
         end,
+        -- * Returns the current drawstack.
+        ---@return drawstack The table containing drawable elements.
         getDrawStack = function()
             return (guifiedlocal.internalregistry.drawstack)
         end,
+        -- * Returns the current updatestack.
+        ---@return updatestack The table containing updateable elements.
         getUpdateStack = function()
             return (guifiedlocal.internalregistry.updatestack)
         end,
+        -- * Returns the current textinputstack.
+        ---@return textinputstack The table containing text input handlers.
         getTextIInputStack = function()
             return (guifiedlocal.internalregistry.textinputstack)
+        end,
+        quit = function()
+            logger.stopSVC()
         end
     },
+
     funcs = {
-        -- ? gui funcs
-        setWindowToBeOnTop = function() -- * sets the Window set to always on top.
+        -- * Sets the window to always be on top.
+        setWindowToBeOnTop = function()
             guifiedlocal.setWindowToBeOnTop(love.window.getTitle())
         end,
-        toggleDraw = function() -- * toggles draw
+        -- * Toggles the draw functionality on or off.
+        toggleDraw = function()
             guifiedlocal.enabledraw = not (guifiedlocal.enabledraw)
         end,
-        toggleUpdate = function() -- * toggles update
+        -- * Toggles the update functionality on or off.
+        toggleUpdate = function()
             guifiedlocal.enableupdate = not (guifiedlocal.enableupdate)
         end,
-        ---@return boolean
-        getDrawStatus = function() -- * returns the draw status
+        -- * Returns the current draw status.
+        ---@return boolean True if drawing is enabled, false otherwise.
+        getDrawStatus = function()
             return (guifiedlocal.enabledraw)
         end,
-        ---@return boolean
-        getUpdateStatus = function() -- * returns the update status
+        -- * Returns the current update status.
+        ---@return boolean True if updating is enabled, false otherwise.
+        getUpdateStatus = function()
             return (guifiedlocal.enableupdate)
         end,
-        ---@return table
-        getIdTable = function() -- * returns the table contaning ids 
+        -- * Returns the table containing IDs for registered elements.
+        ---@return table The table of IDs.
+        getIdTable = function()
             return (guifiedlocal.internalregistry.ids)
         end,
-        ---@return number
-        getFontSize = function() -- * returns the font size
+        -- * Returns the current font size.
+        ---@return number The size of the font.
+        getFontSize = function()
             return (fontsize)
         end,
-        ---@param size number
-        setFontSize = function(size) -- * sets the font size
+        -- * Sets a new font size.
+        ---@param size number The new font size to be set.
+        setFontSize = function(size)
             fontsize = size
         end
     }
 }
--- ? override stuff
+logger.ok("setting up main return table done")
+
+-- ? Love functions
+
+-- * main love loop
 function love.run()
     if love.load then
         love.load(love.arg.parseGameArguments(arg), arg)
@@ -520,21 +611,37 @@ function love.run()
         end
     end
 end
+logger.ok("main loop setup done")
+
+-- * textinput event function
+---@param key any
 function love.textinput(key)
     guifiedlocal.textinput(key, guifiedlocal.internalregistry.textinputstack, guifiedlocal.internalregistry.ids)
 end
+logger.ok("setting up textinput hook done")
+
+--* love quit function
+function love.quit()
+    guified.extcalls.quit()
+    return(false)
+end
+logger.ok("exit function setup done")
+
 -- * post init
-guifiedlocal.setWindowToBeOnTop = OSinterop(warnf).setWindowToBeOnTop
--- * svc init
+
+guifiedlocal.setWindowToBeOnTop = OSinterop(warnf).setWindowToBeOnTop -- ? requires ffi so added by OSinterop here after (almost) everything is done
+
+-- * SVC init
+
+-- ? The WARN SVC
+-- * Processes warnings and displays them
+-- TODO rework this in A-1.3.0
 guified.registry.register({
     name = "warnSVC Guified internal",
     draw = function()
     end,
     update = function()
         for i = 1, #guifiedlocal.internalregistry.warns, 1 do
-            if guifiedlocal.internalregistry.optional == false then
-                -- break -- ? disabled for now
-            end
             local warnelement = guified.registry.elements.text:new(0, love.graphics.getHeight() -
                 ((i * fontsize * 2) - #guifiedlocal.internalregistry.warns), guifiedlocal.internalregistry.warns[i])
             warnelement.name = "warnSVC Guified internal warning"
@@ -543,7 +650,9 @@ guified.registry.register({
         end
     end
 })
+logger.ok("GUIFIED init success !")
 return (guified)
+
 --[[
 * Made by Zalanwastaken with LÖVE and some 🎔
 ! ________  ________  ___       ________  ________   ___       __   ________  ________  _________  ________  ___  __    _______   ________      
