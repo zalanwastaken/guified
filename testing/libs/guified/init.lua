@@ -465,14 +465,9 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
     },
 
     debug = {
-        -- Logs a warning message using warnf.
+        --* Logs a warning message using warnf.
         warn = warnf,
-        -- Temporarily disables optional features.
-        -- Logs a warning indicating this functionality is disabled.
-        ---@deprecated This function will be replaced by guified lite in B-1.0.0
-        disableOptional = function()
-            warnf("disableOptional has been temporarily disabled")
-        end,
+        --* provided by logger module of the love2d-tools lib
         logger = logger
     },
 
@@ -627,7 +622,7 @@ logger.ok("setting up textinput hook done")
 
 --* love quit function
 function love.quit()
-    logger.stopSVC()
+    guified.extcalls.quit()
     return(false)
 end
 logger.ok("exit function setup done")
@@ -647,9 +642,6 @@ guified.registry.register({
     end,
     update = function()
         for i = 1, #guifiedlocal.internalregistry.warns, 1 do
-            if guifiedlocal.internalregistry.optional == false then
-                -- break -- ? disabled for now
-            end
             local warnelement = guified.registry.elements.text:new(0, love.graphics.getHeight() -
                 ((i * fontsize * 2) - #guifiedlocal.internalregistry.warns), guifiedlocal.internalregistry.warns[i])
             warnelement.name = "warnSVC Guified internal warning"
