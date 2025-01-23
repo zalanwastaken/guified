@@ -1,3 +1,6 @@
+if __GUIFIEDGLOBAL__ == nil then
+    return nil
+end
 ---@type guified
 local guified = require(__GUIFIEDGLOBAL__.rootfolder.."init")
 ---@class shotty
