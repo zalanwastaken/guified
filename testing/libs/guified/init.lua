@@ -2,9 +2,6 @@
 ---@alias element table to silence warnings
 ---@alias image table to silence warnings
 
--- ? config
---local VK_CAPITAL = 0x14 -- * Virtual-Key Code for Caps Lock
-
 -- ? imp funcs
 ---@param str string
 ---@return string
@@ -22,6 +19,7 @@ local OSinterop = require("libs.guified.os_interop") -- ? contains ffi
 local elements = require("libs.guified.elements")
 require(getScriptFolder().."errorhandler") -- * setup errorhandler
 --local messagebus = require("libs.guified.dependencies.love2d-tools.modules.messagebus") --* message_bus
+---@type logger
 local logger = require(getScriptFolder().."dependencies.love2d-tools.modules.logger.init") --* logger module
 --local state = require("libs.guified.dependencies.love2d-tools.modules.state") --* state machine
 
@@ -47,6 +45,7 @@ logger.ok("Got guified root folder "..__GUIFIEDGLOBAL__.rootfolder)
 logger.ok("init setup done")
 
 -- * internal stuff
+---@class guifiedinternal
 local guifiedlocal = {
     -- ? vars
     enableupdate = true,
@@ -64,9 +63,9 @@ local guifiedlocal = {
         data = {},
         ---@class idholder
         ids = {},
-        ---@class warningholder
-        warns = {},
-        --optional = true
+        svcids = {},
+        svcupdatestack = {},
+        svcdrawstack = {},
     },
 
     -- ? funcs
@@ -97,6 +96,16 @@ local guifiedlocal = {
                 textinputstack[idtbl[i]](key)
             end
         end
+    end,
+    svcdrawf = function(drawstack, ids)
+        for i = 1, #ids, 1 do
+            drawstack[ids[i]](ids[i])
+        end
+    end,
+    svcupdatef = function(updatestack, dt, ids)
+        for i = 1, #ids, 1 do
+            updatestack[ids[i]](dt, ids[i])
+        end
     end
 }
 logger.ok("setting up internal table done")
@@ -105,17 +114,9 @@ logger.ok("setting up internal table done")
 
 ---@param warn string
 local function warnf(warn)
-    guifiedlocal.internalregistry.warns[#guifiedlocal.internalregistry.warns + 1] = "[WARNING] " .. warn
+    guifiedlocal.internalregistry.svcdataholders.warnings[#guifiedlocal.internalregistry.svcdataholders.warnings + 1] = "[WARNING] " .. warn
     logger.warn(warn)
 end
---[[
----@return boolean
-local function isCapsLockOn()
-    -- GetKeyState returns a value where the lowest bit indicates the key's toggle state.
-    local state = ffi.C.GetKeyState(VK_CAPITAL)
-    return state ~= 0 and bit.band(state, 0x0001) ~= 0
-end
---]]
 ---@return number|nil
 local function getIndex(table, val)
     for i = 1, #table, 1 do
@@ -145,6 +146,7 @@ local function idgen(length)
 end
 
 -- ? guified return table
+---@class guified
 local guified = {
     __VER__ = "B-1.0.0", -- ? The version of Guified bruh
     __LICENCE__ = [[
@@ -382,6 +384,7 @@ function love.run()
             guifiedlocal.internalregistry.data = guifiedlocal.update(dt, guifiedlocal.internalregistry.updatestack,
                 guifiedlocal.internalregistry.ids)
         end
+        guifiedlocal.svcupdatef(guifiedlocal.internalregistry.svcupdatestack, dt, guifiedlocal.internalregistry.svcids)
         -- ? guified code end
         -- Call update and draw
         if love.update then
@@ -397,6 +400,7 @@ function love.run()
             if guifiedlocal.draw and guifiedlocal.enabledraw then
                 guifiedlocal.draw(guifiedlocal.internalregistry.drawstack, guifiedlocal.internalregistry.data)
             end
+            guifiedlocal.svcdrawf(guifiedlocal.internalregistry.svcdrawstack, guifiedlocal.internalregistry.svcids)
             -- ? guified code end
             love.graphics.present()
         end
@@ -424,26 +428,44 @@ logger.ok("exit function setup done")
 -- * post init
 
 guifiedlocal.setWindowToBeOnTop = OSinterop(warnf).setWindowToBeOnTop -- ? requires ffi so added by OSinterop here after (almost) everything is done
+guifiedlocal.svcmethords = { --? needs to access some stuff in guifiedlocal so added here
+    register = function(element, id_length)
+        id_length = id_length or 16
+        local id = idgen(id_length)
+        element.id = id
+        guifiedlocal.internalregistry.svcids[#guifiedlocal.internalregistry.svcids + 1] = id
+        guifiedlocal.internalregistry.svcupdatestack[element.id] = element.update or nil
+        guifiedlocal.internalregistry.svcdrawstack[element.id] = element.draw or nil
+        logger.info("SVC "..element.name.." registered")
+    end,
+    getdataholder = function(element)
+        return(guifiedlocal.svcdataholders[element.id])
+    end
+}
 
 -- * SVC init
 
 -- ? The WARN SVC
 -- * Processes warnings and displays them
--- TODO rework this in A-1.3.0
-guified.registry.register({
+guifiedlocal.svcmethords.register({
     name = "warnSVC Guified internal",
     draw = function()
     end,
     update = function()
-        for i = 1, #guifiedlocal.internalregistry.warns, 1 do
-            local warnelement = guified.registry.elements.text:new(0, love.graphics.getHeight() -
-                ((i * __GUIFIEDGLOBAL__.fontsize * 2) - #guifiedlocal.internalregistry.warns), guifiedlocal.internalregistry.warns[i])
-            warnelement.name = "warnSVC Guified internal warning"
-            guified.registry.register(warnelement)
-            guifiedlocal.internalregistry.warns[i] = nil
-        end
     end
 })
+
+--? SVC handler
+guifiedlocal.svcmethords.register({
+    name = "SVC handler Guified internal",
+    draw = function()
+        
+    end,
+    update = function()
+        
+    end
+})
+
 logger.ok("GUIFIED init success !")
 return (guified)
 
