@@ -1,43 +1,8 @@
 local guified = require("libs.guified.init")
-local framemod = require("libs.guified.modules.frame")
-local colors = require("libs.guified.modules.colors")
-local tween = require("libs.guified.modules.experimental.tween")
----@type logger
-local logger = guified.debug.logger
-logger.info("Hello World !")
-
---local movbox = guified.registry.elements.box:new(0, 0, 40, 40, "line", colors.electric_blue)
---local mouseLoc = guified.registry.elements.text:new(love.mouse.getX(), love.mouse.getY(), tostring(love.mouse.getX().."\n"..tostring(love.mouse.getY())))
---guified.registry.register(mouseLoc)
-local frame = framemod.new({
-    guified.registry.elements.text:new(0, 30, "This is Guified "..guified.__VER__),
-    guified.registry.elements.text:new(0, 15, "Hi !"),
-    --guified.registry.elements.box:new(0, 1, love.graphics.getWidth() - 1, love.graphics.getHeight() - 1, "line", colors.cyan),
-    --movbox,
-    --guified.registry.elements.textInput:new(100, 100, 40, 40)
-}, 0, 0, 150, 60, "Guified")
-function love.load()
-    print("Using guified version "..guified.__VER__)
-    --guified.funcs.setWindowToBeOnTop()
-    frame:load()
-    --print(frame:addSlider(30, 30).id)
-    local box = guified.registry.elements.box:new(0, 0, 40, 40, "fill", colors.green)
-    --local tweenO = tween.newElementTween(box, 0, 0, love.graphics.getWidth() - 40, love.graphics.getHeight() / 2)
-    --guified.registry.register(tweenO)
-    --tweenO.exec()
-end
-function love.update(dt)
-    --movbox.changeSize(love.mouse.getX(), love.mouse.getY())
-    --mouseLoc.changePos(love.mouse.getX() + 10, love.mouse.getY())
-    --mouseLoc.text("X:"..tostring(love.mouse.getX().."\nY:"..tostring(love.mouse.getY())))
-    if love.keyboard.isDown("e") then
-        error("TEST")
-    end
-end
-function love.keypressed(key)
-    if key == "u" then
-        frame:unload()
-        guified.debug.warn("FRAME UNLOADED")
-    end
-end
---? All of that without ever touching love.draw
+local frame = require("libs.guified.modules.frame")
+local shotty = require("libs.guified.modules.shotty")
+local frameobj = frame.new({
+    guified.registry.elements.text:new(0, 15, guified.__VER__)
+}, 0, 0, 150, 150, "Guified frame module")
+frameobj:load()
+--guified.debug.warn("meow")

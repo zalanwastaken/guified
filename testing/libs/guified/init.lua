@@ -451,7 +451,7 @@ guifiedlocal.svcmethords.register({
     name = "warnSVC Guified internal",
     draw = function()
     end,
-    update = function()
+    update = function(dt, id)
     end
 })
 
