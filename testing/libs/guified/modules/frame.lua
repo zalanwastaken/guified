@@ -1,8 +1,8 @@
 if __GUIFIEDGLOBAL__ == nil then
     return nil
 end
-local guified = require(__GUIFIEDGLOBAL__.rootfolder.."init")
-local logger = require(__GUIFIEDGLOBAL__.rootfolder.."dependencies.love2d-tools.modules.logger.init")
+local guified = require(__GUIFIEDGLOBAL__.rootfolder..".init")
+local logger = require(__GUIFIEDGLOBAL__.rootfolder..".dependencies.love2d-tools.modules.logger.init")
 local function createSlider(x, y) --TODO
     return({
         name = "Slider", 

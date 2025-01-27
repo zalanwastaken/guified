@@ -6,3 +6,8 @@ local frameobj = frame.new({
 }, 0, 0, 150, 150, "Guified frame module")
 frameobj:load()
 --guified.debug.warn("meow")
+if love.filesystem.getInfo("libs/guified/modules/c_modules/test.so") then
+    require("libs.guified.modules.c_modules.test")
+else
+    guified.debug.logger.warn("Running without C modules")
+end

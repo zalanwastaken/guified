@@ -25,13 +25,20 @@ local logger = require(getScriptFolder().."dependencies.love2d-tools.modules.log
 
 -- ? init stuff
 local font = love.graphics.newFont(getScriptFolder() .. "Ubuntu-L.ttf")
+
+local rootfolder = replaceSlashWithDot(getScriptFolder())
+--? global table containing vars for guified modules
 __GUIFIEDGLOBAL__ = {
-    rootfolder = replaceSlashWithDot(getScriptFolder()),
+    rootfolder = string.sub(rootfolder, 1, #rootfolder-1),
     fontsize = 12 -- * default font size
 }
-love.graphics.setFont(font, fontsize)
+rootfolder = nil
+logger.ok("Got guified root folder "..__GUIFIEDGLOBAL__.rootfolder)
+
+love.graphics.setFont(font, __GUIFIEDGLOBAL__.fontsize)
 love.graphics.setColor(1, 1, 1, 1)
 love.math.setRandomSeed(os.time())
+
 if love.system.getOS():lower() == "linux" then
     logger.warn("Features that use FFI will not work on Linux !")
 elseif love.system.getOS():lower() == "macos" then
@@ -40,8 +47,8 @@ elseif love.system.getOS():lower() == "macos" then
     --? Trust me i tired to run macOS on a vm but it just would not work. And im not buying a expensive piece of garbage computer
     logger.warn("MacOS is not suppoorted !\nUse at your own caution")
 end
+
 logger.startSVC()
-logger.ok("Got guified root folder "..__GUIFIEDGLOBAL__.rootfolder)
 logger.ok("init setup done")
 
 -- * internal stuff
@@ -66,6 +73,7 @@ local guifiedlocal = {
         svcids = {},
         svcupdatestack = {},
         svcdrawstack = {},
+        svcdataholders = {}
     },
 
     -- ? funcs
@@ -99,12 +107,16 @@ local guifiedlocal = {
     end,
     svcdrawf = function(drawstack, ids)
         for i = 1, #ids, 1 do
-            drawstack[ids[i]](ids[i])
+            if drawstack[ids[i]] ~= nil then
+                drawstack[ids[i]](ids[i])
+            end
         end
     end,
-    svcupdatef = function(updatestack, dt, ids)
+    svcupdatef = function(updatestack, dt, ids, dataholders)
         for i = 1, #ids, 1 do
-            updatestack[ids[i]](dt, ids[i])
+            if updatestack[ids[i]] ~= nil then
+                dataholders[ids[i]] = updatestack[ids[i]](dt, ids[i], dataholders[ids[i]])
+            end
         end
     end
 }
@@ -114,7 +126,7 @@ logger.ok("setting up internal table done")
 
 ---@param warn string
 local function warnf(warn)
-    guifiedlocal.internalregistry.svcdataholders.warnings[#guifiedlocal.internalregistry.svcdataholders.warnings + 1] = "[WARNING] " .. warn
+    --guifiedlocal.internalregistry.svcdataholders.warnings[#guifiedlocal.internalregistry.svcdataholders.warnings + 1] = "[WARNING] " .. warn
     logger.warn(warn)
 end
 ---@return number|nil
@@ -129,7 +141,6 @@ end
 ---@param length number
 ---@return string
 local function idgen(length)
-    length = length or 16
     local chars = { -- * Small chars
     "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w",
     "x", "y", "z", -- * Capital chars
@@ -143,6 +154,12 @@ local function idgen(length)
         ret = ret .. chars[love.math.random(1, #chars)]
     end
     return (ret)
+end
+local function mergetables(t1, t2)
+    for k, v in pairs(t2) do
+        t1[k] = v
+    end
+    return t1
 end
 
 -- ? guified return table
@@ -345,7 +362,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
         setFontSize = function(size)
             fontsize = size
         end
-    }
+    },
+    SVCCalls = {}
 }
 logger.ok("setting up main return table done")
 
@@ -384,7 +402,7 @@ function love.run()
             guifiedlocal.internalregistry.data = guifiedlocal.update(dt, guifiedlocal.internalregistry.updatestack,
                 guifiedlocal.internalregistry.ids)
         end
-        guifiedlocal.svcupdatef(guifiedlocal.internalregistry.svcupdatestack, dt, guifiedlocal.internalregistry.svcids)
+        guifiedlocal.svcupdatef(guifiedlocal.internalregistry.svcupdatestack, dt, guifiedlocal.internalregistry.svcids, guifiedlocal.internalregistry.svcdataholders)
         -- ? guified code end
         -- Call update and draw
         if love.update then
@@ -436,6 +454,10 @@ guifiedlocal.svcmethords = { --? needs to access some stuff in guifiedlocal so a
         guifiedlocal.internalregistry.svcids[#guifiedlocal.internalregistry.svcids + 1] = id
         guifiedlocal.internalregistry.svcupdatestack[element.id] = element.update or nil
         guifiedlocal.internalregistry.svcdrawstack[element.id] = element.draw or nil
+        guifiedlocal.internalregistry.svcdataholders[element.id] = {}
+        if element.calls ~= nil then
+            guified.SVCCalls = mergetables(guified.SVCCalls, element.calls)
+        end
         logger.info("SVC "..element.name.." registered")
     end,
     getdataholder = function(element)
@@ -449,10 +471,11 @@ guifiedlocal.svcmethords = { --? needs to access some stuff in guifiedlocal so a
 -- * Processes warnings and displays them
 guifiedlocal.svcmethords.register({
     name = "warnSVC Guified internal",
-    draw = function()
-    end,
-    update = function(dt, id)
-    end
+    calls = {
+        warn = function()
+            
+        end
+    }
 })
 
 --? SVC handler
