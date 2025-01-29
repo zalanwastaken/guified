@@ -1,5 +1,5 @@
 testing.code-workspace
 other
 archive
-testing/libs/guified/modules/c_modules/*.so
-testing/libs/guified/modules/c_modules/*.o
+*.so
+*.o

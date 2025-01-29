@@ -14,10 +14,12 @@ local function init_interop(warnf)
             static const unsigned int SWP_NOSIZE = 0x0001;
             static const unsigned int SWP_NOMOVE = 0x0002;
             static const unsigned int SWP_SHOWWINDOW = 0x0040;
-            short GetKeyState(int nVirtKey);
         ]]
     elseif os == "linux" then
-        warnf("FFI features on Linux are not supported")
+        --warnf("FFI features on Linux are not supported")
+        package.cpath = package.cpath..";libs/guified/os_interop/linux.so"
+        local funcs = require("linux")
+        print(funcs.add(2, 2))
     end
     local ret = {}
     if os == "windows" then
