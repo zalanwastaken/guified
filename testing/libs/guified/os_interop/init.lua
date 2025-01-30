@@ -17,9 +17,6 @@ local function init_interop(warnf)
         ]]
     elseif os == "linux" then
         --warnf("FFI features on Linux are not supported")
-        package.cpath = package.cpath..";libs/guified/os_interop/linux.so"
-        local funcs = require("linux")
-        print(funcs.add(2, 2))
     end
     local ret = {}
     if os == "windows" then
