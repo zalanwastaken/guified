@@ -69,11 +69,7 @@ local guifiedlocal = {
         ---@class dataholder
         data = {},
         ---@class idholder
-        ids = {},
-        svcids = {},
-        svcupdatestack = {},
-        svcdrawstack = {},
-        svcdataholders = {}
+        ids = {}
     },
 
     -- ? funcs
@@ -104,31 +100,12 @@ local guifiedlocal = {
                 textinputstack[idtbl[i]](key)
             end
         end
-    end,
-    svcdrawf = function(drawstack, ids)
-        for i = 1, #ids, 1 do
-            if drawstack[ids[i]] ~= nil then
-                drawstack[ids[i]](ids[i])
-            end
-        end
-    end,
-    svcupdatef = function(updatestack, dt, ids, dataholders)
-        for i = 1, #ids, 1 do
-            if updatestack[ids[i]] ~= nil then
-                dataholders[ids[i]] = updatestack[ids[i]](dt, ids[i], dataholders[ids[i]])
-            end
-        end
     end
 }
 logger.ok("setting up internal table done")
 
 -- * funcs
 
----@param warn string
-local function warnf(warn)
-    --guifiedlocal.internalregistry.svcdataholders.warnings[#guifiedlocal.internalregistry.svcdataholders.warnings + 1] = "[WARNING] " .. warn
-    logger.warn(warn)
-end
 ---@return number|nil
 local function getIndex(table, val)
     for i = 1, #table, 1 do
@@ -278,8 +255,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
     },
 
     debug = {
-        --* Logs a warning message using warnf.
-        warn = warnf,
+        --! more stuff is added in post init
+
         --* provided by logger module of the love2d-tools lib
         logger = logger
     },
@@ -362,8 +339,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
         setFontSize = function(size)
             fontsize = size
         end
-    },
-    SVCCalls = {}
+    }
 }
 logger.ok("setting up main return table done")
 
@@ -402,7 +378,6 @@ function love.run()
             guifiedlocal.internalregistry.data = guifiedlocal.update(dt, guifiedlocal.internalregistry.updatestack,
                 guifiedlocal.internalregistry.ids)
         end
-        guifiedlocal.svcupdatef(guifiedlocal.internalregistry.svcupdatestack, dt, guifiedlocal.internalregistry.svcids, guifiedlocal.internalregistry.svcdataholders)
         -- ? guified code end
         -- Call update and draw
         if love.update then
@@ -418,7 +393,6 @@ function love.run()
             if guifiedlocal.draw and guifiedlocal.enabledraw then
                 guifiedlocal.draw(guifiedlocal.internalregistry.drawstack, guifiedlocal.internalregistry.data)
             end
-            guifiedlocal.svcdrawf(guifiedlocal.internalregistry.svcdrawstack, guifiedlocal.internalregistry.svcids)
             -- ? guified code end
             love.graphics.present()
         end
@@ -434,60 +408,46 @@ logger.ok("main loop setup done")
 function love.textinput(key)
     guifiedlocal.textinput(key, guifiedlocal.internalregistry.textinputstack, guifiedlocal.internalregistry.ids)
 end
-logger.ok("setting up textinput hook done")
+logger.ok("Setting up textinput hook done")
 
 --* love quit function
 function love.quit()
     guified.extcalls.quit()
     return(false)
 end
-logger.ok("exit function setup done")
+logger.ok("Exit function setup done")
 
 -- * post init
+logger.info("Doing post init")
 
-guifiedlocal.setWindowToBeOnTop = OSinterop(warnf).setWindowToBeOnTop -- ? requires ffi so added by OSinterop here after (almost) everything is done
-guifiedlocal.svcmethords = { --? needs to access some stuff in guifiedlocal so added here
-    register = function(element, id_length)
-        id_length = id_length or 16
-        local id = idgen(id_length)
-        element.id = id
-        guifiedlocal.internalregistry.svcids[#guifiedlocal.internalregistry.svcids + 1] = id
-        guifiedlocal.internalregistry.svcupdatestack[element.id] = element.update or nil
-        guifiedlocal.internalregistry.svcdrawstack[element.id] = element.draw or nil
-        guifiedlocal.internalregistry.svcdataholders[element.id] = {}
-        if element.calls ~= nil then
-            guified.SVCCalls = mergetables(guified.SVCCalls, element.calls)
+guifiedlocal.setWindowToBeOnTop = OSinterop(logger.warn).setWindowToBeOnTop -- ? requires ffi so added by OSinterop here after (almost) everything is done
+guifiedlocal.internalregistry.warndata = {}
+guified.debug.warn = function(warning)
+    logger.warn(warning)
+    warning = "[wARNING] "..warning
+    guifiedlocal.internalregistry.warndata[#guifiedlocal.internalregistry.warndata + 1] = warning
+    local ourpos = #guifiedlocal.internalregistry.warndata
+    guified.registry.register({
+        name = "Guified warning",
+        draw = function()
+            love.graphics.setColor(1, 0, 0)
+            love.graphics.print(warning, 0, ((ourpos - 1) * 12) + 2)
         end
-        logger.info("SVC "..element.name.." registered")
-    end,
-    getdataholder = function(element)
-        return(guifiedlocal.svcdataholders[element.id])
-    end
-}
-
--- * SVC init
-
--- ? The WARN SVC
--- * Processes warnings and displays them
-guifiedlocal.svcmethords.register({
-    name = "warnSVC Guified internal",
-    calls = {
-        warn = function()
-            
+    })
+end
+guified.debug.error = function(err)
+    logger.error(err)
+    err = "[ERROR] "..err
+    guifiedlocal.internalregistry.warndata[#guifiedlocal.internalregistry.warndata + 1] = err
+    local ourpos = #guifiedlocal.internalregistry.warndata
+    guified.registry.register({
+        name = "Guified warning",
+        draw = function()
+            love.graphics.setColor(1, 0, 0)
+            love.graphics.print(err, 0, ((ourpos - 1) * 12) + 2)
         end
-    }
-})
-
---? SVC handler
-guifiedlocal.svcmethords.register({
-    name = "SVC handler Guified internal",
-    draw = function()
-        
-    end,
-    update = function()
-        
-    end
-})
+    })
+end
 
 logger.ok("GUIFIED init success !")
 return (guified)
