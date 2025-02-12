@@ -1,8 +1,11 @@
-if __GUIFIEDGLOBAL__ == nil then
+if __GUIFIEDGLOBAL__ == nil then --? check if guified is loaded
     return nil
 end
-local guified = require(__GUIFIEDGLOBAL__.rootfolder..".init")
-local logger = require(__GUIFIEDGLOBAL__.rootfolder..".dependencies.love2d-tools.modules.logger.init")
+
+---@type guified
+local guified = require(__GUIFIEDGLOBAL__.rootfolder..".init") --? guified api
+local logger = guified.debug.logger
+
 local function createSlider(x, y) --TODO
     return({
         name = "Slider", 
@@ -14,15 +17,21 @@ local function createSlider(x, y) --TODO
         end
     })
 end
-local function newFrameObj(x, y, w, h, bgclr, fgclr, title, elements)
+
+local function newFrameObj(x, y, w, h, bgclr, fgclr, borderclr, title, elements)
     bgclr = bgclr or {0.5, 0.5, 0.5, 1}
     fgclr = fgclr or {love.math.random(0, 255) / 100, love.math.random(0, 255) / 100, love.math.random(0, 255) / 100, 1}
+    borderclr = borderclr or fgclr
     title = title or "Frame"
     local grabbeddata = { grabbed = false, x = 0, y = 0 }
 
     return {
         name = "Frame SVC",
         draw = function()
+            --* border
+            love.graphics.setColor(borderclr)
+            love.graphics.rectangle("fill", x - 5, y - 5, w + 10, h + 10)
+
             --* background
             love.graphics.setColor(bgclr)
             love.graphics.rectangle("fill", x, y, w, h)
@@ -53,10 +62,42 @@ local function newFrameObj(x, y, w, h, bgclr, fgclr, title, elements)
                 x, y = x + xdiff, y + ydiff
                 grabbeddata.x, grabbeddata.y = mouseX, mouseY
                 for i = 2, #elements, 1 do
-                    local elementX, elementY = elements[i].getPos()
-                    elements[i].changePos(elementX + xdiff, elementY + ydiff)
+                    if elements[i].changePos ~= nil and elements[i].getPos ~= nil then
+                        local elementX, elementY = elements[i].getPos()
+                        elements[i].changePos(elementX + xdiff, elementY + ydiff)
+                    else
+                        logger.error(elements[i].name.." not movable")
+                    end
                 end
             end
+        end,
+
+        ---@param argh number
+        ---@param argw number
+        changeWH = function(argw, argh)
+            w = argw
+            h = argh
+        end,
+
+        ---@param argx number
+        ---@param argy number
+        changePos = function(argx, argy)
+            x = argx
+            y = argy
+        end,
+
+        ---@return number
+        getPos = function()
+            return x, y
+        end,
+
+        ---@param argbgclr Color
+        ---@param argborderclr Color
+        ---@param argfgclr Color
+        setclrs = function(argbgclr, argfgclr, argborderclr)
+            bgclr = argbgclr or bgclr
+            fgclr = argfgclr or fgclr
+            borderclr = argborderclr or argborderclr
         end
     }
 end
@@ -64,10 +105,12 @@ end
 local frame = {
     ---@param elements table
     ---@return frame
-    new = function(elements, x, y, w, h, title, bgclr, fgclr)
-        table.insert(elements, 1, newFrameObj(x, y, w, h, bgclr, fgclr, title, elements))
+    new = function(elements, x, y, w, h, title, bgclr, fgclr, borderclr)
+        local frameobj = newFrameObj(x, y, w, h, bgclr, fgclr, borderclr, title, elements)
+        table.insert(elements, 1, frameobj)
         ---@class frame
         local frame = {
+            frame = frameobj,
             elements = elements,
             loaded = false,
             load = function(self)
@@ -86,12 +129,6 @@ local frame = {
                 end
                 self.loaded = false
             end,
-            flip = function()
-                --TODO
-                local tmp = {}
-                for i = 1, #elements, 1 do
-                end
-            end,
             addSlider = function(self, x, y)
                 if self.loaded == true then
                     local slider = createSlider(x, y)
@@ -104,5 +141,6 @@ local frame = {
         return(frame)
     end
 }
+
 logger.ok("Frame module loaded")
 return(frame)
