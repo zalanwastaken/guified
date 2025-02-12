@@ -1,5 +1,54 @@
 # Guified Library Documentation 📚
-#### NOTE: This doc only contains info about the core guified functions(A-1.2.0) not the modules
+#### NOTE: This doc only contains info about the core guified functions(A-1.2.2) not the modules
+
+
+## Setup 😺
+
+1) Install some tools for initial setup
+```BASH
+  sudo apt install unzip wget
+```
+OR
+```BASH
+  sudo pacman -S unzip wget
+```
+
+2) Start by downloading a release version of Guified
+```BASH
+  wget https://github.com/zalanwastaken/guified/releases/download/A-1.2.2/A-1.2.2.zip
+```
+
+3) Extract the downloaded archive
+```BASH
+  unzip A-1.2.2.zip
+```
+
+4) Move Guified into your project's lib folder
+```BASH
+  mv A-1.2.2 <your projects's folder>
+```
+
+5) Include Guified in main.lua of your folder
+```LUA
+  local guified = require("libs.guified")
+```
+
+Done !🚀
+
+## Basic `Hello World` example
+```LUA
+  local guified = require("guified")
+
+  --* create a text element
+  local text = guified.registry.elements.text:new(0, 0, "Hello world !")
+
+  --* register it
+  --* if we dont register the element it will not be drawn or updated
+  --* drawing is handled by guified automatically
+  guified.registry.register(text)
+```
+### Check other examples in the examples folder !
+
 ## GUI Elements 🖼️
 
 ### guified.registry.elements.button\:new(argx, argy, w, h, argtext) 🔘
@@ -12,14 +61,14 @@ Creates a new button element.
   - `argtext`: Text to display on the button
 - **Return**: button element
 
-### guified.registry.elements.textBox\:new(argx, argy, text) 🗒
+### guified.registry.elements.text\:new(argx, argy, text) 🗒
 
-Creates a new text box element.
+Creates a new text element.
 
 - **Parameters**:
-  - `argx`, `argy`: Position of the text box
+  - `argx`, `argy`: Position of the text
   - `text`: Initial text to display
-- **Return**: textBox element
+- **Return**: text element
 
 ### guified.registry.elements.box\:new(x, y, w, h, mode, clr) 📦
 
@@ -41,26 +90,35 @@ Creates a new image element.
   - `image`: LÖVE image object to display
 - **Return**: image element
 
+### guified.registry.elements.textinput\:new(argx, argy, w, h, placeholder, active) 🗒
+
+Creates a new textinput element.
+
+- **Parameters**:
+  - `x`, `y`: Position of the element
+  - `w`, `h`: Dimensions of the element
+  - `placeholder` : The placeholder text (optional)
+  - `active` : Is the element active by default (optional)
+- **Return**: textinput element
+
+
 ## Registry Management 📋
 
-### guified.registry.register(element, id\_length, noerr) ➕
+### guified.registry.register(element, id\_length) ➕
 
 Registers a GUI element for drawing and updating.
 
 - **Parameters**:
   - `element`: The element to register
   - `id_length`: Length of the generated ID (optional)
-  - `noerr`: If true, suppresses errors (optional)
 - **Return**: ID of the registered element
 
-### guified.registry.remove(element, noerr) ➖
+### guified.registry.remove(element) ➖
 
 Removes a registered GUI element.
 
 - **Parameters**:
   - `element`: The element to remove (or its ID as a string)
-  - `noerr`: If true, suppresses errors (optional)
-- **Return**: boolean (if `noerr` is true)
 
 ## Window Management 🫐
 
@@ -130,3 +188,4 @@ Returns the internal registry used by guified.
 
 A string containing the current version of the Guified library.
 
+# Please open a issue if there are problems in this doc !
