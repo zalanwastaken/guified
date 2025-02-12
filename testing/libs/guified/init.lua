@@ -13,26 +13,28 @@ local function getScriptFolder()
     return (debug.getinfo(1, "S").source:sub(2):match("(.*/)"))
 end
 
--- ? requires
-local ffi = require("ffi")
-local OSinterop = require("libs.guified.os_interop") -- ? contains ffi 
-local elements = require("libs.guified.elements")
-require(getScriptFolder().."errorhandler") -- * setup errorhandler
---local messagebus = require("libs.guified.dependencies.love2d-tools.modules.messagebus") --* message_bus
----@type logger
-local logger = require(getScriptFolder().."dependencies.love2d-tools.modules.logger.init") --* logger module
---local state = require("libs.guified.dependencies.love2d-tools.modules.state") --* state machine
-
--- ? init stuff
-local font = love.graphics.newFont(getScriptFolder() .. "Ubuntu-L.ttf")
-
+--* setup global var
 local rootfolder = replaceSlashWithDot(getScriptFolder())
 --? global table containing vars for guified modules
 __GUIFIEDGLOBAL__ = {
     rootfolder = string.sub(rootfolder, 1, #rootfolder-1),
-    fontsize = 12 -- * default font size
+    fontsize = 12, -- * default font size
+    os = love.system.getOS():lower(),
+    __VER__ = "B-1.0.0"
 }
 rootfolder = nil
+
+-- ? requires
+local ffi = require("ffi")
+local OSinterop = require(__GUIFIEDGLOBAL__.rootfolder..".os_interop") -- ? contains ffi 
+require(__GUIFIEDGLOBAL__.rootfolder..".errorhandler") -- * setup errorhandler
+--local messagebus = require("libs.guified.dependencies.love2d-tools.modules.messagebus") --* message_bus
+---@type logger
+local logger = require(getScriptFolder().."dependencies.love2d-tools.modules.logger.init") --* logger module
+
+-- ? init stuff
+local font = love.graphics.newFont(getScriptFolder() .. "Ubuntu-L.ttf")
+
 logger.ok("Got guified root folder "..__GUIFIEDGLOBAL__.rootfolder)
 
 love.graphics.setFont(font, __GUIFIEDGLOBAL__.fontsize)
@@ -40,7 +42,7 @@ love.graphics.setColor(1, 1, 1, 1)
 love.math.setRandomSeed(os.time())
 
 if love.system.getOS():lower() == "linux" then
-    logger.warn("Features that use FFI will not work on Linux !")
+    --logger.warn("Features that use FFI will not work on Linux !")
 elseif love.system.getOS():lower() == "macos" then
     --? If apple was not such a ass and let us run macOS on a vm this would have been supported
     --? Like why even lock down something that much ? Too much effort according to me
@@ -142,7 +144,7 @@ end
 -- ? guified return table
 ---@class guified
 local guified = {
-    __VER__ = "B-1.0.0", -- ? The version of Guified bruh
+    __VER__ = __GUIFIEDGLOBAL__.__VER__,
     __LICENCE__ = [[
 Copyright (c) 2024 Zalanwastaken(Mudit Mishra)
 
@@ -157,7 +159,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
     __AUTHOR__ = "Zalanwastaken",
     registry = {
         -- * Contains the element constructor functions
-        elements = elements,
+        elements = require(__GUIFIEDGLOBAL__.rootfolder..".elements"),
 
         --* Registers an element with the internal registry.
         --* Validates the element's ID length, generates a unique ID, and adds it to the appropriate stacks.

@@ -3,11 +3,11 @@ local elements = {
         ---@param argtext string
         ---@param argx number
         ---@param argy number
-        ---@param h number optional since A-1.2.0
-        ---@param w number optional since A-1.2.0
+        ---@param h number optional
+        ---@param w number optional
         ---@return element
         new = function(self, argx, argy, argtext, w, h)
-            local isPressed = false -- Track if the button is currently pressed
+            local isPressed = false --? Track if the button is currently pressed
             local autoctl = true
             if w ~= nil and h ~= nil then
                 autoctl = false
@@ -206,7 +206,7 @@ local elements = {
         ---@param x number
         ---@param y number
         ---@param image image
-        new = function(self, x, y, image)
+        new = function(self, x, y, image) --TODO: Refactor 
             return ({
                 name = "image",
                 draw = function()
