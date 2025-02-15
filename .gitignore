@@ -1,5 +1,4 @@
 testing.code-workspace
 other
 archive
-*.so
-*.o
+patches
