@@ -14,26 +14,24 @@ local function getScriptFolder()
 end
 
 --* setup global var
-local rootfolder = replaceSlashWithDot(getScriptFolder())
+local rootfolder = os.getenv("GUIFIEDROOTFOLDER") or string.sub(replaceSlashWithDot(getScriptFolder()), 1, #replaceSlashWithDot(getScriptFolder()))
 --? global table containing vars for guified modules
 __GUIFIEDGLOBAL__ = {
-    rootfolder = string.sub(rootfolder, 1, #rootfolder-1),
+    rootfolder = rootfolder,
     fontsize = 12, -- * default font size
     os = love.system.getOS():lower(),
-    __VER__ = "B-1.0.0"
+    __VER__ = "B-1.0.0" --! GUIFIED VERSION
 }
 rootfolder = nil
 
 -- ? requires
-local ffi = require("ffi")
 local OSinterop = require(__GUIFIEDGLOBAL__.rootfolder..".os_interop") -- ? contains ffi 
 require(__GUIFIEDGLOBAL__.rootfolder..".errorhandler") -- * setup errorhandler
---local messagebus = require("libs.guified.dependencies.love2d-tools.modules.messagebus") --* message_bus
 ---@type logger
 local logger = require(getScriptFolder().."dependencies.love2d-tools.modules.logger.init") --* logger module
 
 -- ? init stuff
-local font = love.graphics.newFont(getScriptFolder() .. "Ubuntu-L.ttf")
+local font = love.graphics.newFont(getScriptFolder() .. "Ubuntu-L.ttf", __GUIFIEDGLOBAL__.fontsize)
 
 logger.ok("Got guified root folder "..__GUIFIEDGLOBAL__.rootfolder)
 
@@ -90,10 +88,11 @@ local guifiedlocal = {
     end,
     ---@param drawstack drawstack
     ---@param data table
-    draw = function(drawstack, data)
-        for i = 1, #drawstack, 1 do
+    draw = function(drawstack, data, idtbl)
+        for i = 1, #idtbl, 1 do
             love.graphics.setColor(1, 1, 1, 1)
-            drawstack[i](data[i]) -- ? call the draw func
+            --drawstack[i](data[i]) -- ? call the draw func
+            drawstack[idtbl[i]](data[i])
         end
     end,
     textinput = function(key, textinputstack, idtbl)
@@ -176,7 +175,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
                 if id_length or 16 < 6 then
                     warnf("ID REG for " .. element.name .. " is too short")
                 end
-                local place = #guifiedlocal.internalregistry.drawstack + 1
                 local id = idgen(id_length or 16)
                 for i = 1, #guifiedlocal.internalregistry.ids, 1 do
                     if id == guifiedlocal.internalregistry.ids[i] then
@@ -185,9 +183,10 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
                     end
                 end
                 element.id = id
-                guifiedlocal.internalregistry.ids[place] = element.id
+                id = nil
+                guifiedlocal.internalregistry.ids[#guifiedlocal.internalregistry.ids + 1] = element.id
                 if type(element.draw):lower() == "function" then
-                    guifiedlocal.internalregistry.drawstack[#guifiedlocal.internalregistry.drawstack + 1] = element.draw
+                    guifiedlocal.internalregistry.drawstack[element.id] = element.draw
                 else
                     logger.error("Non-function data type in function field for draw in element "..element.name)
                     logger.error("Critical element function draw missing. Registering element "..element.name.." failed. Aborting")
@@ -230,11 +229,17 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
                         name = id,
                         id = id
                     }
-                    warnf("USING A ID TO REMOVE A ELEMENT IS NOT RECOMENED")
+                    logger.warn("USING A ID TO REMOVE A ELEMENT IS NOT RECOMENED")
                 end
                 if element.id ~= nil then
-                    local place = getIndex(guifiedlocal.internalregistry.ids, element.id)
-                    table.remove(guifiedlocal.internalregistry.drawstack, place)
+                    local idindex = getIndex(guifiedlocal.internalregistry.ids, element.id)
+                    table.remove(guifiedlocal.internalregistry.ids, idindex)
+                    idindex = nil
+                    if guifiedlocal.internalregistry.drawstack[element.id] ~= nil then
+                        guifiedlocal.internalregistry.drawstack[element.id] = nil
+                    else
+                        logger.warn("Broken element ? NAME:"..element.name.." ID:"..element.id)
+                    end
                     if guifiedlocal.internalregistry.updatestack[element.id] ~= nil then
                         guifiedlocal.internalregistry.updatestack[element.id] = nil
                     end
@@ -295,10 +300,12 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
         end,
         -- * Returns the current textinputstack.
         ---@return textinputstack The table containing text input handlers.
-        getTextIInputStack = function()
+        getTextInputStack = function()
             return (guifiedlocal.internalregistry.textinputstack)
         end,
+        --* Quit function the code that needs the be executed when the application quits
         quit = function()
+            logger.info("Quit exec !")
             logger.stopSVC()
         end
     },
@@ -337,9 +344,11 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
             return (fontsize)
         end,
         -- * Sets a new font size.
+        --! This function is deprecated use `__GUIFIEDGLOBAL__.fontsize` variable to set font size insted
+        ---@deprecated
         ---@param size number The new font size to be set.
         setFontSize = function(size)
-            fontsize = size
+            __GUIFIEDGLOBAL__.fontsize = size
         end
     }
 }
@@ -393,7 +402,7 @@ function love.run()
             end
             -- ? guified code
             if guifiedlocal.draw and guifiedlocal.enabledraw then
-                guifiedlocal.draw(guifiedlocal.internalregistry.drawstack, guifiedlocal.internalregistry.data)
+                guifiedlocal.draw(guifiedlocal.internalregistry.drawstack, guifiedlocal.internalregistry.data, guifiedlocal.internalregistry.ids)
             end
             -- ? guified code end
             love.graphics.present()
@@ -410,7 +419,7 @@ logger.ok("main loop setup done")
 function love.textinput(key)
     guifiedlocal.textinput(key, guifiedlocal.internalregistry.textinputstack, guifiedlocal.internalregistry.ids)
 end
-logger.ok("Setting up textinput hook done")
+logger.ok("textinput hook setup done")
 
 --* love quit function
 function love.quit()
