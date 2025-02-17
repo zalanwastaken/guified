@@ -41,8 +41,8 @@ local function newFrameObj(x, y, w, h, bgclr, fgclr, borderclr, title, elements)
             love.graphics.rectangle("fill", x, y, w, 15)
             love.graphics.setColor(0, 0, 0)
             love.graphics.print(title, x + 5, y + 2)
-            love.graphics.setColor(bgclr)
-            love.graphics.rectangle("fill", x+w-15, y+2.5, 10, 10)
+            --love.graphics.setColor(bgclr)
+            --love.graphics.rectangle("fill", x+w-15, y+2.5, 10, 10)
         end,
 
         update = function()
