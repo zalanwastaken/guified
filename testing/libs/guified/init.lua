@@ -14,22 +14,32 @@ local function getScriptFolder()
 end
 
 --* setup global var
-local rootfolder = os.getenv("GUIFIEDROOTFOLDER") or string.sub(replaceSlashWithDot(getScriptFolder()), 1, #replaceSlashWithDot(getScriptFolder()))
---? global table containing vars for guified modules
-__GUIFIEDGLOBAL__ = {
-    rootfolder = rootfolder,
-    fontsize = 12, -- * default font size
-    os = love.system.getOS():lower(),
-    __VER__ = "B-1.0.0" --! GUIFIED VERSION
-}
-rootfolder = nil
+if __GUIFIEDGLOBAL__ == nil then
+    local function setuprootfolder()
+        local folder = replaceSlashWithDot(getScriptFolder())
+        return(os.getenv("GUIFIEDROOTFOLDER") or string.sub(folder, 1, #folder))
+    end
+    local rootfolder = setuprootfolder()
+    --? global table containing vars for guified modules
+    __GUIFIEDGLOBAL__ = {
+        rootfolder = rootfolder,
+        fontsize = 12, -- * default font size
+        os = love.system.getOS():lower(),
+        __VER__ = "B-1.0.0", --! GUIFIED VERSION
+    }
+    rootfolder = nil
+else
+    return __GUIFIEDGLOBAL__.guified
+end
 
 -- ? requires
 local OSinterop = require(__GUIFIEDGLOBAL__.rootfolder..".os_interop") -- ? contains ffi 
 require(__GUIFIEDGLOBAL__.rootfolder..".errorhandler") -- * setup errorhandler
 ---@type logger
 local logger = require(getScriptFolder().."dependencies.love2d-tools.modules.logger.init") --* logger module
-
+if not(logger.thread:isRunning()) then
+    logger.startSVC()
+end
 -- ? init stuff
 local font = love.graphics.newFont(getScriptFolder() .. "Ubuntu-L.ttf", __GUIFIEDGLOBAL__.fontsize)
 
@@ -48,7 +58,9 @@ elseif love.system.getOS():lower() == "macos" then
     logger.warn("MacOS is not suppoorted !\nUse at your own caution")
 end
 
-logger.startSVC()
+if os.getenv("GUIFIEDROOTFOLDER") == nil then
+    logger.warn("ENV VAR GUIFIEDROOTFOLDER IS NOT SETUP ! This may cause issues")
+end
 logger.ok("init setup done")
 
 -- * internal stuff
@@ -340,8 +352,10 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
         end,
         -- * Returns the current font size.
         ---@return number The size of the font.
+        --! This function is deprecated use `__GUIFIEDGLOBAL__.fontsize` variable insted
+        ---@deprecated
         getFontSize = function()
-            return (fontsize)
+            return (__GUIFIEDGLOBAL__.fontsize)
         end,
         -- * Sets a new font size.
         --! This function is deprecated use `__GUIFIEDGLOBAL__.fontsize` variable to set font size insted
@@ -461,6 +475,8 @@ guified.debug.error = function(err)
 end
 
 logger.ok("GUIFIED init success !")
+__GUIFIEDGLOBAL__.guified = guified
+logger.ok("guified added to global var")
 return (guified)
 
 --[[

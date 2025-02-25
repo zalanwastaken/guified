@@ -154,4 +154,6 @@ function M.stopSVC()
 	loggerinternal.write:wait() -- Wait for the thread to finish execution.
 end
 
+M.thread = loggerinternal.write --! ADDED BY Zalanwastaken
+
 return M
