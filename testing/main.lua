@@ -8,8 +8,8 @@ local frameobj = frame.new({
 }, 0, 0, 150, 150, "Guified frame module")
 frameobj:load()
 
-local grad = gradient:newGradient({1, 1, 1}, {1, 0, 0}, 100, 100)
-guified.registry.register(grad)
+--local grad = gradient:newGradient({1, 1, 1}, {1, 0, 0}, 100, 100)
+--guified.registry.register(grad)
 
 function love.update()
     if love.keyboard.isDown("r") then
@@ -17,8 +17,5 @@ function love.update()
     end
     if love.keyboard.isDown("e") then
         error("?")
-    end
-    if love.keyboard.isDown("u") then
-        guified.registry.remove(grad)
     end
 end

@@ -1,5 +1,7 @@
 --! Tween module is still in testing
 
+--TODO: complete this !
+
 local guified = require(__GUIFIEDGLOBAL__.rootfolder.."init")
 local tween = {
     newElementTween = function(element, x, y, sx, sy, time)
