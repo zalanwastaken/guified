@@ -7,7 +7,7 @@ local logger = require(__GUIFIEDGLOBAL__.rootfolder..".dependencies.love2d-tools
 local function error_printer(msg, layer)
 	--print((debug.traceback("Error: " .. tostring(msg), 1+(layer or 1)):gsub("\n[^\n]+$", "")))
 	logger.fatal(debug.traceback("Error: " .. tostring(msg), 1+(layer or 1)):gsub("\n[^\n]+$", ""))
-	logger.info("Found a bug ?\nPlease report it to the Guified repo as a issue !\nThanks !")
+	logger.regular("Found a bug ?\nPlease report it to the Guified repo as a issue !\nThanks !")
 	logger.stopSVC()
 end
 
