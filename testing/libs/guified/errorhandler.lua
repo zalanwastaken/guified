@@ -116,3 +116,11 @@ function love.errorhandler(msg)
 		end
 	end
 end
+
+function love.threaderror(thread, errorstr)
+	if not(logger.thread:isRunning()) then
+		logger.startSVC()
+	end
+	logger.error("Thread error!\n"..errorstr)
+	thread:start()
+end
