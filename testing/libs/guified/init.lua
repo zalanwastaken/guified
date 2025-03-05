@@ -39,6 +39,9 @@ local logger = require(getScriptFolder() .. "dependencies.love2d-tools.modules.l
 if not (logger.thread:isRunning()) then
     logger.startSVC()
 end
+---@type cachehandler
+local cachehandler = require(getScriptFolder().."threads.guifiedcachehandler.init")
+cachehandler.startSVC(getScriptFolder().."dependencies.love2d-tools.modules.database")
 -- ? init stuff
 local font = love.graphics.newFont(getScriptFolder() .. "Ubuntu-L.ttf", __GUIFIEDGLOBAL__.fontsize)
 
@@ -479,7 +482,6 @@ end
 
 logger.ok("GUIFIED init success !")
 
-__GUIFIEDGLOBAL__.guified = guified --! TEMP FIX
 logger.ok("guified added to global var")
 
 return (guified)
