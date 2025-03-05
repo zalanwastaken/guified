@@ -478,8 +478,10 @@ guified.debug.error = function(err)
 end
 
 logger.ok("GUIFIED init success !")
-__GUIFIEDGLOBAL__.guified = guified
+
+__GUIFIEDGLOBAL__.guified = guified --! TEMP FIX
 logger.ok("guified added to global var")
+
 return (guified)
 
 --[[
