@@ -59,6 +59,27 @@ local colors = {
     sapphire = {0.06, 0.32, 0.73},      -- Deep sapphire blue
     jade = {0.0, 0.66, 0.42},           -- Cool jade green
     rose_gold = {0.72, 0.43, 0.47},     -- Subtle rose gold
+
+    funcs = {
+        funcs = {
+            addAlpha = function(clr, alpha)
+                clr[4] = alpha or 0
+                return clr
+            end,
+            checkIfValid = function(clr)
+                for i = 1, 3 do
+                    if type(clr[i]) == "number" then
+                        return false
+                    end
+                end
+                return true
+            end,
+            getAlpha = function(clr)
+                return clr[4]
+            end
+        }        
+    }
 }
+
 return(colors)
---* Black and white still reign supreme, but here's a splash of variety for the adventurous!
+--* Guified is more like a color lib with a free element manager
