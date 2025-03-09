@@ -11,7 +11,7 @@ end
 local function getScriptFolder()
     return (debug.getinfo(1, "S").source:sub(2):match("(.*/)"))
 end
-
+local areweloaded = false
 -- * setup global var
 if __GUIFIEDGLOBAL__ == nil then
     local function setuprootfolder()
@@ -28,20 +28,21 @@ if __GUIFIEDGLOBAL__ == nil then
     }
     rootfolder = nil
 else
-    return __GUIFIEDGLOBAL__.guified
+    areweloaded = true
 end
 
 -- ? requires
-local OSinterop = require(__GUIFIEDGLOBAL__.rootfolder .. ".os_interop") -- ? contains ffi 
-require(__GUIFIEDGLOBAL__.rootfolder .. ".errorhandler") -- * setup errorhandler
+local OSinterop
+if not(areweloaded) then
+    OSinterop = require(__GUIFIEDGLOBAL__.rootfolder .. ".os_interop") -- ? contains ffi 
+    require(__GUIFIEDGLOBAL__.rootfolder .. ".errorhandler") -- * setup errorhandler
+end
 ---@type logger
 local logger = require(getScriptFolder() .. "dependencies.love2d-tools.modules.logger.init") -- * logger module
-if not (logger.thread:isRunning()) then
+if not (logger.thread:isRunning()) and not(areweloaded) then
     logger.startSVC()
 end
----@type cachehandler
-local cachehandler = require(getScriptFolder().."threads.guifiedcachehandler.init")
-cachehandler.startSVC(getScriptFolder().."dependencies.love2d-tools.modules.database")
+
 -- ? init stuff
 local font = love.graphics.newFont(getScriptFolder() .. "Ubuntu-L.ttf", __GUIFIEDGLOBAL__.fontsize)
 
@@ -65,9 +66,13 @@ if os.getenv("GUIFIEDROOTFOLDER") == nil then
 end
 logger.ok("init setup done")
 
+if not(areweloaded) then
+    logger.error("Guified init was called a second time !")
+end
+
 -- * internal stuff
 ---@class guifiedinternal
-local guifiedlocal = {
+local guifiedinternal = {
     -- ? vars
     enableupdate = true,
     enabledraw = true,
@@ -190,17 +195,17 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
                     warnf("ID REG for " .. element.name .. " is too short")
                 end
                 local id = idgen(id_length or 16)
-                for i = 1, #guifiedlocal.internalregistry.ids, 1 do
-                    if id == guifiedlocal.internalregistry.ids[i] then
+                for i = 1, #guifiedinternal.internalregistry.ids, 1 do
+                    if id == guifiedinternal.internalregistry.ids[i] then
                         logger.error("Failed to register element " .. element.name .. " ID already exists. Aborting")
                         return (false)
                     end
                 end
                 element.id = id
                 id = nil
-                guifiedlocal.internalregistry.ids[#guifiedlocal.internalregistry.ids + 1] = element.id
+                guifiedinternal.internalregistry.ids[#guifiedinternal.internalregistry.ids + 1] = element.id
                 if type(element.draw):lower() == "function" then
-                    guifiedlocal.internalregistry.drawstack[element.id] = element.draw
+                    guifiedinternal.internalregistry.drawstack[element.id] = element.draw
                 else
                     logger.error("Non-function data type in function field for draw in element " .. element.name)
                     logger.error("Critical element function draw missing. Registering element " .. element.name ..
@@ -209,7 +214,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
                 end
                 if element.update ~= nil then
                     if type(element.update):lower() == "function" then
-                        guifiedlocal.internalregistry.updatestack[element.id] = element.update
+                        guifiedinternal.internalregistry.updatestack[element.id] = element.update
                         logger.info("element " .. element.name .. " update registered ID: " .. element.id)
                     else
                         logger.error("Non-function data type in function field for update in element " .. element.name)
@@ -217,7 +222,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
                 end
                 if element.textinput ~= nil then
                     if type(element.textinput):lower() == "function" then
-                        guifiedlocal.internalregistry.textinputstack[element.id] = element.textinput
+                        guifiedinternal.internalregistry.textinputstack[element.id] = element.textinput
                         logger.info("element " .. element.name .. " textinput registered ID: " .. element.id)
                     else
                         logger.error("Non-function data type in function field for textinput in element " ..
@@ -248,21 +253,21 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
                     logger.warn("USING A ID TO REMOVE A ELEMENT IS NOT RECOMENED")
                 end
                 if element.id ~= nil then
-                    local idindex = getIndex(guifiedlocal.internalregistry.ids, element.id)
-                    table.remove(guifiedlocal.internalregistry.ids, idindex)
+                    local idindex = getIndex(guifiedinternal.internalregistry.ids, element.id)
+                    table.remove(guifiedinternal.internalregistry.ids, idindex)
                     idindex = nil
-                    if guifiedlocal.internalregistry.drawstack[element.id] ~= nil then
-                        guifiedlocal.internalregistry.drawstack[element.id] = nil
+                    if guifiedinternal.internalregistry.drawstack[element.id] ~= nil then
+                        guifiedinternal.internalregistry.drawstack[element.id] = nil
                     else
                         logger.warn("Broken element ? NAME:" .. element.name .. " ID:" .. element.id)
                     end
-                    if guifiedlocal.internalregistry.updatestack[element.id] ~= nil then
-                        guifiedlocal.internalregistry.updatestack[element.id] = nil
+                    if guifiedinternal.internalregistry.updatestack[element.id] ~= nil then
+                        guifiedinternal.internalregistry.updatestack[element.id] = nil
                     end
-                    if guifiedlocal.internalregistry.textinputstack[element.id] ~= nil then
-                        guifiedlocal.internalregistry.textinputstack[element.id] = nil
+                    if guifiedinternal.internalregistry.textinputstack[element.id] ~= nil then
+                        guifiedinternal.internalregistry.textinputstack[element.id] = nil
                     end
-                    table.remove(guifiedlocal.internalregistry.ids, place)
+                    table.remove(guifiedinternal.internalregistry.ids, place)
                     logger.info("element " .. element.name .. " removed ID: " .. element.id)
                     element.id = nil
                     return (true)
@@ -286,39 +291,39 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
     extcalls = {
         -- * Draw function that manages rendering.
-        -- * Calls the guifiedlocal.draw method to process all drawable elements
+        -- * Calls the guifiedinternal.draw method to process all drawable elements
         -- * from the drawstack in the internal registry.
         drawf = function()
-            guifiedlocal.draw(guifiedlocal.internalregistry.drawstack, guifiedlocal.internalregistry.data)
+            guifiedinternal.draw(guifiedinternal.internalregistry.drawstack, guifiedinternal.internalregistry.data)
         end,
         -- * Update function that manages updating.
-        -- * Calls the guifiedlocal.update method with the average delta time and
+        -- * Calls the guifiedinternal.update method with the average delta time and
         -- * processes elements from the updatestack and associated ids in the internal registry.
         updatef = function()
-            guifiedlocal.update(love.timer.getAverageDelta(), guifiedlocal.internalregistry.updatestack,
-                guifiedlocal.internalregistry.ids)
+            guifiedinternal.update(love.timer.getAverageDelta(), guifiedinternal.internalregistry.updatestack,
+                guifiedinternal.internalregistry.ids)
         end,
         -- * Handles text input events.
         ---@param key string The key argument from the love.textinput callback.
-        -- * Passes the input to the guifiedlocal.textinput method, which processes
+        -- * Passes the input to the guifiedinternal.textinput method, which processes
         -- * text input handlers from the textinputstack in the internal registry.
         textinputf = function(key)
-            guifiedlocal.textinput(key, guifiedlocal.internalregistry.textinputstack, guifiedlocal.internalregistry.ids)
+            guifiedinternal.textinput(key, guifiedinternal.internalregistry.textinputstack, guifiedinternal.internalregistry.ids)
         end,
         -- * Returns the current drawstack.
         ---@return drawstack The table containing drawable elements.
         getDrawStack = function()
-            return (guifiedlocal.internalregistry.drawstack)
+            return (guifiedinternal.internalregistry.drawstack)
         end,
         -- * Returns the current updatestack.
         ---@return updatestack The table containing updateable elements.
         getUpdateStack = function()
-            return (guifiedlocal.internalregistry.updatestack)
+            return (guifiedinternal.internalregistry.updatestack)
         end,
         -- * Returns the current textinputstack.
         ---@return textinputstack The table containing text input handlers.
         getTextInputStack = function()
-            return (guifiedlocal.internalregistry.textinputstack)
+            return (guifiedinternal.internalregistry.textinputstack)
         end,
         -- * Quit function the code that needs the be executed when the application quits
         quit = function()
@@ -330,30 +335,30 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
     funcs = {
         -- * Sets the window to always be on top.
         setWindowToBeOnTop = function()
-            guifiedlocal.setWindowToBeOnTop(love.window.getTitle())
+            guifiedinternal.setWindowToBeOnTop(love.window.getTitle())
         end,
         -- * Toggles the draw functionality on or off.
         toggleDraw = function()
-            guifiedlocal.enabledraw = not (guifiedlocal.enabledraw)
+            guifiedinternal.enabledraw = not (guifiedinternal.enabledraw)
         end,
         -- * Toggles the update functionality on or off.
         toggleUpdate = function()
-            guifiedlocal.enableupdate = not (guifiedlocal.enableupdate)
+            guifiedinternal.enableupdate = not (guifiedinternal.enableupdate)
         end,
         -- * Returns the current draw status.
         ---@return boolean True if drawing is enabled, false otherwise.
         getDrawStatus = function()
-            return (guifiedlocal.enabledraw)
+            return (guifiedinternal.enabledraw)
         end,
         -- * Returns the current update status.
         ---@return boolean True if updating is enabled, false otherwise.
         getUpdateStatus = function()
-            return (guifiedlocal.enableupdate)
+            return (guifiedinternal.enableupdate)
         end,
         -- * Returns the table containing IDs for registered elements.
         ---@return table The table of IDs.
         getIdTable = function()
-            return (guifiedlocal.internalregistry.ids)
+            return (guifiedinternal.internalregistry.ids)
         end,
         -- * Returns the current font size.
         ---@return number The size of the font.
@@ -404,9 +409,9 @@ function love.run()
             dt = love.timer.step()
         end
         -- ? guified code
-        if guifiedlocal.update and guifiedlocal.enableupdate then
-            guifiedlocal.internalregistry.data = guifiedlocal.update(dt, guifiedlocal.internalregistry.updatestack,
-                guifiedlocal.internalregistry.ids)
+        if guifiedinternal.update and guifiedinternal.enableupdate then
+            guifiedinternal.internalregistry.data = guifiedinternal.update(dt, guifiedinternal.internalregistry.updatestack,
+                guifiedinternal.internalregistry.ids)
         end
         -- ? guified code end
         -- Call update and draw
@@ -420,9 +425,9 @@ function love.run()
                 love.draw()
             end
             -- ? guified code
-            if guifiedlocal.draw and guifiedlocal.enabledraw then
-                guifiedlocal.draw(guifiedlocal.internalregistry.drawstack, guifiedlocal.internalregistry.data,
-                    guifiedlocal.internalregistry.ids)
+            if guifiedinternal.draw and guifiedinternal.enabledraw then
+                guifiedinternal.draw(guifiedinternal.internalregistry.drawstack, guifiedinternal.internalregistry.data,
+                    guifiedinternal.internalregistry.ids)
             end
             -- ? guified code end
             love.graphics.present()
@@ -437,7 +442,7 @@ logger.ok("main loop setup done")
 -- * textinput event function
 ---@param key any
 function love.textinput(key)
-    guifiedlocal.textinput(key, guifiedlocal.internalregistry.textinputstack, guifiedlocal.internalregistry.ids)
+    guifiedinternal.textinput(key, guifiedinternal.internalregistry.textinputstack, guifiedinternal.internalregistry.ids)
 end
 logger.ok("textinput hook setup done")
 
@@ -451,13 +456,15 @@ logger.ok("Exit function setup done")
 -- * post init
 logger.info("Doing post init")
 
-guifiedlocal.setWindowToBeOnTop = OSinterop(logger.warn).setWindowToBeOnTop -- ? requires ffi so added by OSinterop here after (almost) everything is done
-guifiedlocal.internalregistry.warndata = {}
+if not(areweloaded) then
+    guifiedinternal.setWindowToBeOnTop = OSinterop(logger.warn).setWindowToBeOnTop -- ? requires ffi so added by OSinterop here after (almost) everything is done
+end
+guifiedinternal.internalregistry.warndata = {}
 guified.debug.warn = function(warning)
     logger.warn(warning)
     warning = "[wARNING] " .. warning
-    guifiedlocal.internalregistry.warndata[#guifiedlocal.internalregistry.warndata + 1] = warning
-    local ourpos = #guifiedlocal.internalregistry.warndata
+    guifiedinternal.internalregistry.warndata[#guifiedinternal.internalregistry.warndata + 1] = warning
+    local ourpos = #guifiedinternal.internalregistry.warndata
     guified.registry.register({
         name = "Guified warning",
         draw = function()
@@ -469,8 +476,8 @@ end
 guified.debug.error = function(err)
     logger.error(err)
     err = "[ERROR] " .. err
-    guifiedlocal.internalregistry.warndata[#guifiedlocal.internalregistry.warndata + 1] = err
-    local ourpos = #guifiedlocal.internalregistry.warndata
+    guifiedinternal.internalregistry.warndata[#guifiedinternal.internalregistry.warndata + 1] = err
+    local ourpos = #guifiedinternal.internalregistry.warndata
     guified.registry.register({
         name = "Guified warning",
         draw = function()
