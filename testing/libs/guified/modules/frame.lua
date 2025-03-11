@@ -82,6 +82,15 @@ local function newFrameObj(x, y, w, h, bgclr, fgclr, borderclr, title, elements)
         ---@param argx number
         ---@param argy number
         changePos = function(argx, argy)
+            local xdiff, ydiff = argx - x, argy - y
+            for i = 2, #elements, 1 do
+                if elements[i].changePos ~= nil and elements[i].getPos ~= nil then
+                    local elementX, elementY = elements[i].getPos()
+                    elements[i].changePos(elementX + xdiff, elementY + ydiff)
+                else
+                    logger.error(elements[i].name.." not movable")
+                end
+            end
             x = argx
             y = argy
         end,
@@ -98,12 +107,25 @@ local function newFrameObj(x, y, w, h, bgclr, fgclr, borderclr, title, elements)
             bgclr = argbgclr or bgclr
             fgclr = argfgclr or fgclr
             borderclr = argborderclr or argborderclr
+        end,
+
+        ---@param argx number
+        ---@param argy number
+        setPos = function(argx, argy)
+            x = argx
+            y = argy
         end
     }
 end
 
 local frame = {
     ---@param elements table
+    ---@param x number
+    ---@param y number
+    ---@param title string
+    ---@param bgclr Color Optional
+    ---@param fgclr Color Optional
+    ---@param borderclr Color Optional
     ---@return frame
     new = function(elements, x, y, w, h, title, bgclr, fgclr, borderclr)
         local frameobj = newFrameObj(x, y, w, h, bgclr, fgclr, borderclr, title, elements)
