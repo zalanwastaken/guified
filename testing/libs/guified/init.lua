@@ -1,7 +1,9 @@
 -- * Type info
 ---@alias element table to silence warnings
 ---@alias image table to silence warnings
--- ? imp funcs
+
+-- * imp stuff
+
 ---@param str string
 ---@return string
 local function replaceSlashWithDot(str)
@@ -12,6 +14,7 @@ local function getScriptFolder()
     return (debug.getinfo(1, "S").source:sub(2):match("(.*/)"))
 end
 local areweloaded = false
+
 -- * setup global var
 if __GUIFIEDGLOBAL__ == nil then
     local function setuprootfolder()
@@ -66,9 +69,11 @@ if os.getenv("GUIFIEDROOTFOLDER") == nil then
 end
 logger.ok("init setup done")
 
-if not(areweloaded) then
+if areweloaded then
     logger.error("Guified init was called a second time !")
 end
+
+--* Guified code
 
 -- * internal stuff
 ---@class guifiedinternal
@@ -378,7 +383,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 }
 logger.ok("setting up main return table done")
 
--- ? Love functions
+-- * Love functions
 
 -- * main love loop
 function love.run()
@@ -479,7 +484,7 @@ guified.debug.error = function(err)
     guifiedinternal.internalregistry.warndata[#guifiedinternal.internalregistry.warndata + 1] = err
     local ourpos = #guifiedinternal.internalregistry.warndata
     guified.registry.register({
-        name = "Guified warning",
+        name = "Guified error",
         draw = function()
             love.graphics.setColor(1, 0, 0)
             love.graphics.print(err, 0, ((ourpos - 1) * 12) + 2)
@@ -488,8 +493,6 @@ guified.debug.error = function(err)
 end
 
 logger.ok("GUIFIED init success !")
-
-logger.ok("guified added to global var")
 
 return (guified)
 
