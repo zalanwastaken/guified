@@ -115,7 +115,6 @@ local guifiedinternal = {
     draw = function(drawstack, data, idtbl)
         for i = 1, #idtbl, 1 do
             love.graphics.setColor(1, 1, 1, 1)
-            -- drawstack[i](data[i]) -- ? call the draw func
             drawstack[idtbl[i]](data[i])
         end
     end,
@@ -291,6 +290,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
         -- ! more stuff is added in post init
 
         -- * provided by logger module of the love2d-tools lib
+        ---@type logger
         logger = logger
     },
 
