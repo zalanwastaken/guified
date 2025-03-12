@@ -1,4 +1,16 @@
-# Guified 🎨🔅
+```
+ $$$$$$\            $$\  $$$$$$\  $$\                 $$\        $$$$$$\            $$\ $$\                           $$$\   
+$$  __$$\           \__|$$  __$$\ \__|                $$ |      $$  __$$\           $$ |$$ |                           \$$\  
+$$ /  \__|$$\   $$\ $$\ $$ /  \__|$$\  $$$$$$\   $$$$$$$ |      $$ /  $$ | $$$$$$\  $$ |$$$$$$$\   $$$$$$\        $$\   \$$\ 
+$$ |$$$$\ $$ |  $$ |$$ |$$$$\     $$ |$$  __$$\ $$  __$$ |      $$$$$$$$ |$$  __$$\ $$ |$$  __$$\  \____$$\       \__|   $$ |
+$$ |\_$$ |$$ |  $$ |$$ |$$  _|    $$ |$$$$$$$$ |$$ /  $$ |      $$  __$$ |$$ /  $$ |$$ |$$ |  $$ | $$$$$$$ |             $$ |
+$$ |  $$ |$$ |  $$ |$$ |$$ |      $$ |$$   ____|$$ |  $$ |      $$ |  $$ |$$ |  $$ |$$ |$$ |  $$ |$$  __$$ |      $$\   $$  |
+\$$$$$$  |\$$$$$$  |$$ |$$ |      $$ |\$$$$$$$\ \$$$$$$$ |      $$ |  $$ |$$$$$$$  |$$ |$$ |  $$ |\$$$$$$$ |      \__|$$$  / 
+ \______/  \______/ \__|\__|      \__| \_______| \_______|      \__|  \__|$$  ____/ \__|\__|  \__| \_______|          \___/  
+                                                                          $$ |                                               
+                                                                          $$ |                                               
+                                                                          \__|                                               
+```
 
 Guified is a ~~lightweight~~ GUI library for LÖVE (Love2D) that simplifies window management and UI element creation. With its easy-to-use features, Guified enables developers to craft intuitive and interactive graphical user interfaces without unnecessary complexity. 🚀 Whether you're building a small game or a large application, Guified provides the tools you need to streamline the process.
 
