@@ -23,7 +23,7 @@ Guified is a ~~lightweight~~ GUI library for LÖVE (Love2D) that simplifies wind
   - 🎨 Create flexible and colorful frames to visually group UI elements and improve layout design.
   - **And More**
 - **Dynamic Drawing and Updating:**
-  - ♻️ Register UI elements to be dynamically drawn and updated, ensuring real-time responsiveness.
+  - ♻️ Easily register UI elements to be dynamically drawn and updated, ensuring real-time responsiveness.
   - ▶️ Easily toggle the drawing and updating of elements on or off during runtime for better control.
 - **Extensible Registry:**
   - 🪧 Extend the library by adding custom UI elements through the registry, making it adaptable to your specific needs.
@@ -57,5 +57,3 @@ local guified = require("libs.guified")
 3. 🔢 Check out the examples folder to quickly familiarize yourself with Guified's capabilities and jumpstart your project.
 4. ⚠ **Currently, there are no plans to support MacOS.**
 5. ❄ **Features that use FFI are not supported on Linux due to compatibility limitations.**
-
-# ✨ **PLEASE NOTE THAT GUIFIED IS IN VERY EARLY DEVELOPMENT, AND MANY BUILT-IN UI ELEMENTS ARE YET TO BE ADDED! Stay tuned for updates and new features!**
