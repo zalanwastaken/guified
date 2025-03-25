@@ -41,7 +41,7 @@ if not(areweloaded) then
     require(__GUIFIEDGLOBAL__.rootfolder .. ".errorhandler") -- * setup errorhandler
 end
 ---@type logger
-local logger = require(getScriptFolder() .. "dependencies.love2d-tools.modules.logger.init") -- * logger module
+local logger = require(__GUIFIEDGLOBAL__.rootfolder .. ".dependencies.love2d-tools.modules.logger.init") -- * logger module
 if not (logger.thread:isRunning()) and not(areweloaded) then
     logger.startSVC()
 end
@@ -181,6 +181,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
     __AUTHOR__ = "Zalanwastaken",
     registry = {
         -- * Contains the element constructor functions
+        ---@type elements
         elements = require(__GUIFIEDGLOBAL__.rootfolder .. ".elements"),
 
         -- * Registers an element with the internal registry.
@@ -378,6 +379,13 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
         ---@param size number The new font size to be set.
         setFontSize = function(size)
             __GUIFIEDGLOBAL__.fontsize = size
+        end,
+        isRegistered = function(element)
+            if element.id then
+                return true
+            else
+                return false
+            end
         end
     }
 }
@@ -491,6 +499,16 @@ guified.debug.error = function(err)
         end
     })
 end
+local title = love.window.getTitle()
+guified.registry.register({
+    name = "guified internal SVC",
+    draw = function()
+        
+    end,
+    update = function()
+        love.window.setTitle(title.." FPS:"..love.timer.getFPS())
+    end
+})
 
 logger.ok("GUIFIED init success !")
 

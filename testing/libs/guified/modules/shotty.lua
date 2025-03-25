@@ -32,7 +32,7 @@ local shotty = {
         elements = guified.registry.elements,
         register = guified.registry.register,
         remove = guified.registry.remove,
-        extcalls = guified.extcalls,
+        ext_calls = guified.extcalls,
         debug = guified.debug
     },
 
@@ -59,7 +59,7 @@ local shotty = {
         Elements = guified.registry.elements,
         Register = guified.registry.register,
         Remove = guified.registry.remove,
-        ExtCalls = guified.extcalls,
+        Ext_Calls = guified.extcalls,
         Debug = guified.debug
     },
 

@@ -1,3 +1,4 @@
+---@class elements
 local elements = {
     button = {
         ---@param argtext string
@@ -159,6 +160,10 @@ local elements = {
                 changePos = function(x, y)
                     argx = x
                     argy = y
+                end,
+                changeWH = function(argw, argh)
+                    w = argw
+                    h = argh
                 end
             }
             return (ret)
