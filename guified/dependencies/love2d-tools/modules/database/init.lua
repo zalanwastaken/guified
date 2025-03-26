@@ -236,7 +236,7 @@ local DB = {
 					savedbinfo(dbname, info)
 					love.filesystem.newFile(dbname .. "/" .. tablename .. ".json")
 					struct = { struct = struct, data = {} }
-					print(json.encode(struct))
+					--print(json.encode(struct))
 					love.filesystem.write(dbname .. "/" .. tablename .. ".json", json.encode(struct))
 				else
 					error("Table " .. tablename .. " does already exist in DB " .. dbname)

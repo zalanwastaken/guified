@@ -25,7 +25,8 @@ if __GUIFIEDGLOBAL__ == nil then
         rootfolder = rootfolder,
         fontsize = 12, -- * default font size
         os = love.system.getOS():lower(),
-        __VER__ = "B-1.0.0", -- ! GUIFIED VERSION
+        __VER__ = "B-1.0.0: Existential Crisis Edition", -- ! GUIFIED VERSION CODENAME
+        __VERINT__ = "B-1.0.0", -- ! GUIFIED VERSION
         __TYPE__ = "DEV"
     }
     rootfolder = nil
@@ -175,6 +176,7 @@ end
 ---@class guified
 local guified = {
     __VER__ = __GUIFIEDGLOBAL__.__VER__,
+    __VERINT__ = __GUIFIEDGLOBAL__.__VERINT__,
     __LICENCE__ = [[
 Copyright (c) 2024 Zalanwastaken(Mudit Mishra)
 
@@ -534,6 +536,7 @@ guified.debug.error = function(err)
     })
 end
 if __GUIFIEDGLOBAL__.__TYPE__ == "DEV" then
+    love.window.setTitle("Guified: "..__GUIFIEDGLOBAL__.__VER__)
     local title = love.window.getTitle()
     guified.registry.register({
         name = "guified internal SVC",

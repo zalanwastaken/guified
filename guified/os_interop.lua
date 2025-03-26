@@ -1,3 +1,5 @@
+--TODO do something about linux with ffi
+
 local logger = require("libs.guified.dependencies.love2d-tools.modules.logger.init")
 
 ---@param warnf function
@@ -14,10 +16,9 @@ local function init_interop(warnf)
             static const unsigned int SWP_NOSIZE = 0x0001;
             static const unsigned int SWP_NOMOVE = 0x0002;
             static const unsigned int SWP_SHOWWINDOW = 0x0040;
-            short GetKeyState(int nVirtKey);
         ]]
     elseif os == "linux" then
-        warnf("FFI features on Linux are not supported")
+        --warnf("FFI features on Linux are not supported")
     end
     local ret = {}
     if os == "windows" then

@@ -1,12 +1,17 @@
 --* Error handling
 local utf8 = require("utf8")
-local logger = require("libs.guified.dependencies.love2d-tools.modules.logger.init")
+
+---@type logger
+local logger = require(__GUIFIEDGLOBAL__.rootfolder..".dependencies.love2d-tools.modules.logger.init")
+
 local function error_printer(msg, layer)
 	--print((debug.traceback("Error: " .. tostring(msg), 1+(layer or 1)):gsub("\n[^\n]+$", "")))
-	logger.fatal(debug.traceback("Error: " .. tostring(msg), 1+(layer or 1)):gsub("\n[^\n]+$", ""))
-	logger.info("Found a bug ?\nPlease report it to the Guified repo as a issue !\nThanks !")
+	logger.fatal(msg)
+	logger.trace(debug.traceback("Error: " .. tostring(msg), 1+(layer or 1)):gsub("\n[^\n]+$", ""))
+	logger.regular("Found a bug ?\nPlease report it to the Guified repo as a issue !\nThanks !")
 	logger.stopSVC()
 end
+
 function love.errorhandler(msg)
 	msg = tostring(msg)
 	error_printer(msg, 2)
@@ -68,6 +73,7 @@ function love.errorhandler(msg)
         love.graphics.setFont(largefont)
         love.graphics.printf("GUIFIED", 0, 44, love.graphics.getWidth(), "center")
         love.graphics.setFont(font)
+		love.graphics.printf(__GUIFIEDGLOBAL__.__VER__, 0, 88, love.graphics.getWidth(), "center")
 		love.graphics.printf(p, 0, love.graphics.getHeight() / 4, love.graphics.getWidth(), "center")
 		love.graphics.present()
 	end
@@ -111,4 +117,12 @@ function love.errorhandler(msg)
 			love.timer.sleep(0.1)
 		end
 	end
+end
+
+function love.threaderror(thread, errorstr)
+	if not(logger.thread:isRunning()) then
+		logger.startSVC()
+	end
+	logger.error("Thread error!\n"..errorstr)
+	thread:start()
 end

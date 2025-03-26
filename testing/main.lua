@@ -8,7 +8,7 @@ if love.filesystem.getInfo("libs/guified/modules/experimental/mimix.lua") then -
 end
 local frameobj = frame.new({
     guified.registry.elements.text:new(0, 15, guified.__VER__)
-}, 0, 0, 150, 150, "Guified frame module")
+}, 0, 0, 200, 200, "Guified frame module")
 frameobj:load()
 
 local text_tween = tween.newElementTween(guified.registry.elements.text:new(0, 0, "henlo"), love.graphics.getWidth(),

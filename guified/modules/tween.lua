@@ -1,60 +1,66 @@
---! Tween module is still in testing
+if __GUIFIEDGLOBAL__ == nil then
+    return nil
+end
 
----@return string
-local function getScriptFolder()
-    return (debug.getinfo(1, "S").source:sub(2):match("(.*/)"))
-end
-local function removeAfterLastSlash(str)
-    local lastSlashIndex = str:match(".*()/")  -- Find the position of the last slash
-    if lastSlashIndex then
-        return str:sub(1, lastSlashIndex - 1)  -- Return the string up to the last slash
-    else
-        return str  -- No slashes found, return the original string
+---@type guified
+local guified = require(__GUIFIEDGLOBAL__.rootfolder .. ".init")
+local logger = guified.debug.logger
+
+local tween = {}
+
+---@param element element
+---@param targetX number
+---@param targetY number
+---@param duration number seconds
+function tween.newElementTween(element, targetX, targetY, duration)
+    if not (element.getPos and element.changePos) then
+        logger.error(element.name .. " cannot be tweened")
+        return nil
     end
-end
-local function replaceSlashWithDot(str)
-    return str:gsub("/", ".")  -- Replace all '/' with '.'
-end
---local guified = require("libs.guified.init")
-local guified = require(replaceSlashWithDot(removeAfterLastSlash(removeAfterLastSlash(getScriptFolder()))..".init"))
-local tween = {
-    newElementTween = function(element, x, y, sx, sy, time)
-        if element.changePos ~= nil then
-            local execen = false
-            element.changePos(sx, sy)
-            return({
-                name = "TWEEN SVC for element "..element.name,
-                draw = function()
-                    element.draw()
-                end,
-                update = function()
-                    if element.update ~= nil then
-                        element.update()
-                    end
-                    if execen then
-                        if sx > x then
-                            x = x + 1
-                        else
-                            x = x - 1
-                        end
-                        if sy > y then
-                            y = y + 1
-                        else
-                            y = y - 1
-                        end
-                        if sx == x and sy == y then
-                            execen = not(execen)
-                        end
-                        element.changePos(x, y)
-                    end
-                end,
-                exec = function()
-                    execen = not(execen)
-                end
-            })
-        else
-            error("Element "..element.name.." cant be tweened")
+
+    local startX, startY = element.getPos()
+    local elapsedTime = 0
+    local completed = true
+
+    local tweenObject = {
+        name = "tween SVC for " .. element.name,
+        draw = function()
+            element.draw()
+        end,
+        update = function(dt)
+            if element.update then
+                element.update(dt)
+            end
+            if completed then
+                return
+            end
+
+            local t = math.min(elapsedTime / duration, 1) -- Clamp between 0 and 1
+
+            local newX = startX + (targetX - startX) * t
+            local newY = startY + (targetY - startY) * t
+            elapsedTime = elapsedTime + dt
+            element.changePos(newX, newY)
+
+            if t >= 1 then
+                completed = true
+            end
+        end,
+        isCompleted = function(self)
+            return completed
+        end,
+        start = function()
+            completed = false
+        end,
+        newTarget = function(x, y)
+            startX, startY = element.getPos()
+            targetX = x
+            targetY = y
+            elapsedTime = 0
         end
-    end
-}
-return(tween)
+    }
+
+    return tweenObject
+end
+
+return tween
