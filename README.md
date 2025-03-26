@@ -39,15 +39,18 @@ Guified is a ~~lightweight~~ GUI library for LÖVE (Love2D) that simplifies wind
 ### 1) Clone the repo.
 ```bash
 git clone https://github.com/zalanwastaken/guified.git guified
-cd guified
 ```
 ### 2) Copy guified to your project folder
 ```bash
-cp -r guified <YOUR PROJECT FOLDER'S PATH>
+cp -r guified <your project folder>
 ```
 ### 3) Include guified in main.lua of your project
 ```lua
-local guified = require("libs.guified")
+local guified = require(<path to guified>)
+```
+### 4) Setup ENV variable(Optional but highly recommended if you want to use modules)
+```bash
+export GUIFIEDROOTFOLDER=<Same as the require path in main.lua>
 ```
 ### Done! ✨ Enjoy creating with Guified! 😎
 
