@@ -5,6 +5,7 @@
 | Version | Supported          |
 | ------- | ------------------ |
 | A-1.x.x   | :white_check_mark: |
+| B-1.x.x   | :white_check_mark: |
 | U-A-1.x.x | :negative_squared_cross_mark: |
 ## Reporting a Vulnerability 🚨
 
