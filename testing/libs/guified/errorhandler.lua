@@ -73,6 +73,7 @@ function love.errorhandler(msg)
         love.graphics.setFont(largefont)
         love.graphics.printf("GUIFIED", 0, 44, love.graphics.getWidth(), "center")
         love.graphics.setFont(font)
+		love.graphics.printf(__GUIFIEDGLOBAL__.__VER__, 0, 88, love.graphics.getWidth(), "center")
 		love.graphics.printf(p, 0, love.graphics.getHeight() / 4, love.graphics.getWidth(), "center")
 		love.graphics.present()
 	end
