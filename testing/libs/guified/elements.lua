@@ -211,7 +211,7 @@ local elements = {
         ---@param x number
         ---@param y number
         ---@param image image
-        new = function(self, x, y, image) --TODO: Refactor 
+        new = function(self, x, y, image) --TODO: Refactor(Later meow~)
             return ({
                 name = "image",
                 draw = function()

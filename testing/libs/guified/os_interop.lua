@@ -1,3 +1,5 @@
+--TODO do something about linux with ffi
+
 local logger = require("libs.guified.dependencies.love2d-tools.modules.logger.init")
 
 ---@param warnf function
