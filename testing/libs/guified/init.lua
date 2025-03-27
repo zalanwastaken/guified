@@ -25,8 +25,8 @@ if __GUIFIEDGLOBAL__ == nil then
         rootfolder = rootfolder,
         fontsize = 12, -- * default font size
         os = love.system.getOS():lower(),
-        __VER__ = "B-1.0.0: Existential Crisis Edition", -- ! GUIFIED VERSION CODENAME
-        __VERINT__ = "B-1.0.0", -- ! GUIFIED VERSION
+        __VER__ = "B-2.0.0: Existential Crisis Edition", -- ! GUIFIED VERSION CODENAME
+        __VERINT__ = "B-2.0.0", -- ! GUIFIED VERSION
         __TYPE__ = "DEV"
     }
     rootfolder = nil
@@ -37,8 +37,12 @@ end
 -- ? requires
 local OSinterop
 if not (areweloaded) then
-    OSinterop = require(__GUIFIEDGLOBAL__.rootfolder .. ".os_interop") -- ? contains ffi 
-    require(__GUIFIEDGLOBAL__.rootfolder .. ".errorhandler") -- * setup errorhandler
+    if love.filesystem.getInfo(getScriptFolder().."/os_interop.lua") then
+        OSinterop = require(__GUIFIEDGLOBAL__.rootfolder .. ".os_interop") -- ? contains ffi 
+    end
+    if love.filesystem.getInfo(getScriptFolder().."/errorhandler.lua") then
+        require(__GUIFIEDGLOBAL__.rootfolder .. ".errorhandler") -- * setup errorhandler
+    end
 end
 ---@type logger
 local logger = require(__GUIFIEDGLOBAL__.rootfolder .. ".dependencies.love2d-tools.modules.logger.init") -- * logger module
@@ -47,7 +51,12 @@ if not (logger.thread:isRunning()) and not (areweloaded) then
 end
 
 -- ? init stuff
-local font = love.graphics.newFont(getScriptFolder() .. "Ubuntu-L.ttf", __GUIFIEDGLOBAL__.fontsize)
+local font 
+if love.filesystem.getInfo(getScriptFolder() .. "Ubuntu-L.ttf") then
+    font = love.graphics.newFont(getScriptFolder() .. "Ubuntu-L.ttf", __GUIFIEDGLOBAL__.fontsize)
+else
+    font = love.graphics.newFont(__GUIFIEDGLOBAL__.fontsize)
+end
 
 logger.ok("Got guified root folder " .. __GUIFIEDGLOBAL__.rootfolder)
 
@@ -171,6 +180,14 @@ local function mergetables(t1, t2)
     end
     return t1
 end
+---@return elements
+local function loadelements()
+    if love.filesystem.getInfo(getScriptFolder().."/elements.lua") then
+        return(require(__GUIFIEDGLOBAL__.rootfolder..".elements"))
+    else
+        return nil
+    end
+end
 
 -- ? guified return table
 ---@class guified
@@ -191,8 +208,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
     __AUTHOR__ = "Zalanwastaken",
     registry = {
         -- * Contains the element constructor functions
-        ---@type elements
-        elements = require(__GUIFIEDGLOBAL__.rootfolder .. ".elements"),
+        elements = loadelements(),
 
         -- * Registers an element with the internal registry.
         -- * Validates the element's ID length, generates a unique ID, and adds it to the appropriate stacks.
@@ -499,7 +515,7 @@ logger.ok("Exit function setup done")
 -- * post init
 logger.info("Doing post init")
 
-if not (areweloaded) then
+if not (areweloaded) and OSinterop ~= nil then
     guifiedinternal.setWindowToBeOnTop = OSinterop(logger.warn).setWindowToBeOnTop -- ? requires ffi so added by OSinterop here after (almost) everything is done
 end
 guifiedinternal.internalregistry.warndata = {}
