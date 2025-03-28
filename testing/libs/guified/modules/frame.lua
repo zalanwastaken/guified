@@ -119,6 +119,7 @@ local function newFrameObj(x, y, w, h, bgclr, fgclr, borderclr, title, elements)
 end
 
 local frame = {
+    --* creates a new frameobj
     ---@param elements table
     ---@param x number
     ---@param y number
