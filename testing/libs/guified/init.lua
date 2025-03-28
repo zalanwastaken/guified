@@ -25,8 +25,8 @@ if __GUIFIEDGLOBAL__ == nil then
         rootfolder = rootfolder,
         fontsize = 12, -- * default font size
         os = love.system.getOS():lower(),
-        __VER__ = "B-2.0.0: Existential Crisis Edition", -- ! GUIFIED VERSION CODENAME
-        __VERINT__ = "B-2.0.0", -- ! GUIFIED VERSION
+        __VER__ = "B-1.1.0: Existential Crisis Edition", -- ! GUIFIED VERSION CODENAME
+        __VERINT__ = "B-1.1.0", -- ! GUIFIED VERSION
         __TYPE__ = "DEV"
     }
     rootfolder = nil
@@ -60,7 +60,7 @@ end
 
 logger.ok("Got guified root folder " .. __GUIFIEDGLOBAL__.rootfolder)
 
-love.graphics.setFont(font, __GUIFIEDGLOBAL__.fontsize)
+love.graphics.setFont(font)
 love.graphics.setColor(1, 1, 1, 1)
 love.math.setRandomSeed(os.time())
 
@@ -551,7 +551,8 @@ guified.debug.error = function(err)
         end
     })
 end
-if __GUIFIEDGLOBAL__.__TYPE__ == "DEV" then
+if __GUIFIEDGLOBAL__.__TYPE__ == "DEV" and love.window.getTitle():lower() == "untitled" then
+    logger.info("Window title set by guified")
     love.window.setTitle("Guified: "..__GUIFIEDGLOBAL__.__VER__)
     local title = love.window.getTitle()
     guified.registry.register({

@@ -6,6 +6,14 @@ local mimix
 if love.filesystem.getInfo("libs/guified/modules/experimental/mimix.lua") then --? dont error out on unimplimented builds
     mimix = require("libs.guified.modules.experimental.mimix")
 end
+
+local grid = require("libs.guified.modules.experimental.grid")
+local gridobj = grid.newGrid(0, 0, 0, 0)
+
+gridobj.register(guified.registry.elements.text:new(0, 0, "meow"), 0, 12)
+gridobj.register(guified.registry.elements.text:new(0, 0, "meow"), 0, 12)
+gridobj.enable()
+
 local frameobj = frame.new({
     guified.registry.elements.text:new(0, 15, guified.__VER__)
 }, 0, 0, 200, 200, "Guified frame module")
@@ -44,7 +52,9 @@ function love.update()
         frameobj:unload()
         if guified.funcs.isRegistered(text_tween) then
             guified.registry.remove(text_tween)
+            guified.registry.remove(text_tween.element)
         end
+        gridobj.disable()
     end
     if love.keyboard.isDown("b") then
         error("test")
