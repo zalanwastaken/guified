@@ -226,6 +226,51 @@ local elements = {
                 end
             })
         end
+    },
+
+    guifiedsplash = { --? simple guified splash screen
+        new = function(self)
+            local largefont = love.graphics.newFont(20)
+            local stdfont = love.graphics.newFont(__GUIFIEDGLOBAL__.fontsize)
+            local quotes = {
+                "Meow",
+                "ZWT",
+                "The CPU is a rock",
+                "Lua > JS = true. Lua < JS = true. JS logic",
+                "{something = something}",
+                "pog",
+                "segfault(core dumped)",
+                "404 quote not found",
+                "OwO",
+                ">_O"
+            }
+            local alpha = 1
+            local quote = quotes[love.math.random(1, #quotes)]
+            local done = false
+            return({
+                name = "splash",
+                draw = function()
+                    love.graphics.setColor(0, 0, 0, alpha or 0)
+                    love.graphics.rectangle("fill", 0, 0, love.graphics.getWidth(), love.graphics.getHeight())
+                    love.graphics.setColor(1, 1, 1, alpha or 0)
+                    love.graphics.setFont(largefont)
+                    love.graphics.printf("Guified", 0, love.graphics.getHeight() / 2, love.graphics.getWidth(), "center")
+                    love.graphics.setFont(stdfont)
+                    love.graphics.printf(quote, 0, (love.graphics.getHeight() / 2)+25, love.graphics.getWidth(), "center")
+                end,
+                update = function(dt)
+                    if (alpha or -1) > 0 and not(done) then
+                        alpha = alpha - 0.25 * dt
+                    else
+                        done = true
+                        alpha = nil
+                    end
+                end,
+                completed = function()
+                    return(done)
+                end
+            })
+        end
     }
 }
 return(elements)
