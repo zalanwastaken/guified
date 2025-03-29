@@ -126,6 +126,7 @@ local guifiedinternal = {
     draw = function(drawstack, data, idtbl)
         for i = 1, #idtbl, 1 do
             love.graphics.setColor(1, 1, 1, 1)
+            love.graphics.setFont(font)
             drawstack[idtbl[i]](data[i])
         end
     end,
@@ -206,10 +207,9 @@ Permission is hereby granted, free of charge, to any person obtaining a copy of 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ]],
     __AUTHOR__ = "Zalanwastaken",
+    -- * Contains the element constructor functions
+    elements = loadelements(),
     registry = {
-        -- * Contains the element constructor functions
-        elements = loadelements(),
-
         -- * Registers an element with the internal registry.
         -- * Validates the element's ID length, generates a unique ID, and adds it to the appropriate stacks.
         -- * Logs errors if non-function types are found for required fields.

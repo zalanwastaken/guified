@@ -10,16 +10,17 @@ end
 local grid = require("libs.guified.modules.experimental.grid")
 local gridobj = grid.newGrid(0, 0, 0, 0)
 
-gridobj.register(guified.registry.elements.text:new(0, 0, "meow"), 0, 12)
-gridobj.register(guified.registry.elements.text:new(0, 0, "meow"), 0, 12)
+for i = 1, 20, 1 do
+    gridobj.register(guified.elements.text:new(0, 0, "meow"), 0, 12)
+end
 gridobj.enable()
 
 local frameobj = frame.new({
-    guified.registry.elements.text:new(0, 15, guified.__VER__)
+    guified.elements.text:new(0, 15, guified.__VER__)
 }, 0, 0, 200, 200, "Guified frame module")
 frameobj:load()
 
-local text_tween = tween.newElementTween(guified.registry.elements.text:new(0, 0, "henlo"), love.graphics.getWidth(),
+local text_tween = tween.newElementTween(guified.elements.text:new(0, 0, "henlo"), love.graphics.getWidth(),
     love.graphics.getHeight(), 2)
 text_tween.start()
 guified.registry.register(text_tween)
@@ -27,7 +28,6 @@ guified.registry.register(text_tween)
 --guified.registry.register(mimix.init())
 
 local keyp = ""
-
 guified.registry.register({
     name = "test for keypressed",
     draw = function()
@@ -37,6 +37,9 @@ guified.registry.register({
         keyp = key
     end
 })
+
+local splash = guified.elements.guifiedsplash:new()
+guified.registry.register(splash)
 
 function love.update()
     if love.keyboard.isDown("r") then
@@ -58,5 +61,8 @@ function love.update()
     end
     if love.keyboard.isDown("b") then
         error("test")
+    end
+    if splash.completed() and splash.id ~= nil then
+        guified.registry.remove(splash)
     end
 end
