@@ -48,7 +48,7 @@ Guified is a ~~lightweight~~ GUI library for LÖVE (Love2D) that simplifies wind
   - Custom error handler implimented by Guified.
 - **Version Information:**
   - 🔢 Built-in version tracking ensures you're always aware of the library's iteration and improvements.
-- **😊 Choose what you need:**
+- **😊 Choose what you need(TESTING BUILD):**
   - ❌ Simply remove the files whose features you dont use gufied will adapt.
   - Eg. Dont use modules ? ```rm -rf modules/```. Dont use FFI features ? ```rm -rf os_interop.lua```.
 - **🫵 Guified adapts to you**
