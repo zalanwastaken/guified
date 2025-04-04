@@ -1,1 +1,0 @@
-Here i store the external licenses in case of use of external libraries, functions or licensed resources
