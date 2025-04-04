@@ -123,6 +123,7 @@ This version supports the following Love2d version(These versions are tested wit
 🔹 **Better Input Handling (keyboard, mouse, and maybe gamepad support?)**  
 🔹 **Performance Optimizations & Code Cleanup**  
 🔹 **More UI Components (Dropdowns, Sliders, etc.)**  
+🔹 **Make a studio for LOVE2D using Guified**
 🔹 **Modular Design: Use only the features you need.**
 
 ### 🔮 **Future Goals**  
