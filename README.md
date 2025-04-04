@@ -126,9 +126,9 @@ This version supports the following Love2d version(These versions are tested wit
 🔹 **Modular Design: Use only the features you need.**
 
 ### 🔮 **Future Goals**  
-✨ Make Guified the **go-to UI framework for LÖVE**(TRY)
-✨ Provide **seamless integration** with other LÖVE libraries(NOT CONFIRM)
-✨ Support **legacy LÖVE versions for no reason at all**
+✨ Make Guified the **go-to UI framework for LÖVE**(TRY)<br>
+✨ Provide **seamless integration** with other LÖVE libraries(NOT CONFIRM)<br>
+✨ Support **legacy LÖVE versions for no reason at all**<br>
 
 ### 🎯 **Side Quests (Ongoing Tasks)**
 🔸 Ensure removing unused modules doesn’t break everything.<br>
