@@ -1,7 +1,7 @@
 -- * Type info
 ---@alias element table to silence warnings
 ---@alias image table to silence warnings
--- * imp stuff
+-- * functions
 ---@param str string
 ---@return string
 local function replaceSlashWithDot(str)
@@ -26,8 +26,7 @@ if __GUIFIEDGLOBAL__ == nil then
         fontsize = 12, -- * default font size
         os = love.system.getOS():lower(),
         __VER__ = "B-1.1.0: Existential Crisis Edition", -- ! GUIFIED VERSION CODENAME
-        __VERINT__ = "B-1.1.0", -- ! GUIFIED VERSION
-        __TYPE__ = "DEV"
+        __VERINT__ = "B-1.1.0" -- ! GUIFIED VERSION
     }
     rootfolder = nil
 else
@@ -37,10 +36,10 @@ end
 -- ? requires
 local OSinterop
 if not (areweloaded) then
-    if love.filesystem.getInfo(getScriptFolder().."/os_interop.lua") then
+    if love.filesystem.getInfo(getScriptFolder() .. "/os_interop.lua") then
         OSinterop = require(__GUIFIEDGLOBAL__.rootfolder .. ".os_interop") -- ? contains ffi 
     end
-    if love.filesystem.getInfo(getScriptFolder().."/errorhandler.lua") then
+    if love.filesystem.getInfo(getScriptFolder() .. "/errorhandler.lua") then
         require(__GUIFIEDGLOBAL__.rootfolder .. ".errorhandler") -- * setup errorhandler
     end
 end
@@ -51,7 +50,7 @@ if not (logger.thread:isRunning()) and not (areweloaded) then
 end
 
 -- ? init stuff
-local font 
+local font
 if love.filesystem.getInfo(getScriptFolder() .. "Ubuntu-L.ttf") then
     font = love.graphics.newFont(getScriptFolder() .. "Ubuntu-L.ttf", __GUIFIEDGLOBAL__.fontsize)
 else
@@ -148,6 +147,7 @@ local guifiedinternal = {
 logger.ok("setting up internal table done")
 
 -- * funcs
+-- ? they need guified stuff so declared here
 
 ---@return number|nil
 local function getIndex(table, val)
@@ -183,8 +183,8 @@ local function mergetables(t1, t2)
 end
 ---@return elements
 local function loadelements()
-    if love.filesystem.getInfo(getScriptFolder().."/elements.lua") then
-        return(require(__GUIFIEDGLOBAL__.rootfolder..".elements"))
+    if love.filesystem.getInfo(getScriptFolder() .. "/elements.lua") then
+        return (require(__GUIFIEDGLOBAL__.rootfolder .. ".elements"))
     else
         return nil
     end
@@ -193,7 +193,7 @@ end
 -- * guified return table
 ---@class guified
 local guified = {
-    --* version licence author stuff
+    -- * version licence author stuff
 
     __VER__ = __GUIFIEDGLOBAL__.__VER__,
     __VERINT__ = __GUIFIEDGLOBAL__.__VERINT__,
@@ -210,7 +210,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 ]],
     __AUTHOR__ = "Zalanwastaken",
 
-    --* actual guified stuff
+    -- * actual guified stuff
 
     -- * Contains the element constructor functions
     elements = loadelements(),
@@ -506,7 +506,8 @@ end
 logger.ok("textinput hook setup done")
 
 function love.keypressed(key)
-    guifiedinternal.keypressed(key, guifiedinternal.internalregistry.keypressedstack, guifiedinternal.internalregistry.ids)
+    guifiedinternal.keypressed(key, guifiedinternal.internalregistry.keypressedstack,
+        guifiedinternal.internalregistry.ids)
 end
 logger.ok("keypressed hook setup done")
 
@@ -556,9 +557,10 @@ guified.debug.error = function(err)
         end
     })
 end
-if __GUIFIEDGLOBAL__.__TYPE__ == "DEV" and love.window.getTitle():lower() == "untitled" then
+
+if love.window.getTitle():lower() == "untitled" then
     logger.info("Window title set by guified")
-    love.window.setTitle("Guified: "..__GUIFIEDGLOBAL__.__VER__)
+    love.window.setTitle("Guified: " .. __GUIFIEDGLOBAL__.__VER__)
     local title = love.window.getTitle()
     guified.registry.register({
         name = "guified internal SVC",
@@ -569,6 +571,7 @@ if __GUIFIEDGLOBAL__.__TYPE__ == "DEV" and love.window.getTitle():lower() == "un
         end
     })
 end
+
 logger.ok("GUIFIED init success !")
 
 return (guified)
