@@ -79,6 +79,8 @@ logger.ok("init setup done")
 
 if areweloaded then
     logger.error("Guified init was called a second time !")
+else
+    __GUIFIEDGLOBAL__.font = font
 end
 
 -- * Guified code
@@ -484,6 +486,17 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
             else
                 return false
             end
+        end,
+
+        ---@param font string filepath to the font
+        ---@param size number size of the font
+        updateFont = function(font, size)
+            if font == nil then
+                font = size
+                size = nil
+            end
+            __GUIFIEDGLOBAL__.font = love.graphics.newFont(font, size)
+            __GUIFIEDGLOBAL__.fontsize = size or font
         end
     }
 }
