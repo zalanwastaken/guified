@@ -161,14 +161,19 @@ end
 ---@param length number
 ---@return string
 local function idgen(length)
-    local chars = { -- * Small chars
-    "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w",
-    "x", "y", "z", -- * Capital chars
-    "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W",
-    "X", "Y", "Z", -- * Numbers
-    "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", -- * Special chars
-    "!", "@", "#", "$", "%", "^", "&", "*", "(", ")", "-", "_", "=", "+", "{", "}", "[", "]", ":", ";", "'", "<", ">",
-    ",", ".", "?", "/"}
+    local chars = {
+        -- * Small chars
+        "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w",
+        "x", "y", "z", 
+        -- * Capital chars
+        "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W",
+        "X", "Y", "Z", 
+        -- * Numbers
+        "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", 
+        -- * Special chars
+        "!", "@", "#", "$", "%", "^", "&", "*", "(", ")", "-", "_", "=", "+", "{", "}", "[", "]", ":", ";", "'", "<", ">",
+        ",", ".", "?", "/"
+    }
     local ret = ""
     for i = 1, length, 1 do
         ret = ret .. chars[love.math.random(1, #chars)]
@@ -194,7 +199,6 @@ end
 ---@class guified
 local guified = {
     -- * version licence author stuff
-
     __VER__ = __GUIFIEDGLOBAL__.__VER__,
     __VERINT__ = __GUIFIEDGLOBAL__.__VERINT__,
     __LICENCE__ = [[
@@ -242,6 +246,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
                 guifiedinternal.internalregistry.ids[#guifiedinternal.internalregistry.ids + 1] = element.id
                 if type(element.draw):lower() == "function" then
                     guifiedinternal.internalregistry.drawstack[element.id] = element.draw
+                    logger.info("draw registered for element " .. element.name .. ":" .. element.id)
                 else
                     logger.error("Non-function data type in function field for draw in element " .. element.name)
                     logger.error("Critical element function draw missing. Registering element " .. element.name ..
@@ -251,7 +256,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
                 if element.update ~= nil then
                     if type(element.update):lower() == "function" then
                         guifiedinternal.internalregistry.updatestack[element.id] = element.update
-                        logger.info("element " .. element.name .. " update registered ID: " .. element.id)
+                        logger.info("update registered for element " .. element.name .. ":" .. element.id)
                     else
                         logger.error("Non-function data type in function field for update in element " .. element.name)
                     end
@@ -259,7 +264,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
                 if element.textinput ~= nil then
                     if type(element.textinput):lower() == "function" then
                         guifiedinternal.internalregistry.textinputstack[element.id] = element.textinput
-                        logger.info("element " .. element.name .. " textinput registered ID: " .. element.id)
+                        logger.info("textinput registered for element " .. element.name .. ":" .. element.id)
                     else
                         logger.error("Non-function data type in function field for textinput in element " ..
                                          element.name)
@@ -268,13 +273,12 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
                 if element.keypressed ~= nil then
                     if type(element.keypressed):lower() == "function" then
                         guifiedinternal.internalregistry.keypressedstack[element.id] = element.keypressed
-                        logger.info("element " .. element.name .. " textinput registered ID: " .. element.id)
+                        logger.info("keypressed registered for element " .. element.name .. ":" .. element.id)
                     else
                         logger.error("Non-function data type in function field for keypressed in element " ..
                                          element.name)
                     end
                 end
-                logger.info("element " .. element.name .. " draw registered ID: " .. element.id)
                 return (true)
             else
                 logger.error("No element provided to register. Aborting")
@@ -302,7 +306,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
                     if guifiedinternal.internalregistry.drawstack[element.id] ~= nil then
                         guifiedinternal.internalregistry.drawstack[element.id] = nil
                     else
-                        logger.warn("Broken element ? NAME:" .. element.name .. " ID:" .. element.id) -- ? this will only happen in like once in a mil
+                        logger.warn("Broken element ? NAME:" .. element.name .. ":" .. element.id) -- ? this will only happen in like once in a mil
                     end
                     if guifiedinternal.internalregistry.updatestack[element.id] ~= nil then
                         guifiedinternal.internalregistry.updatestack[element.id] = nil
@@ -315,7 +319,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
                     end
                     table.remove(guifiedinternal.internalregistry.ids, idindex)
                     idindex = nil
-                    logger.info("element " .. element.name .. " removed ID: " .. element.id)
+                    logger.info("Removing element " .. element.name .. ":" .. element.id)
                     element.id = nil
                     return (true)
                 else
@@ -325,6 +329,35 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
             else
                 logger.error("No element provided to remove. Aborting")
                 return (false)
+            end
+        end,
+
+        ---@param element element
+        ---@param event string
+        ---@param func function
+        injectEventHandler = function(element, event, func)
+            error("NON FUNCTIONAL DO NOT USE") --! disabled for now
+            if element.id ~= nil then --? there will be a element id if the element is registered
+                if element.__events == nil then
+                    logger.error("element "..element.name..":"..element.id.." does not support events")
+                else
+                    if element.__events[event] then
+                        element.__eventcalls[event] = func
+                    end
+                end
+            else
+                logger.error("element "..element.name.." is not registered")
+            end
+        end,
+        
+        ---@param element element
+        ---@param event string
+        removeEventHandler = function(element, event)
+            error("NON FUNCTIONAL DO NOT USE") --! disabled for now
+            if element.__eventcalls[event] ~= nil then
+                element.__eventcalls[event] = nil
+            else
+                logger.error(event.." is not set in "..element.name..":"..(element.id or "err"))
             end
         end
     },
@@ -344,6 +377,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
         drawf = function()
             guifiedinternal.draw(guifiedinternal.internalregistry.drawstack, guifiedinternal.internalregistry.data)
         end,
+
         -- * Update function that manages updating.
         -- * Calls the guifiedinternal.update method with the average delta time and
         -- * processes elements from the updatestack and associated ids in the internal registry.
@@ -351,32 +385,50 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
             guifiedinternal.update(love.timer.getAverageDelta(), guifiedinternal.internalregistry.updatestack,
                 guifiedinternal.internalregistry.ids)
         end,
+
         -- * Handles text input events.
         ---@param key string The key argument from the love.textinput callback.
-        -- * Passes the input to the guifiedinternal.textinput method, which processes
-        -- * text input handlers from the textinputstack in the internal registry.
+        -- * Passes the input to the guifiedinternal.textinput method
+        -- * textinput handler
         textinputf = function(key)
             guifiedinternal.textinput(key, guifiedinternal.internalregistry.textinputstack,
                 guifiedinternal.internalregistry.ids)
         end,
+
+        -- * handles keypressed events
+        ---@param key string The key argument from love.keypressed callback
+        -- * Passes the input to the guifiedinternal.keypressed methord
+        -- * keypressed handler
+        keypressedf = function(key)
+            guifiedinternal.textinput(key, guifiedinternal.internalregistry.keypressedstack, guifiedinternal.internalregistry.ids)
+        end,
+
         -- * Returns the current drawstack.
         ---@return drawstack The table containing drawable elements.
         getDrawStack = function()
             return (guifiedinternal.internalregistry.drawstack)
         end,
+
         -- * Returns the current updatestack.
         ---@return updatestack The table containing updateable elements.
         getUpdateStack = function()
             return (guifiedinternal.internalregistry.updatestack)
         end,
+
         -- * Returns the current textinputstack.
-        ---@return textinputstack The table containing text input handlers.
+        ---@return textinputstack The table containing textinput handlers.
         getTextInputStack = function()
             return (guifiedinternal.internalregistry.textinputstack)
         end,
+
+        -- * returns the keypressedstack
+        ---@return keypressedstack The table containing keypressed handlers
+        getKeypressedStack = function()
+            return(guifiedinternal.internalregistry.keypressedstack)
+        end,
+
         -- * Quit function the code that needs the be executed when the application quits
         quit = function()
-            logger.info("Quit exec !")
             logger.stopSVC()
         end
     },
@@ -526,6 +578,8 @@ if not (areweloaded) and OSinterop ~= nil then
 end
 guifiedinternal.internalregistry.warndata = {}
 
+---@deprecated
+--! this function will be removed
 -- * puts a warning on the screen and logs it
 ---@param warning string
 guified.debug.warn = function(warning)
@@ -542,6 +596,8 @@ guified.debug.warn = function(warning)
     })
 end
 
+---@deprecated
+--! this function will be removed
 -- * puts a error on the screen and logs it
 ---@param err string
 guified.debug.error = function(err)
@@ -558,16 +614,19 @@ guified.debug.error = function(err)
     })
 end
 
-if love.window.getTitle():lower() == "untitled" then
+if love.window.getTitle():lower() == "untitled" and not(areweloaded) then
     logger.info("Window title set by guified")
-    love.window.setTitle("Guified: " .. __GUIFIEDGLOBAL__.__VER__)
+    logger.warn("Window title was set by guified this disables love.window.setTitle. To prevent this set window title before calling guified init")
+    local setTitle = love.window.setTitle
+    love.window.setTitle = nil
+    setTitle("Guified: " .. __GUIFIEDGLOBAL__.__VER__)
     local title = love.window.getTitle()
     guified.registry.register({
-        name = "guified internal SVC",
+        name = "guified internal title SVC",
         draw = function()
         end,
         update = function()
-            love.window.setTitle(title .. " FPS:" .. love.timer.getFPS())
+            setTitle(title .. " FPS:" .. love.timer.getFPS())
         end
     })
 end
