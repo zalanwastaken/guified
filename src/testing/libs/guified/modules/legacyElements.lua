@@ -1,5 +1,11 @@
----@class elements
-local elements = {
+--! NOTE
+--! LEGACY ELEMENTS WILL NOT BE UPDATED
+--! THEY ARE ONLY INCLUDED IN GUIFIED FOR LEGACY SUPPORT
+--! USE AT YOUR OWN CAUTION
+--! SWITCH TO USING NEW ELEMENTS !
+
+---@class Legacyelements
+local Legacyelements = {
     button = {
         ---@param argtext string
         ---@param argx number
@@ -228,4 +234,4 @@ local elements = {
         end
     }
 }
-return(elements)
+return(Legacyelements)
