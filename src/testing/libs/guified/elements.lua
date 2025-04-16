@@ -1,3 +1,4 @@
+---@class elementsinternal
 local elementsinternal = {
     funcs = {
         checkArg = function(arg, argnum, expected, name)
@@ -28,15 +29,15 @@ local elements = {
     ---@param bgclr table Optional
     ---@param activebtn number Optional
     button = function(text, x, y, w, h, bgclr, fgclr, activebtn)
+        elementsinternal.funcs.checkArg(text, 1, elementsinternal.types.string, "button")
+        elementsinternal.funcs.checkArg(x, 2, elementsinternal.types.int, "button")
+        elementsinternal.funcs.checkArg(y, 3, elementsinternal.types.int, "button")
+
         bgclr = bgclr or {1, 1, 1, 1}
         fgclr = fgclr or {0, 0, 0, 1}
         w = w or #text * __GUIFIEDGLOBAL__.fontsize
         h = h or __GUIFIEDGLOBAL__.fontsize*2
         activebtn = activebtn or 1
-
-        elementsinternal.funcs.checkArg(text, 1, elementsinternal.types.string, "button")
-        elementsinternal.funcs.checkArg(x, 2, elementsinternal.types.int, "button")
-        elementsinternal.funcs.checkArg(y, 3, elementsinternal.types.int, "button")
 
         local isPressed = false
 
@@ -116,6 +117,26 @@ local elements = {
                 love.graphics.printf(text, x, y, maxalign, align)
             end
         })
+    end,
+
+    image = function(x, y, image)
+        elementsinternal.funcs.checkArg(x, 1, elementsinternal.types.number, "image")
+        elementsinternal.funcs.checkArg(y, 2, elementsinternal.types.number, "image")
+
+        if type(image):lower() == "string" then
+            image = love.graphics.newImage(image)
+        end
+
+        return({
+            name = "image",
+            draw = function()
+                love.graphics.draw(image, x, y)
+            end
+        })
+    end,
+
+    textInput = function()
+        --TODO
     end,
 
     guifiedsplash = function()
