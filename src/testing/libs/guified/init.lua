@@ -190,8 +190,8 @@ local function mergetables(t1, t2)
 end
 ---@return elements
 local function loadelements()
-    if love.filesystem.getInfo(getScriptFolder() .. "/elements.lua") then
-        return (require(__GUIFIEDGLOBAL__.rootfolder .. ".elements"))
+    if love.filesystem.getInfo(getScriptFolder() .. "elements.lua") then
+        return (require(__GUIFIEDGLOBAL__.rootfolder .. "elements"))
     else
         return nil
     end
