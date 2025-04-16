@@ -11,7 +11,7 @@ local shotty = {
 
     --* Original case (unchanged)
     original = {
-        elements = guified.registry.elements,
+        elements = guified.elements,
         register = guified.registry.register,
         remove = guified.registry.remove,
         extcalls = guified.extcalls,
@@ -20,7 +20,7 @@ local shotty = {
 
     --* camelCase
     camelCase = {
-        elements = guified.registry.elements,
+        elements = guified.elements,
         register = guified.registry.register,
         remove = guified.registry.remove,
         extCalls = guified.extcalls,
@@ -29,7 +29,7 @@ local shotty = {
 
     --* snake_case
     snake_case = {
-        elements = guified.registry.elements,
+        elements = guified.elements,
         register = guified.registry.register,
         remove = guified.registry.remove,
         ext_calls = guified.extcalls,
@@ -38,7 +38,7 @@ local shotty = {
 
     --* SCREAMING_SNAKE_CASE
     SCREAMING_SNAKE_CASE = {
-        ELEMENTS = guified.registry.elements,
+        ELEMENTS = guified.elements,
         REGISTER = guified.registry.register,
         REMOVE = guified.registry.remove,
         EXTCALLS = guified.extcalls,
@@ -47,7 +47,7 @@ local shotty = {
 
     --* PascalCase
     PascalCase = {
-        Elements = guified.registry.elements,
+        Elements = guified.elements,
         Register = guified.registry.register,
         Remove = guified.registry.remove,
         ExtCalls = guified.extcalls,
@@ -56,7 +56,7 @@ local shotty = {
 
     --* Title Case (Each word starts with a capital letter)
     Title_Case = {
-        Elements = guified.registry.elements,
+        Elements = guified.elements,
         Register = guified.registry.register,
         Remove = guified.registry.remove,
         Ext_Calls = guified.extcalls,
@@ -65,7 +65,7 @@ local shotty = {
 
     --* lowerCamelCase
     lowerCamelCase = {
-        elements = guified.registry.elements,
+        elements = guified.elements,
         register = guified.registry.register,
         remove = guified.registry.remove,
         extCalls = guified.extcalls,
