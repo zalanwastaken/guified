@@ -3,7 +3,7 @@ local elementsinternal = {
     funcs = {
         checkArg = function(arg, argnum, expected, name)
             if type(arg):lower() ~= expected then
-                error("Argument #"..argnum.." to "..name.." expected "..expected.." got "..type(arg))
+                error("Argument #" .. argnum .. " to " .. name .. " expected " .. expected .. " got " .. type(arg))
             end
         end
     },
@@ -36,23 +36,23 @@ local elements = {
         bgclr = bgclr or {1, 1, 1, 1}
         fgclr = fgclr or {0, 0, 0, 1}
         w = w or #text * __GUIFIEDGLOBAL__.fontsize
-        h = h or __GUIFIEDGLOBAL__.fontsize*2
+        h = h or __GUIFIEDGLOBAL__.fontsize * 2
         activebtn = activebtn or 1
 
         local isPressed = false
 
-        return({
+        return ({
             name = "button",
             draw = function()
                 love.graphics.setColor(bgclr)
                 love.graphics.rectangle("fill", x, y, w, h)
                 love.graphics.setColor(fgclr)
-                love.graphics.printf(text, x, y+h/5, w, "center")
+                love.graphics.printf(text, x, y + h / 5, w, "center")
             end,
             pressed = function()
                 if love.mouse.isDown(activebtn) then
                     local mouseX, mouseY = love.mouse.getPosition()
-                    if mouseX > x and mouseX < x+w and mouseY > y and mouseY < y+h then
+                    if mouseX > x and mouseX < x + w and mouseY > y and mouseY < y + h then
                         isPressed = true
                         return true
                     end
@@ -60,7 +60,7 @@ local elements = {
                 return false
             end,
             released = function()
-                if isPressed and not(love.mouse.isDown(activebtn)) then
+                if isPressed and not (love.mouse.isDown(activebtn)) then
                     isPressed = false
                     return true
                 end
@@ -69,7 +69,7 @@ local elements = {
 
             updateFont = function()
                 w = w or #text * __GUIFIEDGLOBAL__.fontsize
-                h = h or __GUIFIEDGLOBAL__.fontsize*2
+                h = h or __GUIFIEDGLOBAL__.fontsize * 2
             end,
             setPOS = function(argx, argy)
                 x = argx
@@ -90,8 +90,8 @@ local elements = {
 
         elementsinternal.funcs.checkArg(text, 1, elementsinternal.types.string, "text")
 
-        return({
-            name = "text: "..text,
+        return ({
+            name = "text: " .. text,
             draw = function()
                 love.graphics.print(text, x, y)
             end
@@ -111,8 +111,8 @@ local elements = {
 
         elementsinternal.funcs.checkArg(text, 1, elementsinternal.types.string, "textf")
 
-        return({
-            name = "textf: "..text,
+        return ({
+            name = "textf: " .. text,
             draw = function()
                 love.graphics.printf(text, x, y, maxalign, align)
             end
@@ -127,7 +127,7 @@ local elements = {
             image = love.graphics.newImage(image)
         end
 
-        return({
+        return ({
             name = "image",
             draw = function()
                 love.graphics.draw(image, x, y)
@@ -136,14 +136,15 @@ local elements = {
     end,
 
     textInput = function()
-        --TODO
+        -- TODO
     end,
 
     guifiedsplash = function()
         local largefont = love.graphics.newFont(20)
         local stdfont = __GUIFIEDGLOBAL__.font
         local quotes = {"Meow", "ZWT", "The CPU is a rock", "Lua > JS = true. Lua < JS = true. JS logic",
-                        "{something = something}", "pog", "segfault(core dumped)", "404 quote not found", "OwO", ">_O"}
+                        "{something = something}", "pog", "segfault(core dumped)", "404 quote not found", "OwO", ">_O",
+                        "Miku", "Teto", "Hmmmmmmm"}
         local alpha = 1
         local quote = quotes[love.math.random(1, #quotes)]
         local done = false
