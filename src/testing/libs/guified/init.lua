@@ -134,6 +134,8 @@ local guifiedinternal = {
         textinputstack = {},
         ---@class keypressedstack
         keypressedstack = {},
+        ---@class resizestack
+        resizestack = {},
         ---@class dataholder
         data = {},
         ---@class idholder
@@ -174,6 +176,13 @@ local guifiedinternal = {
         for i = 1, #idtbl, 1 do
             if keypressedstack[idtbl[i]] ~= nil then
                 keypressedstack[idtbl[i]](key)
+            end
+        end
+    end,
+    resize = function(w, h, resizestack, idtbl)
+        for i = 1, #idtbl, 1 do
+            if resizestack[idtbl[i]] ~= nil then
+                resizestack[idtbl[i]](w, h)
             end
         end
     end
@@ -277,6 +286,15 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
                                          element.name)
                     end
                 end
+                if element.resize ~= nil then
+                    if type(element.resize):lower() == "function" then
+                        guifiedinternal.internalregistry.resizestack[element.id] = element.resize
+                        logger.info("resize registered for element " .. element.name .. ":" .. element.id)
+                    else
+                        logger.error("Non-function data type in function field for resize in element " ..
+                            element.name)
+                    end
+                end
                 return (true)
             else
                 logger.error("No element provided to register. Aborting")
@@ -314,6 +332,9 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
                     end
                     if guifiedinternal.internalregistry.keypressedstack[element.id] ~= nil then
                         guifiedinternal.internalregistry.keypressedstack[element.id] = nil
+                    end
+                    if guifiedinternal.internalregistry.resizestack[element.id] ~= nil then
+                        guifiedinternal.internalregistry.resizestack[element.id] = nil
                     end
                     table.remove(guifiedinternal.internalregistry.ids, idindex)
                     idindex = nil
@@ -369,16 +390,16 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
     },
 
     extcalls = {
-        -- * Draw function that manages rendering.
-        -- * Calls the guifiedinternal.draw method to process all drawable elements
-        -- * from the drawstack in the internal registry.
+        --* Handles draw event
+        --* Calls guifiedinternal.draw
+        --* draw handler
         drawf = function()
             guifiedinternal.draw(guifiedinternal.internalregistry.drawstack, guifiedinternal.internalregistry.data)
         end,
 
-        -- * Update function that manages updating.
-        -- * Calls the guifiedinternal.update method with the average delta time and
-        -- * processes elements from the updatestack and associated ids in the internal registry.
+        --* Handles update event
+        --* Calls guifiedinternal.update
+        --* update handler
         updatef = function()
             guifiedinternal.update(love.timer.getAverageDelta(), guifiedinternal.internalregistry.updatestack,
                 guifiedinternal.internalregistry.ids)
@@ -399,6 +420,15 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
         -- * keypressed handler
         keypressedf = function(key)
             guifiedinternal.textinput(key, guifiedinternal.internalregistry.keypressedstack, guifiedinternal.internalregistry.ids)
+        end,
+
+        --* Handles resize event.
+        ---@param w number
+        ---@param h number
+        --* Passes input to guifiedinternal.resize methord
+        --* resize handler
+        resizef = function(w, h)
+            guifiedinternal.resize(w, h, guifiedinternal.internalregistry.resizestack, guifiedinternal.internalregistry.ids)
         end,
 
         -- * Returns the current drawstack.
@@ -600,6 +630,11 @@ function love.keypressed(key)
         guifiedinternal.internalregistry.ids)
 end
 logger.ok("keypressed hook setup done")
+
+function love.resize(w, h)
+    guifiedinternal.resize(w, h, guifiedinternal.internalregistry.resizestack, guifiedinternal.internalregistry.ids)
+end
+logger.ok("resize hook setup done")
 
 -- * love quit function
 function love.quit()
