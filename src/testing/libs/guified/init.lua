@@ -11,6 +11,38 @@ end
 local function getScriptFolder()
     return (debug.getinfo(1, "S").source:sub(2):match("(.*/)"))
 end
+---@return number|nil
+local function getIndex(table, val)
+    for i = 1, #table, 1 do
+        if table[i] == val then
+            return (i)
+        end
+    end
+    return (nil)
+end
+---@param length number
+---@return string
+local function idgen(length)
+    local chars = {
+        -- * Small chars
+        "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w",
+        "x", "y", "z", 
+        -- * Capital chars
+        "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W",
+        "X", "Y", "Z", 
+        -- * Numbers
+        "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", 
+        -- * Special chars
+        "!", "@", "#", "$", "%", "^", "&", "*", "(", ")", "-", "_", "=", "+", "{", "}", "[", "]", ":", ";", "'", "<", ">",
+        ",", ".", "?", "/"
+    }
+    local ret = ""
+    for i = 1, length, 1 do
+        ret = ret .. chars[love.math.random(1, #chars)]
+    end
+    return (ret)
+end
+
 local areweloaded = false
 
 -- * setup global var
@@ -37,10 +69,10 @@ end
 local OSinterop
 if not (areweloaded) then
     if love.filesystem.getInfo(getScriptFolder() .. "/os_interop.lua") then
-        OSinterop = require(__GUIFIEDGLOBAL__.rootfolder .. ".os_interop") -- ? contains ffi 
+        OSinterop = require(__GUIFIEDGLOBAL__.rootfolder .. "os_interop") -- ? contains ffi 
     end
     if love.filesystem.getInfo(getScriptFolder() .. "/errorhandler.lua") then
-        require(__GUIFIEDGLOBAL__.rootfolder .. ".errorhandler") -- * setup errorhandler
+        require(__GUIFIEDGLOBAL__.rootfolder .. "errorhandler") -- * setup errorhandler
     end
 end
 ---@type logger
@@ -151,43 +183,6 @@ logger.ok("setting up internal table done")
 -- * funcs
 -- ? they need guified stuff so declared here
 
----@return number|nil
-local function getIndex(table, val)
-    for i = 1, #table, 1 do
-        if table[i] == val then
-            return (i)
-        end
-    end
-    return (nil)
-end
----@param length number
----@return string
-local function idgen(length)
-    local chars = {
-        -- * Small chars
-        "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w",
-        "x", "y", "z", 
-        -- * Capital chars
-        "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W",
-        "X", "Y", "Z", 
-        -- * Numbers
-        "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", 
-        -- * Special chars
-        "!", "@", "#", "$", "%", "^", "&", "*", "(", ")", "-", "_", "=", "+", "{", "}", "[", "]", ":", ";", "'", "<", ">",
-        ",", ".", "?", "/"
-    }
-    local ret = ""
-    for i = 1, length, 1 do
-        ret = ret .. chars[love.math.random(1, #chars)]
-    end
-    return (ret)
-end
-local function mergetables(t1, t2)
-    for k, v in pairs(t2) do
-        t1[k] = v
-    end
-    return t1
-end
 ---@return elements
 local function loadelements()
     if love.filesystem.getInfo(getScriptFolder() .. "elements.lua") then
