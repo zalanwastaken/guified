@@ -12,6 +12,9 @@
 
 Guified is a ~~lightweight~~ GUI library for LÖVE (Love2D) that simplifies window management and UI element creation. With its easy-to-use features, Guified enables developers to craft intuitive and interactive graphical user interfaces without unnecessary complexity. 🚀 Whether you're building a small game or a large application, Guified provides the tools you need to streamline the process.
 
+### Why Guified? 🤷
+Guified is a flexible, lightweight framework built for developers who want control without the bloat. It gives you powerful tools like a customizable registry, and efficient error handling, while leaving you the freedom to build exactly what you need. Guified doesn’t force patterns or hand-hold you through the process—it’s all about giving you the flexibility to create and optimize your own solutions, on your terms.
+
 ## Features ✨
 - **Window Management:**
   - 📌 Set the game window to always stay on top of other windows, ensuring your application remains in focus during critical interactions.
@@ -101,11 +104,15 @@ This version supports the following Love2d version(These versions are tested wit
 - 11.5 (Mysterious Mysteries)
   - Windows ✅ Full support
   - Linux ✅ Without FFI
-  - MacOS ❌ No support. Bugs on MacOS wont be fixed(Guified might still run MacOS is not blocked)
+  - MacOS ❌ No support. Bugs on MacOS wont be fixed(Guified might still run. MacOS is not blocked)
 - 11.4 (Mysterious Mysteries)
   - Windows ✅ Full support
   - Linux ✅ Without FFI
-  - MacOS ❌ No support. Bugs on MacOS wont be fixed(Guified might still run MacOS is not blocked)
+  - MacOS ❌ No support. Bugs on MacOS wont be fixed(Guified might still run. MacOS is not blocked)
+- 11.3 (Mysterious Mysteries)
+  - Windows ✅ Full support
+  - Linux ✅ Without FFI
+  - MacOS ❌ No support. Bugs on MacOS wont be fixed(Guified might still run. MacOS is not blocked)
 
 ## 📍 Roadmap  
 
