@@ -183,6 +183,7 @@ logger.ok("setting up internal table done")
 -- * funcs
 -- ? they need guified stuff so declared here
 
+--* loads the elements file
 ---@return elements
 local function loadelements()
     if love.filesystem.getInfo(getScriptFolder() .. "elements.lua") then
@@ -435,43 +436,71 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
         setWindowToBeOnTop = function()
             guifiedinternal.setWindowToBeOnTop(love.window.getTitle())
         end,
+
         -- * Toggles the draw functionality on or off.
+        --! This function is deprecated use setDraw insted
+        ---@deprecated
         toggleDraw = function()
+            logger.warn("toggerDraw is deprecated use setDraw insted")
             guifiedinternal.enabledraw = not (guifiedinternal.enabledraw)
         end,
+
         -- * Toggles the update functionality on or off.
+        --! This function is deprecated use setUpdate insted
+        ---@deprecated
         toggleUpdate = function()
+            logger.warn("toggerUpdate is deprecated use setUpdate insted")
             guifiedinternal.enableupdate = not (guifiedinternal.enableupdate)
         end,
+
+        --* Sets the draw functionality
+        ---@param set boolean
+        setDraw = function(set)
+            guifiedinternal.enabledraw = set or false
+        end,
+
+        --* Sets the update functionality
+        ---@param set boolean
+        setUpdate = function(set)
+            guifiedinternal.enableupdate = set or false
+        end,
+
         -- * Returns the current draw status.
         ---@return boolean True if drawing is enabled, false otherwise.
         getDrawStatus = function()
             return (guifiedinternal.enabledraw)
         end,
+
         -- * Returns the current update status.
         ---@return boolean True if updating is enabled, false otherwise.
         getUpdateStatus = function()
             return (guifiedinternal.enableupdate)
         end,
+
         -- * Returns the table containing IDs for registered elements.
         ---@return table The table of IDs.
         getIdTable = function()
             return (guifiedinternal.internalregistry.ids)
         end,
+
         -- * Returns the current font size.
         -- ! This function is deprecated use `__GUIFIEDGLOBAL__.fontsize` variable insted
         ---@deprecated
         ---@return number The size of the font.
         getFontSize = function()
+            logger.warn("getFontSize is deprecated use __GUIFIEDGLOBAL__.fontsize variable insted")
             return (__GUIFIEDGLOBAL__.fontsize)
         end,
+
         -- * Sets a new font size.
         -- ! This function is deprecated use `__GUIFIEDGLOBAL__.fontsize` variable insted
         ---@deprecated
         ---@param size number The new font size to be set.
         setFontSize = function(size)
+            logger.warn("setFontSize is deprecated use __GUIFIEDGLOBAL__.fontsize variable insted")
             __GUIFIEDGLOBAL__.fontsize = size
         end,
+
         -- * checks if the element provided is registered or not
         ---@param element element
         ---@return boolean
@@ -483,12 +512,13 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
             end
         end,
 
-        ---@param font string filepath to the font
+        ---@param font string|number filepath to the font or the font size
         ---@param size number size of the font
         updateFont = function(font, size)
             if font == nil then
                 font = size
                 size = nil
+                logger.warn("Please use __GUIFIEDGLOBAL__.fontsize variable to set the font size insted")
             end
             __GUIFIEDGLOBAL__.font = love.graphics.newFont(font, size)
             __GUIFIEDGLOBAL__.fontsize = size or font
