@@ -64,9 +64,9 @@ local function newFrameObj(x, y, w, h, bgclr, fgclr, borderclr, title, elements)
                 for i = 2, #elements, 1 do
                     if elements[i].changePos ~= nil and elements[i].getPos ~= nil then
                         local elementX, elementY = elements[i].getPos()
-                        elements[i].changePos(elementX + xdiff, elementY + ydiff)
+                        elements[i].setPOS(elementX + xdiff, elementY + ydiff)
                     else
-                        logger.error(elements[i].name.." not movable")
+                        logger.error(elements[i].name..":"..elements[i].id.." not movable")
                     end
                 end
             end
@@ -81,7 +81,7 @@ local function newFrameObj(x, y, w, h, bgclr, fgclr, borderclr, title, elements)
 
         ---@param argx number
         ---@param argy number
-        changePos = function(argx, argy)
+        changePOS = function(argx, argy)
             local xdiff, ydiff = argx - x, argy - y
             for i = 2, #elements, 1 do
                 if elements[i].changePos ~= nil and elements[i].getPos ~= nil then
@@ -111,7 +111,7 @@ local function newFrameObj(x, y, w, h, bgclr, fgclr, borderclr, title, elements)
 
         ---@param argx number
         ---@param argy number
-        setPos = function(argx, argy)
+        setPOS = function(argx, argy)
             x = argx
             y = argy
         end

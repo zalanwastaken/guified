@@ -14,12 +14,12 @@ local tween = {}
 ---@param targetY number
 ---@param duration number seconds
 function tween.newElementTween(element, targetX, targetY, duration)
-    if not (element.getPos and element.changePos) then
+    if not (element.getPOS and element.setPOS) then
         logger.error(element.name .. " cannot be tweened")
         return nil
     end
 
-    local startX, startY = element.getPos()
+    local startX, startY = element.getPOS()
     local elapsedTime = 0
     local completed = true
     local hidden = false
@@ -38,7 +38,7 @@ function tween.newElementTween(element, targetX, targetY, duration)
             local newX = startX + (targetX - startX) * t
             local newY = startY + (targetY - startY) * t
             elapsedTime = elapsedTime + dt
-            element.changePos(math.floor(newX), math.floor(newY)) --! might cause the tween to be shakey
+            element.setPOS(math.floor(newX), math.floor(newY)) --! might cause the tween to be shakey
 
             if t >= 1 then
                 completed = true

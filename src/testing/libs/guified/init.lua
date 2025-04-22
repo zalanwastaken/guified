@@ -49,7 +49,7 @@ local areweloaded = false
 if __GUIFIEDGLOBAL__ == nil then
     local function setuprootfolder()
         local folder = replaceSlashWithDot(getScriptFolder())
-        return (os.getenv("GUIFIEDROOTFOLDER") or string.sub(folder, 1, #folder))
+        return (os.getenv("GUIFIEDROOTFOLDER") or string.sub(folder, 1, #folder-1))
     end
     local rootfolder = setuprootfolder()
     -- ? global table containing vars for guified modules
@@ -69,10 +69,10 @@ end
 local OSinterop
 if not (areweloaded) then
     if love.filesystem.getInfo(getScriptFolder() .. "/os_interop.lua") then
-        OSinterop = require(__GUIFIEDGLOBAL__.rootfolder .. "os_interop") -- ? contains ffi 
+        OSinterop = require(__GUIFIEDGLOBAL__.rootfolder .. ".os_interop") -- ? contains ffi 
     end
     if love.filesystem.getInfo(getScriptFolder() .. "/errorhandler.lua") then
-        require(__GUIFIEDGLOBAL__.rootfolder .. "errorhandler") -- * setup errorhandler
+        require(__GUIFIEDGLOBAL__.rootfolder .. ".errorhandler") -- * setup errorhandler
     end
 end
 ---@type logger
@@ -196,7 +196,7 @@ logger.ok("setting up internal table done")
 ---@return elements
 local function loadelements()
     if love.filesystem.getInfo(getScriptFolder() .. "elements.lua") then
-        return (require(__GUIFIEDGLOBAL__.rootfolder .. "elements"))
+        return (require(__GUIFIEDGLOBAL__.rootfolder .. ".elements"))
     else
         return nil
     end
@@ -394,7 +394,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
         --* Calls guifiedinternal.draw
         --* draw handler
         drawf = function()
-            guifiedinternal.draw(guifiedinternal.internalregistry.drawstack, guifiedinternal.internalregistry.data)
+            guifiedinternal.draw(guifiedinternal.internalregistry.drawstack, guifiedinternal.internalregistry.data, guifiedinternal.internalregistry.ids)
         end,
 
         --* Handles update event
@@ -553,7 +553,10 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
             __GUIFIEDGLOBAL__.font = love.graphics.newFont(font, size)
             __GUIFIEDGLOBAL__.fontsize = size or font
         end
-    }
+    },
+
+    --! New thing Gufied Processed Event
+    GPE = {}
 }
 logger.ok("setting up main return table done")
 
