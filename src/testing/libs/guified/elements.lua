@@ -1,6 +1,10 @@
 ---@class elementsinternal
 local elementsinternal = {
     funcs = {
+        ---@param arg any
+        ---@param argnum number
+        ---@param expected string
+        ---@param name string
         checkArg = function(arg, argnum, expected, name)
             if type(arg):lower() ~= expected then
                 error("Argument #" .. argnum .. " to " .. name .. " expected " .. expected .. " got " .. type(arg))
@@ -49,6 +53,8 @@ local elements = {
                 love.graphics.setColor(fgclr)
                 love.graphics.printf(text, x, y + h / 5, w, "center")
             end,
+
+            ---@return boolean
             pressed = function()
                 if love.mouse.isDown(activebtn) then
                     local mouseX, mouseY = love.mouse.getPosition()
@@ -59,6 +65,8 @@ local elements = {
                 end
                 return false
             end,
+
+            ---@return boolean
             released = function()
                 if isPressed and not (love.mouse.isDown(activebtn)) then
                     isPressed = false
@@ -67,14 +75,25 @@ local elements = {
                 return false
             end,
 
+            --? updates element data according to the font
             updateFont = function()
                 w = w or #text * __GUIFIEDGLOBAL__.fontsize
                 h = h or __GUIFIEDGLOBAL__.fontsize * 2
             end,
+
+            --? changes the position of the element
+            ---@param argx number
+            ---@param argy number
             setPOS = function(argx, argy)
+                elementsinternal.funcs.checkArg(argx, 1, elementsinternal.types.number, "SetPOS")
+                elementsinternal.funcs.checkArg(argy, 2, elementsinternal.types.number, "setPOS")
+
                 x = argx
                 y = argy
             end,
+
+            --? returns the position of the element
+            ---@return number The position. x, y
             getPOS = function()
                 return x, y
             end
@@ -85,15 +104,40 @@ local elements = {
     ---@param x number Optional
     ---@param y number Optional
     text = function(text, x, y)
+        elementsinternal.funcs.checkArg(text, 1, elementsinternal.types.string, "text")
+
         x = x or 0
         y = y or 0
-
-        elementsinternal.funcs.checkArg(text, 1, elementsinternal.types.string, "text")
 
         return ({
             name = "text: " .. text,
             draw = function()
                 love.graphics.print(text, x, y)
+            end,
+
+            --? changes the text to display
+            ---@param argtext string
+            setText = function(argtext)
+                elementsinternal.funcs.checkArg(argtext, 1, elementsinternal.types.string, "setText")
+
+                text = argtext
+            end,
+
+            --? changes the position of the element
+            ---@param argx number
+            ---@param argy number
+            setPOS = function(argx, argy)
+                elementsinternal.funcs.checkArg(argx, 1, elementsinternal.types.number, "SetPOS")
+                elementsinternal.funcs.checkArg(argy, 2, elementsinternal.types.number, "setPOS")
+
+                x = argx
+                y = argy
+            end,
+
+            --? returns the postion of the element
+            ---@return number The position. x, y
+            getPOS = function()
+                return x, y
             end
         })
     end,
@@ -104,26 +148,46 @@ local elements = {
     ---@param align string Optional
     ---@param maxalign number Optional
     textf = function(text, x, y, align, maxalign)
+        elementsinternal.funcs.checkArg(text, 1, elementsinternal.types.string, "textf")
+
         maxalign = maxalign or love.graphics.getWidth()
         x = x or 0
         y = y or 0
         align = align or "center"
 
-        elementsinternal.funcs.checkArg(text, 1, elementsinternal.types.string, "textf")
-
         return ({
             name = "textf: " .. text,
             draw = function()
                 love.graphics.printf(text, x, y, maxalign, align)
+            end,
+
+            --? changes the position of the element
+            ---@param argx number
+            ---@param argy number
+            setPOS = function(argx, argy)
+                elementsinternal.funcs.checkArg(argx, 1, elementsinternal.types.number, "SetPOS")
+                elementsinternal.funcs.checkArg(argy, 2, elementsinternal.types.number, "setPOS")
+
+                x = argx
+                y = argy
+            end,
+
+            --? returns the position of the element
+            ---@return number
+            getPOS = function()
+                return x, y
             end
         })
     end,
 
+    ---@param x number
+    ---@param y number
+    ---@param image string|image image or the path to the image file
     image = function(x, y, image)
         elementsinternal.funcs.checkArg(x, 1, elementsinternal.types.number, "image")
         elementsinternal.funcs.checkArg(y, 2, elementsinternal.types.number, "image")
 
-        if type(image):lower() == "string" then
+        if type(image):lower() == "string" then --? check if the image path was given
             image = love.graphics.newImage(image)
         end
 
@@ -131,6 +195,23 @@ local elements = {
             name = "image",
             draw = function()
                 love.graphics.draw(image, x, y)
+            end,
+
+            --? changes the position of the element
+            ---@param argx number
+            ---@param argy number
+            setPOS = function(argx, argy)
+                elementsinternal.funcs.checkArg(argx, 1, elementsinternal.types.number, "SetPOS")
+                elementsinternal.funcs.checkArg(argy, 2, elementsinternal.types.number, "setPOS")
+
+                x = argx
+                y = argy
+            end,
+
+            --? returns the position of the element
+            ---@return number
+            getPOS = function()
+                return x, y
             end
         })
     end,
@@ -149,7 +230,7 @@ local elements = {
         local quote = quotes[love.math.random(1, #quotes)]
         local done = false
         return ({
-            name = "splash element",
+            name = "splash element guified",
             draw = function()
                 love.graphics.setColor(0, 0, 0, alpha or 0)
                 love.graphics.rectangle("fill", 0, 0, love.graphics.getWidth(), love.graphics.getHeight())
@@ -167,6 +248,8 @@ local elements = {
                     alpha = nil
                 end
             end,
+
+            ---@return boolean is the anim done
             completed = function()
                 return (done)
             end
