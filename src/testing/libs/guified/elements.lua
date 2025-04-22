@@ -29,9 +29,10 @@ local elements = {
     ---@param y number
     ---@param w number Optional
     ---@param h number Optional
-    ---@param fgclr table Optional
-    ---@param bgclr table Optional
+    ---@param fgclr Color Optional
+    ---@param bgclr Color Optional
     ---@param activebtn number Optional
+    ---@return element
     button = function(text, x, y, w, h, bgclr, fgclr, activebtn)
         elementsinternal.funcs.checkArg(text, 1, elementsinternal.types.string, "button")
         elementsinternal.funcs.checkArg(x, 2, elementsinternal.types.int, "button")
@@ -103,6 +104,7 @@ local elements = {
     ---@param text string
     ---@param x number Optional
     ---@param y number Optional
+    ---@return element
     text = function(text, x, y)
         elementsinternal.funcs.checkArg(text, 1, elementsinternal.types.string, "text")
 
@@ -147,6 +149,7 @@ local elements = {
     ---@param y number Optional
     ---@param align string Optional
     ---@param maxalign number Optional
+    ---@return element
     textf = function(text, x, y, align, maxalign)
         elementsinternal.funcs.checkArg(text, 1, elementsinternal.types.string, "textf")
 
@@ -183,6 +186,7 @@ local elements = {
     ---@param x number
     ---@param y number
     ---@param image string|image image or the path to the image file
+    ---@return element
     image = function(x, y, image)
         elementsinternal.funcs.checkArg(x, 1, elementsinternal.types.number, "image")
         elementsinternal.funcs.checkArg(y, 2, elementsinternal.types.number, "image")
@@ -217,9 +221,61 @@ local elements = {
     end,
 
     textInput = function()
+        error("TODO")
         -- TODO
     end,
 
+    ---@param x number
+    ---@param y number
+    ---@param w number Optional
+    ---@param h number Optional
+    ---@param mode string Optional
+    ---@param clr Color Optional
+    ---@return element
+    box = function(x, y, w, h, mode, clr)
+        elementsinternal.funcs.checkArg(x, 2, elementsinternal.types.number, "box")
+        elementsinternal.funcs.checkArg(y, 3, elementsinternal.types.number, "box")
+
+        mode = mode or "line"
+        w = w or 40
+        h = h or 40
+        --            r  g  b  a 
+        clr = clr or {1, 1, 1, 1}
+
+        return({
+            draw = function()
+                love.graphics.setColor(clr)
+                love.graphics.rectangle(mode, x, y, w, h)
+            end,
+
+            ---@param argx number
+            ---@param argy number
+            setPOS = function(argx, argy)
+                elementsinternal.funcs.checkArg(argx, 1, elementsinternal.types.number, "setPOS")
+                elementsinternal.funcs.checkArg(argy, 2, elementsinternal.types.number, "setPOS")
+
+                x = argx
+                y = argy
+            end,
+
+            ---@return number
+            getPOS = function()
+                return x, y
+            end,
+
+            ---@param argh number
+            ---@param argw number
+            setWH = function(argw, argh)
+                elementsinternal.funcs.checkArg(argw, 1, elementsinternal.types.number, "setWH")
+                elementsinternal.funcs.checkArg(argh, 2, elementsinternal.types.number, "setWH")
+
+                w = argw
+                h = argh
+            end
+        })
+    end,
+
+    ---@return element
     guifiedsplash = function()
         local largefont = love.graphics.newFont(20)
         local stdfont = __GUIFIEDGLOBAL__.font
