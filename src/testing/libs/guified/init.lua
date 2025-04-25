@@ -351,34 +351,16 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
             end
         end,
 
+        -- * checks if the element provided is registered or not
         ---@param element element
-        ---@param event string
-        ---@param func function
-        injectEventHandler = function(element, event, func)
-            error("NON FUNCTIONAL DO NOT USE") --! disabled for now
-            if element.id ~= nil then --? there will be a element id if the element is registered
-                if element.__events == nil then
-                    logger.error("element "..element.name..":"..element.id.." does not support events")
-                else
-                    if element.__events[event] then
-                        element.__eventcalls[event] = func
-                    end
-                end
+        ---@return boolean
+        isRegistered = function(element)
+            if element.id then
+                return true
             else
-                logger.error("element "..element.name.." is not registered")
+                return false
             end
         end,
-        
-        ---@param element element
-        ---@param event string
-        removeEventHandler = function(element, event)
-            error("NON FUNCTIONAL DO NOT USE") --! disabled for now
-            if element.__eventcalls[event] ~= nil then
-                element.__eventcalls[event] = nil
-            else
-                logger.error(event.." is not set in "..element.name..":"..(element.id or "err"))
-            end
-        end
     },
 
     debug = {
@@ -457,6 +439,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
         -- * Quit function the code that needs the be executed when the application quits
         quit = function()
+            logger.regular("Bye Bye !")
             logger.stopSVC()
         end
     },
@@ -531,17 +514,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
             __GUIFIEDGLOBAL__.fontsize = size
         end,
 
-        -- * checks if the element provided is registered or not
-        ---@param element element
-        ---@return boolean
-        isRegistered = function(element)
-            if element.id then
-                return true
-            else
-                return false
-            end
-        end,
-
         ---@param font string|number filepath to the font or the font size
         ---@param size number size of the font
         updateFont = function(font, size)
@@ -590,12 +562,12 @@ function love.run()
         if love.timer then
             dt = love.timer.step()
         end
-        -- ? guified code
+        -- * guified code
         if guifiedinternal.update and guifiedinternal.enableupdate then
             guifiedinternal.internalregistry.data = guifiedinternal.update(dt, guifiedinternal.internalregistry
                 .updatestack, guifiedinternal.internalregistry.ids)
         end
-        -- ? guified code end
+        -- * guified code end
         -- Call update and draw
         if love.update then
             love.update(dt)
@@ -606,12 +578,12 @@ function love.run()
             if love.draw then
                 love.draw()
             end
-            -- ? guified code
+            -- * guified code
             if guifiedinternal.draw and guifiedinternal.enabledraw then
                 guifiedinternal.draw(guifiedinternal.internalregistry.drawstack, guifiedinternal.internalregistry.data,
                     guifiedinternal.internalregistry.ids)
             end
-            -- ? guified code end
+            -- * guified code end
             love.graphics.present()
         end
         if love.timer then

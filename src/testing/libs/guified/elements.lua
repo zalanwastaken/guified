@@ -220,9 +220,147 @@ local elements = {
         })
     end,
 
-    textInput = function()
-        error("TODO")
-        -- TODO
+    ---@param x number
+    ---@param y number
+    ---@param w number
+    ---@param h number
+    ---@param mode string optional fill or line
+    ---@param bgclr Color optional
+    ---@param fgclr Color optional
+    ---@param placeholderTXT Color optional
+    ---@param activebtn number optional. 1 = left, btn 2 = right btn
+    ---@param activebydefault boolean optional is the element active(selected) by default ?
+    ---@param limit number optional limit of the enterable text
+    ---@return element
+    textInput = function(x, y, w, h, mode, bgclr, fgclr, placeholderTXT, activebtn, activebydefault, limit)
+        elementsinternal.funcs.checkArg(x, 1, elementsinternal.types.number, "textInput")
+        elementsinternal.funcs.checkArg(y, 2, elementsinternal.types.number, "textInput")
+        elementsinternal.funcs.checkArg(w, 3, elementsinternal.types.number, "textInput")
+        elementsinternal.funcs.checkArg(h, 4, elementsinternal.types.number, "textInput")
+
+        mode = mode or "fill"
+        bgclr = bgclr or {1, 1, 1, 1}
+        fgclr = fgclr or {0, 0, 0, 1}
+        placeholderTXT = placeholderTXT or "Place Holder :3"
+        activebtn = activebtn or 1
+        limit = limit or 16
+
+        if mode ~= "fill" and mode ~= "line" then
+            error("Unknown mode please use:-\nline\nOR\nfill")
+        end
+
+        local txt = nil
+        local wasdownbefore = false
+        local active = activebydefault or false
+        return({
+            name = "textinput",
+            draw = function()
+                love.graphics.setColor(bgclr)
+                love.graphics.rectangle(mode, x, y, w, h)
+
+                love.graphics.setColor(fgclr)
+                if txt ~= nil and active then
+                    love.graphics.printf(txt.."|", x, y+(h/4), x+w, "center")
+                elseif txt == nil then
+                    love.graphics.printf(placeholderTXT, x, y+(h/4), x+w, "center")
+                elseif txt ~= nil then
+                    love.graphics.printf(txt, x, y+(h/4), x+w, "center")
+                end
+            end,
+            update = function()
+                if love.mouse.isDown(1) then
+                    local mouseX, mouseY = love.mouse.getPosition()
+                    if mouseX > x and mouseX < x+w and mouseY > y and mouseY < y+h then
+                        if not(wasdownbefore) then
+                            wasdownbefore = true
+                            active = true
+                        end
+                    elseif wasdownbefore then
+                        wasdownbefore = false
+                        active = false
+                    end
+                end
+            end,
+            textinput = function(key)
+                if active then
+                    if txt == nil then
+                        txt = ""
+                    end
+
+                    if not(#txt >= limit) then
+                        txt = txt..key
+                    end
+                end
+            end,
+            keypressed = function(key)
+                if key == "backspace" and txt ~= nil and active then
+                    txt = string.sub(txt, 1, #txt-1)
+                end
+
+                if txt ~= nil then
+                    if #txt == 0 then
+                        txt = nil
+                    end
+                end
+            end,
+
+            ---@param argx number
+            ---@param argy number
+            setPOS = function(argx, argy)
+                elementsinternal.funcs.checkArg(argx, 1, elementsinternal.types.number, "setPOS")
+                elementsinternal.funcs.checkArg(argy, 2, elementsinternal.types.number, "setPOS")
+
+                x = argx
+                y = argy
+            end,
+
+            ---@param argbgclr Color
+            ---@param argfgclr Color
+            setClr = function(argbgclr, argfgclr)
+                elementsinternal.funcs.checkArg(argfgclr, 1, elementsinternal.types.table, "setClr")
+                elementsinternal.funcs.checkArg(argbgclr, 2, elementsinternal.types.table, "setClr")
+
+                bgclr = argbgclr
+                fgclr = argfgclr
+            end,
+
+            ---@param arglimit number
+            setLimit = function(arglimit)
+                elementsinternal.funcs.checkArg(arglimit, 1, elementsinternal.types.number, "setLimit")
+
+                limit = arglimit
+            end,
+
+            ---@param argmode string
+            setMode = function(argmode)
+                elementsinternal.funcs.checkArg(argmode, 1, elementsinternal.types.string, "setMode")
+                if argmode ~= "fill" and argmode ~= "line" then
+                    error("Unknown mode please use:-\nline\nOR\nfill")
+                end
+
+                mode = argmode
+            end,
+
+            ---@return string
+            getText = function()
+                return(txt or "")
+            end,
+
+            ---@return boolean
+            isActive = function()
+                return active
+            end,
+
+            ---@return Color
+            getClr = function()
+                return bgclr, fgclr
+            end,
+
+            ---@return number
+            getPOS = function()
+                return x, y
+            end
+        })
     end,
 
     ---@param x number
@@ -281,7 +419,7 @@ local elements = {
         local stdfont = __GUIFIEDGLOBAL__.font
         local quotes = {"Meow", "ZWT", "The CPU is a rock", "Lua > JS = true. Lua < JS = true. JS logic",
                         "{something = something}", "pog", "segfault(core dumped)", "404 quote not found", "OwO", ">_O",
-                        "Miku", "Teto", "Hmmmmmmm"}
+                        "Miku", "Teto", "Hmmmmmmm", __GUIFIEDGLOBAL__.__VERINT__}
         local alpha = 1
         local quote = quotes[love.math.random(1, #quotes)]
         local done = false
@@ -305,7 +443,7 @@ local elements = {
                 end
             end,
 
-            ---@return boolean is the anim done
+            ---@return boolean is the element done
             completed = function()
                 return (done)
             end
