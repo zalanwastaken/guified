@@ -1,32 +1,24 @@
+local profile = require("profile")
 love.window.setTitle("disable hook meow") --? to disable guified window title hook
+
+profile.start()
 
 local guified = require("libs.guified.init")
 local logger = guified.debug.logger
-local tween = require("libs.guified.modules.tween")
 
-guified.registry.register(guified.elements.image(0, 0, "assets/name.png"))
+guified.registry.register(guified.elements.textInput(0, 0, 80, 40))
 
-print(tween)
+local splash = guified.elements.guifiedsplash()
 
-local fpsx, fpsy = 0, 0
+guified.registry.register(splash)
 
-local fps_counter = {
-    name = "FPS",
-    draw = function()
-        love.graphics.setColor(1, 0, 0)
-        love.graphics.print(love.timer.getFPS(), fpsx, fpsy)
-    end,
-    setPOS = function(argx, argy)
-        fpsx = argx
-        fpsy = argy
-    end,
-    getPOS = function()
-        return fpsx, fpsy
+profile.stop()
+
+logger.debug(profile.report(20))
+
+function love.update(dt)
+    if splash.completed() and guified.registry.isRegistered(splash) then
+        guified.registry.remove(splash)
     end
-}
+end
 
-local fps_tween = tween.newElementTween(fps_counter, love.math.random(0, love.graphics.getWidth()), love.math.random(0, love.graphics.getHeight()), 10)
-
-guified.registry.register(fps_tween)
-
-fps_tween.start()
