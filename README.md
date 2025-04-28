@@ -33,11 +33,11 @@ Guified is a flexible, ~~lightweight~~ framework built for developers who want c
     local element = {
       name = "name" -- required
       draw = function() -- required
-      end
+      end,
       update = function(dt) -- optional
-      end
+      end,
       keypressed = function(key) -- optional
-      end
+      end,
       textinput = function(key) -- optional
       end
     }
@@ -135,7 +135,6 @@ This version supports the following Love2d version(These versions are tested wit
 
 ### 🔮 **Future Goals**  
 ✨ Make Guified the **go-to UI framework for LÖVE**(TRY)<br>
-✨ Provide **seamless integration** with other LÖVE libraries(NOT CONFIRM)<br>
 ✨ Support **legacy LÖVE versions for no reason at all**<br>
 
 ### 🎯 **Side Quests (Ongoing Tasks)**
