@@ -6,8 +6,9 @@ local elementsinternal = {
         ---@param expected string
         ---@param name string
         checkArg = function(arg, argnum, expected, name)
-            if type(arg):lower() ~= expected then
-                error("Argument #" .. argnum .. " to " .. name .. " expected " .. expected .. " got " .. type(arg))
+            local argtyp = type(arg)
+            if argtyp:lower() ~= expected then
+                error("Argument #" .. argnum .. " to " .. name .. " expected " .. expected .. " got " .. argtyp)
             end
         end
     },
@@ -377,7 +378,6 @@ local elements = {
         mode = mode or "line"
         w = w or 40
         h = h or 40
-        --            r  g  b  a 
         clr = clr or {1, 1, 1, 1}
 
         return({
@@ -413,13 +413,60 @@ local elements = {
         })
     end,
 
+    dropDown = function(x, y, w, h, content, bgclr, fgclr, activebtn)
+        fgclr = fgclr or {0, 0, 0, 1}
+        bgclr = bgclr or {1, 1, 1, 1}
+        activebtn = activebtn or 1
+
+        local selcont = content[1]
+        local active = false
+        local wasdownbefore = false
+
+        return({
+            name = "dropdown",
+            draw = function()
+                if active then
+                    for i = 1, #content, 1 do
+                        love.graphics.setColor(bgclr)
+                        love.graphics.rectangle("fill", x, y+(i*__GUIFIEDGLOBAL__.fontsize), w, h)
+
+                        love.graphics.setColor(fgclr)
+                        love.graphics.printf(content[i], x, (y+(h/4))+(i*__GUIFIEDGLOBAL__.fontsize), x+w, "center")
+                        --TODO continue from here, creep
+                    end
+                else
+                    love.graphics.setColor(bgclr)
+                    love.graphics.rectangle("fill", x, y, w, h)
+
+                    love.graphics.setColor(fgclr)
+                    love.graphics.printf(selcont, x, y+(h/4), x+w, "center")
+                end
+            end,
+
+            update = function()
+                if love.mouse.isDown(activebtn) then
+                    local mouseX, mouseY = love.mouse.getPosition()
+                    if mouseX > x and mouseX < x+w and mouseY > y and mouseY < y+h then
+                        if not(wasdownbefore) then
+                            wasdownbefore = true
+                            active = true
+                        end
+                    elseif wasdownbefore then
+                        wasdownbefore = false
+                        active = false
+                    end
+                end
+            end
+        })
+    end,
+
     ---@return element
     guifiedsplash = function()
         local largefont = love.graphics.newFont(20)
         local stdfont = __GUIFIEDGLOBAL__.font
         local quotes = {"Meow", "ZWT", "The CPU is a rock", "Lua > JS = true. Lua < JS = true. JS logic",
                         "{something = something}", "pog", "segfault(core dumped)", "404 quote not found", "OwO", ">_O",
-                        "Miku", "Teto", "Hmmmmmmm", __GUIFIEDGLOBAL__.__VERINT__}
+                        "Miku", "Teto", "Hmmmmmmm", __GUIFIEDGLOBAL__.__VER__}
         local alpha = 1
         local quote = quotes[love.math.random(1, #quotes)]
         local done = false
