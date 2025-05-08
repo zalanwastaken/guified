@@ -1,24 +1,9 @@
-local profile = require("profile")
-love.window.setTitle("disable hook meow") --? to disable guified window title hook
-
-profile.start()
-
+local profiler = require("profile")
+profiler.start()
 local guified = require("libs.guified.init")
 local logger = guified.debug.logger
 
-guified.registry.register(guified.elements.textInput(0, 0, 80, 40))
+guified.registry.register(guified.elements.dropDown(0, 0, 80, 40, {"cat", "dog"}))
 
-local splash = guified.elements.guifiedsplash()
-
-guified.registry.register(splash)
-
-profile.stop()
-
-logger.debug(profile.report(20))
-
-function love.update(dt)
-    if splash.completed() and guified.registry.isRegistered(splash) then
-        guified.registry.remove(splash)
-    end
-end
-
+profiler.stop()
+logger.debug(profiler.report(20))

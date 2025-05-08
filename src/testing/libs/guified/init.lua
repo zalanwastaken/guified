@@ -66,20 +66,13 @@ else
 end
 
 -- ? requires
-local OSinterop
-if not (areweloaded) then
-    if love.filesystem.getInfo(getScriptFolder() .. "/os_interop.lua") then
-        OSinterop = require(__GUIFIEDGLOBAL__.rootfolder .. ".os_interop") -- ? contains ffi 
-    end
-    if love.filesystem.getInfo(getScriptFolder() .. "/errorhandler.lua") then
-        require(__GUIFIEDGLOBAL__.rootfolder .. ".errorhandler") -- * setup errorhandler
-    end
-end
+local OSinterop = not(areweloaded) and love.filesystem.getInfo(getScriptFolder().."/os_interop.lua") and require(__GUIFIEDGLOBAL__.rootfolder..".os_interop") or nil
+local errorhandler = not(areweloaded) and love.filesystem.getInfo(getScriptFolder().."/errorhandler.lua") and require(__GUIFIEDGLOBAL__.rootfolder..".errorhandler") or nil
+errorhandler = nil --? we dont need this
 ---@type logger
 local logger = require(__GUIFIEDGLOBAL__.rootfolder .. ".dependencies.love2d-tools.modules.logger.init") -- * logger module
-if not (logger.thread:isRunning()) and not (areweloaded) then
-    logger.startSVC()
-end
+local startlogger = not(logger.thread:isRunning()) and not(areweloaded) and logger.startSVC()
+startlogger = nil --? we dont need this 
 
 -- ? init stuff
 local font
@@ -189,19 +182,6 @@ local guifiedinternal = {
 }
 logger.ok("setting up internal table done")
 
--- * funcs
--- ? they need guified stuff so declared here
-
---* loads the elements file
----@return elements
-local function loadelements()
-    if love.filesystem.getInfo(getScriptFolder() .. "elements.lua") then
-        return (require(__GUIFIEDGLOBAL__.rootfolder .. ".elements"))
-    else
-        return nil
-    end
-end
-
 -- * guified return table
 ---@class guified
 local guified = {
@@ -224,7 +204,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
     -- * actual guified stuff
 
     -- * Contains the element constructor functions
-    elements = loadelements(),
+    elements = love.filesystem.getInfo(getScriptFolder().."elements.lua") and require(__GUIFIEDGLOBAL__.rootfolder..".elements") or nil,
     registry = {
         -- * Registers an element with the internal registry.
         -- * Validates the element's ID length, generates a unique ID, and adds it to the appropriate stacks.
