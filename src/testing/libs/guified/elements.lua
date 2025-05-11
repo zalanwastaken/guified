@@ -1,27 +1,4 @@
----@class elementsinternal
-local elementsinternal = {
-    funcs = {
-        ---@param arg any
-        ---@param argnum number
-        ---@param expected string
-        ---@param name string
-        checkArg = function(arg, argnum, expected, name)
-            local argtyp = type(arg)
-            if argtyp:lower() ~= expected then
-                error("Argument #" .. argnum .. " to " .. name .. " expected " .. expected .. " got " .. argtyp)
-            end
-        end
-    },
-    types = {
-        string = "string",
-        number = "number",
-        int = "number",
-        dict = "table",
-        table = "table",
-        null = "nil",
-        nil_val = "nil"
-    }
-}
+local elementsinternal = require(__GUIFIEDGLOBAL__.rootfolder..".dependencies.internal.funcs")
 
 ---@class elements
 local elements = {
@@ -428,11 +405,10 @@ local elements = {
                 if active then
                     for i = 1, #content, 1 do
                         love.graphics.setColor(bgclr)
-                        love.graphics.rectangle("fill", x, y+(i*__GUIFIEDGLOBAL__.fontsize), w, h)
+                        love.graphics.rectangle("fill", x, (y+h)*i, w, h)
 
                         love.graphics.setColor(fgclr)
-                        love.graphics.printf(content[i], x, (y+(h/4))+(i*__GUIFIEDGLOBAL__.fontsize), x+w, "center")
-                        --TODO continue from here, creep
+                        love.graphics.printf(content[i], x, ((y+h)*i)+__GUIFIEDGLOBAL__.fontsize/4, x+w, "center")
                     end
                 else
                     love.graphics.setColor(bgclr)
