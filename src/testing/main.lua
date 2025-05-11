@@ -1,9 +1,17 @@
-local profiler = require("profile")
-profiler.start()
 local guified = require("libs.guified.init")
-local logger = guified.debug.logger
 
-guified.registry.register(guified.elements.dropDown(0, 0, 80, 40, {"cat", "dog"}))
+--guified.registry.setDraw(false)
+--guified.registry.setUpdate(false)
 
-profiler.stop()
-logger.debug(profiler.report(20))
+guified.registry.register(guified.elements.text("Hello World !", 0, 0))
+
+--[[
+
+function love.update(dt)
+    guified.extcalls.updatef()
+end
+
+function love.draw()
+    guified.extcalls.drawf()
+end
+--]]

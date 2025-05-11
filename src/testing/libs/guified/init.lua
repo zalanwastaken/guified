@@ -82,14 +82,17 @@ else
     font = love.graphics.newFont(__GUIFIEDGLOBAL__.fontsize)
 end
 
-logger.ok("Got guified root folder " .. __GUIFIEDGLOBAL__.rootfolder)
+logger.info("OS: "..love.system.getOS())
+logger.info("Guified Version: "..__GUIFIEDGLOBAL__.__VER__)
+
+logger.ok("Got guified root folder: " .. __GUIFIEDGLOBAL__.rootfolder)
 
 love.graphics.setFont(font)
 love.graphics.setColor(1, 1, 1, 1)
 love.math.setRandomSeed(os.time())
 
 if love.system.getOS():lower() == "linux" then
-    -- logger.warn("Features that use FFI will not work on Linux !")
+    logger.warn("Features that use FFI will not work on Linux !")
 elseif love.system.getOS():lower() == "macos" then
     -- ? If apple was not such a ass and let us run macOS on a vm this would have been supported
     -- ? Like why even lock down something that much ? Too much effort according to me
@@ -204,6 +207,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
     -- * actual guified stuff
 
     -- * Contains the element constructor functions
+    ---@type elements
     elements = love.filesystem.getInfo(getScriptFolder().."elements.lua") and require(__GUIFIEDGLOBAL__.rootfolder..".elements") or nil,
     registry = {
         -- * Registers an element with the internal registry.
@@ -341,6 +345,30 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
                 return false
             end
         end,
+
+        --* Sets the draw functionality
+        ---@param set boolean
+        setDraw = function(set)
+            guifiedinternal.enabledraw = set or false
+        end,
+
+        --* Sets the update functionality
+        ---@param set boolean
+        setUpdate = function(set)
+            guifiedinternal.enableupdate = set or false
+        end,
+
+        -- * Returns the current draw status.
+        ---@return boolean True if drawing is enabled, false otherwise.
+        getDrawStatus = function()
+            return (guifiedinternal.enabledraw)
+        end,
+
+        -- * Returns the current update status.
+        ---@return boolean True if updating is enabled, false otherwise.
+        getUpdateStatus = function()
+            return (guifiedinternal.enableupdate)
+        end,
     },
 
     debug = {
@@ -431,7 +459,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
         end,
 
         -- * Toggles the draw functionality on or off.
-        --! This function is deprecated use setDraw insted
+        --! This function is deprecated use registry.setDraw insted
         ---@deprecated
         toggleDraw = function()
             logger.warn("toggerDraw is deprecated use setDraw insted")
@@ -439,35 +467,11 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
         end,
 
         -- * Toggles the update functionality on or off.
-        --! This function is deprecated use setUpdate insted
+        --! This function is deprecated use registry.setUpdate insted
         ---@deprecated
         toggleUpdate = function()
             logger.warn("toggerUpdate is deprecated use setUpdate insted")
             guifiedinternal.enableupdate = not (guifiedinternal.enableupdate)
-        end,
-
-        --* Sets the draw functionality
-        ---@param set boolean
-        setDraw = function(set)
-            guifiedinternal.enabledraw = set or false
-        end,
-
-        --* Sets the update functionality
-        ---@param set boolean
-        setUpdate = function(set)
-            guifiedinternal.enableupdate = set or false
-        end,
-
-        -- * Returns the current draw status.
-        ---@return boolean True if drawing is enabled, false otherwise.
-        getDrawStatus = function()
-            return (guifiedinternal.enabledraw)
-        end,
-
-        -- * Returns the current update status.
-        ---@return boolean True if updating is enabled, false otherwise.
-        getUpdateStatus = function()
-            return (guifiedinternal.enableupdate)
         end,
 
         -- * Returns the table containing IDs for registered elements.
