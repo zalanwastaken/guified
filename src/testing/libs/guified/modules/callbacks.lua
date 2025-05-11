@@ -6,38 +6,26 @@ end
 local guified = require(__GUIFIEDGLOBAL__.rootfolder..".init")
 local logger = guified.debug.logger
 
-local callbacksinternal = {
-    json = require(__GUIFIEDGLOBAL__.rootfolder..".dependencies.love2d-tools.modules.database.json.json"),
-    commstack = {}
-}
-
-callbacksinternal.pushtostack = function(msg)
-    callbacksinternal.commstack[#callbacksinternal.commstack + 1] = msg
-end
-callbacksinternal.popfromstack = function()
-    local ret = callbacksinternal.commstack[1]
-    table.remove(callbacksinternal.commstack, 1)
-    return ret
-end
-
 local callbacks = {
-    initCallbackSystem = function()
-        guified.registry.register({
-            name = "callbacks SVC",
-            draw = function()
-                
-            end,
-            update = function()
-                
-            end
-        })
-    end,
-    addCallback = function(element, eventname, firetype, callback)
-        if type(element[eventname]):lower() == "function" then
-            
-        else
-            logger.error("Cant add callback for element "..element.name)
+    addCallback = function(element, eventname, callback)
+        local waselementregistered = false
+        if guified.registry.isRegistered(element) then
+            logger.warn(element.name..":"..element.id.." is registered removing and re-registering to add callback")
+            guified.registry.remove(element)
+            waselementregistered = true
         end
+        if element[eventname] ~= nil then
+            logger.error("Event "..eventname.." is not empty in element "..element.name..":"..element.id or "NO ID")
+            if waselementregistered then
+                logger.error("Element "..element.name..":"..element.id or "NO ID".." was removed re-registering and aborting due to previous error")
+                guified.registry.register(element)
+            end
+            logger.error("Callback addition for "..element.name..":"..element.id.."aborted")
+            return nil
+        end
+        element[eventname] = callback
+        guified.registry.register(element)
+        logger.ok("Successful callback addition for element "..element.name..":"..element.id)
     end
 }
 
