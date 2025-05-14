@@ -99,7 +99,7 @@ export GUIFIEDROOTFOLDER=<Same as the require path in main.lua>
 ### Done! ✨ Enjoy creating with Guified! 😎
 
 ## Latest Guified version
-Latest Guified version is currently B-1.0.0 "Existential Crisis Edition". This brings a lot to the table the most important being stability.<br>
+Latest Guified version is currently B-2.0.0 "Repressed Memory Edition". This brings a lot to the table.<br>
 This version supports the following Love2d version(These versions are tested with Guifed other versions might also run Guified fine):-
 - 11.5 (Mysterious Mysteries)
   - Windows ✅ Full support
