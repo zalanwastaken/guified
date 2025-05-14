@@ -1,3 +1,4 @@
+---@class funcs
 local funcs = {
     ---@param arg any
     ---@param argnum number

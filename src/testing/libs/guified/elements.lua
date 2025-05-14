@@ -1,4 +1,12 @@
-local elementsinternal = require(__GUIFIEDGLOBAL__.rootfolder..".dependencies.internal.funcs")
+---@type funcs
+local funcs = require(__GUIFIEDGLOBAL__.rootfolder..".dependencies.internal.funcs")
+local elementsinternal = {
+    funcs = {
+        checkArg = funcs.checkArg
+    },
+    types = funcs.types
+}
+funcs = nil
 
 ---@class elements
 local elements = {
@@ -390,6 +398,7 @@ local elements = {
         })
     end,
 
+    --[[
     dropDown = function(x, y, w, h, content, bgclr, fgclr, activebtn)
         fgclr = fgclr or {0, 0, 0, 1}
         bgclr = bgclr or {1, 1, 1, 1}
@@ -435,6 +444,7 @@ local elements = {
             end
         })
     end,
+    --]]
 
     ---@return element
     guifiedsplash = function()

@@ -648,7 +648,7 @@ end
 
 if love.window.getTitle():lower() == "untitled" and not(areweloaded) then
     logger.info("Window title set by guified")
-    logger.warn("Window title was set by guified this disables love.window.setTitle. To prevent this set window title before calling guified init")
+    logger.warn("Window title was set by guified this disables love.window.setTitle To prevent this set window title before calling guified init")
     local setTitle = love.window.setTitle
     love.window.setTitle = nil
     setTitle("Guified: " .. __GUIFIEDGLOBAL__.__VER__)
