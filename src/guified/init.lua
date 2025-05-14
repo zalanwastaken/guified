@@ -1,7 +1,7 @@
 -- * Type info
 ---@alias element table to silence warnings
 ---@alias image table to silence warnings
--- * imp stuff
+-- * functions
 ---@param str string
 ---@return string
 local function replaceSlashWithDot(str)
@@ -11,13 +11,45 @@ end
 local function getScriptFolder()
     return (debug.getinfo(1, "S").source:sub(2):match("(.*/)"))
 end
+---@return number|nil
+local function getIndex(table, val)
+    for i = 1, #table, 1 do
+        if table[i] == val then
+            return (i)
+        end
+    end
+    return (nil)
+end
+---@param length number
+---@return string
+local function idgen(length)
+    local chars = {
+        -- * Small chars
+        "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w",
+        "x", "y", "z", 
+        -- * Capital chars
+        "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W",
+        "X", "Y", "Z", 
+        -- * Numbers
+        "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", 
+        -- * Special chars
+        "!", "@", "#", "$", "%", "^", "&", "*", "(", ")", "-", "_", "=", "+", "{", "}", "[", "]", ":", ";", "'", "<", ">",
+        ",", ".", "?", "/"
+    }
+    local ret = ""
+    for i = 1, length, 1 do
+        ret = ret .. chars[love.math.random(1, #chars)]
+    end
+    return (ret)
+end
+
 local areweloaded = false
 
 -- * setup global var
 if __GUIFIEDGLOBAL__ == nil then
     local function setuprootfolder()
         local folder = replaceSlashWithDot(getScriptFolder())
-        return (os.getenv("GUIFIEDROOTFOLDER") or string.sub(folder, 1, #folder))
+        return (os.getenv("GUIFIEDROOTFOLDER") or string.sub(folder, 1, #folder-1))
     end
     local rootfolder = setuprootfolder()
     -- ? global table containing vars for guified modules
@@ -25,9 +57,8 @@ if __GUIFIEDGLOBAL__ == nil then
         rootfolder = rootfolder,
         fontsize = 12, -- * default font size
         os = love.system.getOS():lower(),
-        __VER__ = "B-1.0.0: Existential Crisis Edition", -- ! GUIFIED VERSION CODENAME
-        __VERINT__ = "B-1.0.0", -- ! GUIFIED VERSION
-        __TYPE__ = "DEV"
+        __VER__ = "B-2.0.0: Repressed Memory Edition", -- ! GUIFIED VERSION CODENAME
+        __VERINT__ = "B-2.0.0" -- ! GUIFIED VERSION
     }
     rootfolder = nil
 else
@@ -35,28 +66,33 @@ else
 end
 
 -- ? requires
-local OSinterop
-if not (areweloaded) then
-    OSinterop = require(__GUIFIEDGLOBAL__.rootfolder .. ".os_interop") -- ? contains ffi 
-    require(__GUIFIEDGLOBAL__.rootfolder .. ".errorhandler") -- * setup errorhandler
-end
+local OSinterop = not(areweloaded) and love.filesystem.getInfo(getScriptFolder().."/os_interop.lua") and require(__GUIFIEDGLOBAL__.rootfolder..".os_interop") or nil
+local errorhandler = not(areweloaded) and love.filesystem.getInfo(getScriptFolder().."/errorhandler.lua") and require(__GUIFIEDGLOBAL__.rootfolder..".errorhandler") or nil
+errorhandler = nil --? we dont need this
 ---@type logger
 local logger = require(__GUIFIEDGLOBAL__.rootfolder .. ".dependencies.love2d-tools.modules.logger.init") -- * logger module
-if not (logger.thread:isRunning()) and not (areweloaded) then
-    logger.startSVC()
-end
+local startlogger = not(logger.thread:isRunning()) and not(areweloaded) and logger.startSVC()
+startlogger = nil --? we dont need this 
 
 -- ? init stuff
-local font = love.graphics.newFont(getScriptFolder() .. "Ubuntu-L.ttf", __GUIFIEDGLOBAL__.fontsize)
+local font
+if love.filesystem.getInfo(getScriptFolder() .. "Ubuntu-L.ttf") then
+    font = love.graphics.newFont(getScriptFolder() .. "Ubuntu-L.ttf", __GUIFIEDGLOBAL__.fontsize)
+else
+    font = love.graphics.newFont(__GUIFIEDGLOBAL__.fontsize)
+end
 
-logger.ok("Got guified root folder " .. __GUIFIEDGLOBAL__.rootfolder)
+logger.info("OS: "..love.system.getOS())
+logger.info("Guified Version: "..__GUIFIEDGLOBAL__.__VER__)
 
-love.graphics.setFont(font, __GUIFIEDGLOBAL__.fontsize)
+logger.ok("Got guified root folder: " .. __GUIFIEDGLOBAL__.rootfolder)
+
+love.graphics.setFont(font)
 love.graphics.setColor(1, 1, 1, 1)
 love.math.setRandomSeed(os.time())
 
 if love.system.getOS():lower() == "linux" then
-    -- logger.warn("Features that use FFI will not work on Linux !")
+    logger.warn("Features that use FFI will not work on Linux !")
 elseif love.system.getOS():lower() == "macos" then
     -- ? If apple was not such a ass and let us run macOS on a vm this would have been supported
     -- ? Like why even lock down something that much ? Too much effort according to me
@@ -71,6 +107,8 @@ logger.ok("init setup done")
 
 if areweloaded then
     logger.error("Guified init was called a second time !")
+else
+    __GUIFIEDGLOBAL__.font = font
 end
 
 -- * Guified code
@@ -92,6 +130,8 @@ local guifiedinternal = {
         textinputstack = {},
         ---@class keypressedstack
         keypressedstack = {},
+        ---@class resizestack
+        resizestack = {},
         ---@class dataholder
         data = {},
         ---@class idholder
@@ -117,6 +157,7 @@ local guifiedinternal = {
     draw = function(drawstack, data, idtbl)
         for i = 1, #idtbl, 1 do
             love.graphics.setColor(1, 1, 1, 1)
+            love.graphics.setFont(font)
             drawstack[idtbl[i]](data[i])
         end
     end,
@@ -133,48 +174,21 @@ local guifiedinternal = {
                 keypressedstack[idtbl[i]](key)
             end
         end
+    end,
+    resize = function(w, h, resizestack, idtbl)
+        for i = 1, #idtbl, 1 do
+            if resizestack[idtbl[i]] ~= nil then
+                resizestack[idtbl[i]](w, h)
+            end
+        end
     end
 }
 logger.ok("setting up internal table done")
 
--- * funcs
-
----@return number|nil
-local function getIndex(table, val)
-    for i = 1, #table, 1 do
-        if table[i] == val then
-            return (i)
-        end
-    end
-    return (nil)
-end
----@param length number
----@return string
-local function idgen(length)
-    local chars = { -- * Small chars
-    "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w",
-    "x", "y", "z", -- * Capital chars
-    "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W",
-    "X", "Y", "Z", -- * Numbers
-    "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", -- * Special chars
-    "!", "@", "#", "$", "%", "^", "&", "*", "(", ")", "-", "_", "=", "+", "{", "}", "[", "]", ":", ";", "'", "<", ">",
-    ",", ".", "?", "/"}
-    local ret = ""
-    for i = 1, length, 1 do
-        ret = ret .. chars[love.math.random(1, #chars)]
-    end
-    return (ret)
-end
-local function mergetables(t1, t2)
-    for k, v in pairs(t2) do
-        t1[k] = v
-    end
-    return t1
-end
-
--- ? guified return table
+-- * guified return table
 ---@class guified
 local guified = {
+    -- * version licence author stuff
     __VER__ = __GUIFIEDGLOBAL__.__VER__,
     __VERINT__ = __GUIFIEDGLOBAL__.__VERINT__,
     __LICENCE__ = [[
@@ -189,11 +203,13 @@ Permission is hereby granted, free of charge, to any person obtaining a copy of 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ]],
     __AUTHOR__ = "Zalanwastaken",
-    registry = {
-        -- * Contains the element constructor functions
-        ---@type elements
-        elements = require(__GUIFIEDGLOBAL__.rootfolder .. ".elements"),
 
+    -- * actual guified stuff
+
+    -- * Contains the element constructor functions
+    ---@type elements
+    elements = love.filesystem.getInfo(getScriptFolder().."elements.lua") and require(__GUIFIEDGLOBAL__.rootfolder..".elements") or nil,
+    registry = {
         -- * Registers an element with the internal registry.
         -- * Validates the element's ID length, generates a unique ID, and adds it to the appropriate stacks.
         -- * Logs errors if non-function types are found for required fields.
@@ -221,6 +237,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
                 guifiedinternal.internalregistry.ids[#guifiedinternal.internalregistry.ids + 1] = element.id
                 if type(element.draw):lower() == "function" then
                     guifiedinternal.internalregistry.drawstack[element.id] = element.draw
+                    logger.info("draw registered for element " .. element.name .. ":" .. element.id)
                 else
                     logger.error("Non-function data type in function field for draw in element " .. element.name)
                     logger.error("Critical element function draw missing. Registering element " .. element.name ..
@@ -230,7 +247,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
                 if element.update ~= nil then
                     if type(element.update):lower() == "function" then
                         guifiedinternal.internalregistry.updatestack[element.id] = element.update
-                        logger.info("element " .. element.name .. " update registered ID: " .. element.id)
+                        logger.info("update registered for element " .. element.name .. ":" .. element.id)
                     else
                         logger.error("Non-function data type in function field for update in element " .. element.name)
                     end
@@ -238,7 +255,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
                 if element.textinput ~= nil then
                     if type(element.textinput):lower() == "function" then
                         guifiedinternal.internalregistry.textinputstack[element.id] = element.textinput
-                        logger.info("element " .. element.name .. " textinput registered ID: " .. element.id)
+                        logger.info("textinput registered for element " .. element.name .. ":" .. element.id)
                     else
                         logger.error("Non-function data type in function field for textinput in element " ..
                                          element.name)
@@ -247,13 +264,21 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
                 if element.keypressed ~= nil then
                     if type(element.keypressed):lower() == "function" then
                         guifiedinternal.internalregistry.keypressedstack[element.id] = element.keypressed
-                        logger.info("element " .. element.name .. " textinput registered ID: " .. element.id)
+                        logger.info("keypressed registered for element " .. element.name .. ":" .. element.id)
                     else
                         logger.error("Non-function data type in function field for keypressed in element " ..
                                          element.name)
                     end
                 end
-                logger.info("element " .. element.name .. " draw registered ID: " .. element.id)
+                if element.resize ~= nil then
+                    if type(element.resize):lower() == "function" then
+                        guifiedinternal.internalregistry.resizestack[element.id] = element.resize
+                        logger.info("resize registered for element " .. element.name .. ":" .. element.id)
+                    else
+                        logger.error("Non-function data type in function field for resize in element " ..
+                            element.name)
+                    end
+                end
                 return (true)
             else
                 logger.error("No element provided to register. Aborting")
@@ -281,7 +306,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
                     if guifiedinternal.internalregistry.drawstack[element.id] ~= nil then
                         guifiedinternal.internalregistry.drawstack[element.id] = nil
                     else
-                        logger.warn("Broken element ? NAME:" .. element.name .. " ID:" .. element.id) -- ? this will only happen in like once in a mil
+                        logger.warn("Broken element ? NAME:" .. element.name .. ":" .. element.id) -- ? this will only happen in like once in a mil
                     end
                     if guifiedinternal.internalregistry.updatestack[element.id] ~= nil then
                         guifiedinternal.internalregistry.updatestack[element.id] = nil
@@ -292,9 +317,12 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
                     if guifiedinternal.internalregistry.keypressedstack[element.id] ~= nil then
                         guifiedinternal.internalregistry.keypressedstack[element.id] = nil
                     end
+                    if guifiedinternal.internalregistry.resizestack[element.id] ~= nil then
+                        guifiedinternal.internalregistry.resizestack[element.id] = nil
+                    end
                     table.remove(guifiedinternal.internalregistry.ids, idindex)
                     idindex = nil
-                    logger.info("element " .. element.name .. " removed ID: " .. element.id)
+                    logger.info("Removing element " .. element.name .. ":" .. element.id)
                     element.id = nil
                     return (true)
                 else
@@ -305,7 +333,42 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
                 logger.error("No element provided to remove. Aborting")
                 return (false)
             end
-        end
+        end,
+
+        -- * checks if the element provided is registered or not
+        ---@param element element
+        ---@return boolean
+        isRegistered = function(element)
+            if element.id then
+                return true
+            else
+                return false
+            end
+        end,
+
+        --* Sets the draw functionality
+        ---@param set boolean
+        setDraw = function(set)
+            guifiedinternal.enabledraw = set or false
+        end,
+
+        --* Sets the update functionality
+        ---@param set boolean
+        setUpdate = function(set)
+            guifiedinternal.enableupdate = set or false
+        end,
+
+        -- * Returns the current draw status.
+        ---@return boolean True if drawing is enabled, false otherwise.
+        getDrawStatus = function()
+            return (guifiedinternal.enabledraw)
+        end,
+
+        -- * Returns the current update status.
+        ---@return boolean True if updating is enabled, false otherwise.
+        getUpdateStatus = function()
+            return (guifiedinternal.enableupdate)
+        end,
     },
 
     debug = {
@@ -317,45 +380,74 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
     },
 
     extcalls = {
-        -- * Draw function that manages rendering.
-        -- * Calls the guifiedinternal.draw method to process all drawable elements
-        -- * from the drawstack in the internal registry.
+        --* Handles draw event
+        --* Calls guifiedinternal.draw
+        --* draw handler
         drawf = function()
-            guifiedinternal.draw(guifiedinternal.internalregistry.drawstack, guifiedinternal.internalregistry.data)
+            guifiedinternal.draw(guifiedinternal.internalregistry.drawstack, guifiedinternal.internalregistry.data, guifiedinternal.internalregistry.ids)
         end,
-        -- * Update function that manages updating.
-        -- * Calls the guifiedinternal.update method with the average delta time and
-        -- * processes elements from the updatestack and associated ids in the internal registry.
+
+        --* Handles update event
+        --* Calls guifiedinternal.update
+        --* update handler
         updatef = function()
             guifiedinternal.update(love.timer.getAverageDelta(), guifiedinternal.internalregistry.updatestack,
                 guifiedinternal.internalregistry.ids)
         end,
+
         -- * Handles text input events.
         ---@param key string The key argument from the love.textinput callback.
-        -- * Passes the input to the guifiedinternal.textinput method, which processes
-        -- * text input handlers from the textinputstack in the internal registry.
+        -- * Passes the input to the guifiedinternal.textinput method
+        -- * textinput handler
         textinputf = function(key)
             guifiedinternal.textinput(key, guifiedinternal.internalregistry.textinputstack,
                 guifiedinternal.internalregistry.ids)
         end,
+
+        -- * handles keypressed events
+        ---@param key string The key argument from love.keypressed callback
+        -- * Passes the input to the guifiedinternal.keypressed methord
+        -- * keypressed handler
+        keypressedf = function(key)
+            guifiedinternal.textinput(key, guifiedinternal.internalregistry.keypressedstack, guifiedinternal.internalregistry.ids)
+        end,
+
+        --* Handles resize event.
+        ---@param w number
+        ---@param h number
+        --* Passes input to guifiedinternal.resize methord
+        --* resize handler
+        resizef = function(w, h)
+            guifiedinternal.resize(w, h, guifiedinternal.internalregistry.resizestack, guifiedinternal.internalregistry.ids)
+        end,
+
         -- * Returns the current drawstack.
         ---@return drawstack The table containing drawable elements.
         getDrawStack = function()
             return (guifiedinternal.internalregistry.drawstack)
         end,
+
         -- * Returns the current updatestack.
         ---@return updatestack The table containing updateable elements.
         getUpdateStack = function()
             return (guifiedinternal.internalregistry.updatestack)
         end,
+
         -- * Returns the current textinputstack.
-        ---@return textinputstack The table containing text input handlers.
+        ---@return textinputstack The table containing textinput handlers.
         getTextInputStack = function()
             return (guifiedinternal.internalregistry.textinputstack)
         end,
+
+        -- * returns the keypressedstack
+        ---@return keypressedstack The table containing keypressed handlers
+        getKeypressedStack = function()
+            return(guifiedinternal.internalregistry.keypressedstack)
+        end,
+
         -- * Quit function the code that needs the be executed when the application quits
         quit = function()
-            logger.info("Quit exec !")
+            logger.regular("Bye Bye !")
             logger.stopSVC()
         end
     },
@@ -365,54 +457,62 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
         setWindowToBeOnTop = function()
             guifiedinternal.setWindowToBeOnTop(love.window.getTitle())
         end,
+
         -- * Toggles the draw functionality on or off.
+        --! This function is deprecated use registry.setDraw insted
+        ---@deprecated
         toggleDraw = function()
+            logger.warn("toggerDraw is deprecated use setDraw insted")
             guifiedinternal.enabledraw = not (guifiedinternal.enabledraw)
         end,
+
         -- * Toggles the update functionality on or off.
+        --! This function is deprecated use registry.setUpdate insted
+        ---@deprecated
         toggleUpdate = function()
+            logger.warn("toggerUpdate is deprecated use setUpdate insted")
             guifiedinternal.enableupdate = not (guifiedinternal.enableupdate)
         end,
-        -- * Returns the current draw status.
-        ---@return boolean True if drawing is enabled, false otherwise.
-        getDrawStatus = function()
-            return (guifiedinternal.enabledraw)
-        end,
-        -- * Returns the current update status.
-        ---@return boolean True if updating is enabled, false otherwise.
-        getUpdateStatus = function()
-            return (guifiedinternal.enableupdate)
-        end,
+
         -- * Returns the table containing IDs for registered elements.
         ---@return table The table of IDs.
         getIdTable = function()
             return (guifiedinternal.internalregistry.ids)
         end,
+
         -- * Returns the current font size.
         -- ! This function is deprecated use `__GUIFIEDGLOBAL__.fontsize` variable insted
         ---@deprecated
         ---@return number The size of the font.
         getFontSize = function()
+            logger.warn("getFontSize is deprecated use __GUIFIEDGLOBAL__.fontsize variable insted")
             return (__GUIFIEDGLOBAL__.fontsize)
         end,
+
         -- * Sets a new font size.
         -- ! This function is deprecated use `__GUIFIEDGLOBAL__.fontsize` variable insted
         ---@deprecated
         ---@param size number The new font size to be set.
         setFontSize = function(size)
+            logger.warn("setFontSize is deprecated use __GUIFIEDGLOBAL__.fontsize variable insted")
             __GUIFIEDGLOBAL__.fontsize = size
         end,
-        -- * checks if the element provided is registered or not
-        ---@param element element
-        ---@return boolean
-        isRegistered = function(element)
-            if element.id then
-                return true
-            else
-                return false
+
+        ---@param font string|number filepath to the font or the font size
+        ---@param size number size of the font
+        updateFont = function(font, size)
+            if font == nil then
+                font = size
+                size = nil
+                logger.warn("Please use __GUIFIEDGLOBAL__.fontsize variable to set the font size insted")
             end
+            __GUIFIEDGLOBAL__.font = love.graphics.newFont(font, size)
+            __GUIFIEDGLOBAL__.fontsize = size or font
         end
-    }
+    },
+
+    --! New thing Gufied Processed Event
+    GPE = {}
 }
 logger.ok("setting up main return table done")
 
@@ -446,12 +546,12 @@ function love.run()
         if love.timer then
             dt = love.timer.step()
         end
-        -- ? guified code
+        -- * guified code
         if guifiedinternal.update and guifiedinternal.enableupdate then
             guifiedinternal.internalregistry.data = guifiedinternal.update(dt, guifiedinternal.internalregistry
                 .updatestack, guifiedinternal.internalregistry.ids)
         end
-        -- ? guified code end
+        -- * guified code end
         -- Call update and draw
         if love.update then
             love.update(dt)
@@ -462,12 +562,12 @@ function love.run()
             if love.draw then
                 love.draw()
             end
-            -- ? guified code
+            -- * guified code
             if guifiedinternal.draw and guifiedinternal.enabledraw then
                 guifiedinternal.draw(guifiedinternal.internalregistry.drawstack, guifiedinternal.internalregistry.data,
                     guifiedinternal.internalregistry.ids)
             end
-            -- ? guified code end
+            -- * guified code end
             love.graphics.present()
         end
         if love.timer then
@@ -485,9 +585,15 @@ end
 logger.ok("textinput hook setup done")
 
 function love.keypressed(key)
-    guifiedinternal.keypressed(key, guifiedinternal.internalregistry.keypressedstack, guifiedinternal.internalregistry.ids)
+    guifiedinternal.keypressed(key, guifiedinternal.internalregistry.keypressedstack,
+        guifiedinternal.internalregistry.ids)
 end
 logger.ok("keypressed hook setup done")
+
+function love.resize(w, h)
+    guifiedinternal.resize(w, h, guifiedinternal.internalregistry.resizestack, guifiedinternal.internalregistry.ids)
+end
+logger.ok("resize hook setup done")
 
 -- * love quit function
 function love.quit()
@@ -499,11 +605,13 @@ logger.ok("Exit function setup done")
 -- * post init
 logger.info("Doing post init")
 
-if not (areweloaded) then
+if not (areweloaded) and OSinterop ~= nil then
     guifiedinternal.setWindowToBeOnTop = OSinterop(logger.warn).setWindowToBeOnTop -- ? requires ffi so added by OSinterop here after (almost) everything is done
 end
 guifiedinternal.internalregistry.warndata = {}
 
+---@deprecated
+--! this function will be removed
 -- * puts a warning on the screen and logs it
 ---@param warning string
 guified.debug.warn = function(warning)
@@ -520,6 +628,8 @@ guified.debug.warn = function(warning)
     })
 end
 
+---@deprecated
+--! this function will be removed
 -- * puts a error on the screen and logs it
 ---@param err string
 guified.debug.error = function(err)
@@ -535,18 +645,24 @@ guified.debug.error = function(err)
         end
     })
 end
-if __GUIFIEDGLOBAL__.__TYPE__ == "DEV" then
-    love.window.setTitle("Guified: "..__GUIFIEDGLOBAL__.__VER__)
+
+if love.window.getTitle():lower() == "untitled" and not(areweloaded) then
+    logger.info("Window title set by guified")
+    logger.warn("Window title was set by guified this disables love.window.setTitle To prevent this set window title before calling guified init")
+    local setTitle = love.window.setTitle
+    love.window.setTitle = nil
+    setTitle("Guified: " .. __GUIFIEDGLOBAL__.__VER__)
     local title = love.window.getTitle()
     guified.registry.register({
-        name = "guified internal SVC",
+        name = "guified internal title SVC",
         draw = function()
         end,
         update = function()
-            love.window.setTitle(title .. " FPS:" .. love.timer.getFPS())
+            setTitle(title .. " FPS:" .. love.timer.getFPS())
         end
     })
 end
+
 logger.ok("GUIFIED init success !")
 
 return (guified)
