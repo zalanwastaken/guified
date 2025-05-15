@@ -51,7 +51,7 @@ Guified is a flexible, ~~lightweight~~ framework built for developers who want c
   - Custom error handler implimented by Guified.
 - **Version Information:**
   - 🔢 Built-in version tracking ensures you're always aware of the library's iteration and improvements.
-- **😊 Choose what you need(TESTING BUILD):**
+- **😊 Choose what you need:**
   - ❌ Simply remove the files whose features you dont use gufied will adapt.
   - Eg. Dont use modules ? ```rm -rf modules/```. Dont use FFI features ? ```rm -rf os_interop.lua```.
 - **🫵 Guified adapts to you**
@@ -99,7 +99,7 @@ export GUIFIEDROOTFOLDER=<Same as the require path in main.lua>
 ### Done! ✨ Enjoy creating with Guified! 😎
 
 ## Latest Guified version
-Latest Guified version is currently B-2.0.0 "Repressed Memory Edition". This brings a lot to the table.<br>
+Latest Guified version is currently B-2.0.0 "Repressed Memory Edition".<br>
 This version supports the following Love2d version(These versions are tested with Guifed other versions might also run Guified fine):-
 - 11.5 (Mysterious Mysteries)
   - Windows ✅ Full support
