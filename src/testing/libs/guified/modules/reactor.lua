@@ -7,6 +7,7 @@
 *░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░      ░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░        ░▒▓█▓▒░  ░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░ 
 *░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░      ░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░  ░▒▓█▓▒░░▒▓█▓▒░▒▓█▓▒░░▒▓█▓▒░ 
 *░▒▓█▓▒░░▒▓█▓▒░▒▓████████▓▒░▒▓█▓▒░░▒▓█▓▒░░▒▓██████▓▒░  ░▒▓█▓▒░   ░▒▓██████▓▒░░▒▓█▓▒░░▒▓█▓▒░ 
+? Welcome to a dirty system capable of reaching 900 FPS
 --]]
 
 if __GUIFIEDGLOBAL__ == nil then
@@ -16,6 +17,10 @@ end
 ---@type guified
 local guified = require(__GUIFIEDGLOBAL__.rootfolder..".init")
 local logger = guified.debug.logger
+---@type funcs
+local funcs = require(__GUIFIEDGLOBAL__.rootfolder..".dependencies.internal.funcs")
+
+logger.info("Reactor init started")
 
 local reactorinternal = {
     funcs = {
@@ -38,6 +43,9 @@ local reactorinternal = {
 
 local reactor = {
     registry = {
+        ---@param settings table
+        ---@param element element
+        ---@param idlen number optional
         register = function(settings, element, idlen)
             local elementIMPL = element
             local mt = {
@@ -48,7 +56,7 @@ local reactor = {
                     return elementIMPL[key]
                 end
             }
-            element = setmetatable({update = elementIMPL.update or nil, draw = elementIMPL.draw}, mt)
+            element = setmetatable({update = elementIMPL.update or nil, draw = elementIMPL.draw or nil}, mt)
             guified.registry.register(element, idlen)
             reactorinternal.dirty = true
             return(element)
@@ -61,6 +69,13 @@ local reactor = {
             setWH = true,
             setText = true
         }
+    },
+    funcs = {
+        ---@param dirty boolean
+        setDirty = function(dirty)
+            funcs.checkArg(dirty, 1, funcs.types.bool, "setDirty")
+            reactorinternal.dirty = dirty
+        end
     }
 }
 
@@ -110,5 +125,14 @@ function love.run()
         end
     end
 end
+logger.ok("love.run override done")
+
+function love.resize(w, h)
+    guified.extcalls.resizef(w, h)
+    reactorinternal.funcs.draw(true)
+end
+logger.ok("love.resize override done")
+logger.ok("Reactor init done")
+logger.warn("Reactor is experimental. Proceed like ur defusing a bomb")
 
 return reactor
