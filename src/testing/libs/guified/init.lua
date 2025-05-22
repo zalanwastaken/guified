@@ -458,44 +458,10 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
             guifiedinternal.setWindowToBeOnTop(love.window.getTitle())
         end,
 
-        -- * Toggles the draw functionality on or off.
-        --! This function is deprecated use registry.setDraw insted
-        ---@deprecated
-        toggleDraw = function()
-            logger.warn("toggerDraw is deprecated use setDraw insted")
-            guifiedinternal.enabledraw = not (guifiedinternal.enabledraw)
-        end,
-
-        -- * Toggles the update functionality on or off.
-        --! This function is deprecated use registry.setUpdate insted
-        ---@deprecated
-        toggleUpdate = function()
-            logger.warn("toggerUpdate is deprecated use setUpdate insted")
-            guifiedinternal.enableupdate = not (guifiedinternal.enableupdate)
-        end,
-
         -- * Returns the table containing IDs for registered elements.
         ---@return table The table of IDs.
         getIdTable = function()
             return (guifiedinternal.internalregistry.ids)
-        end,
-
-        -- * Returns the current font size.
-        -- ! This function is deprecated use `__GUIFIEDGLOBAL__.fontsize` variable insted
-        ---@deprecated
-        ---@return number The size of the font.
-        getFontSize = function()
-            logger.warn("getFontSize is deprecated use __GUIFIEDGLOBAL__.fontsize variable insted")
-            return (__GUIFIEDGLOBAL__.fontsize)
-        end,
-
-        -- * Sets a new font size.
-        -- ! This function is deprecated use `__GUIFIEDGLOBAL__.fontsize` variable insted
-        ---@deprecated
-        ---@param size number The new font size to be set.
-        setFontSize = function(size)
-            logger.warn("setFontSize is deprecated use __GUIFIEDGLOBAL__.fontsize variable insted")
-            __GUIFIEDGLOBAL__.fontsize = size
         end,
 
         ---@param font string|number filepath to the font or the font size
@@ -509,10 +475,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
             __GUIFIEDGLOBAL__.font = love.graphics.newFont(font, size)
             __GUIFIEDGLOBAL__.fontsize = size or font
         end
-    },
-
-    --! New thing Gufied Processed Event
-    GPE = {}
+    }
 }
 logger.ok("setting up main return table done")
 
@@ -609,42 +572,6 @@ if not (areweloaded) and OSinterop ~= nil then
     guifiedinternal.setWindowToBeOnTop = OSinterop(logger.warn).setWindowToBeOnTop -- ? requires ffi so added by OSinterop here after (almost) everything is done
 end
 guifiedinternal.internalregistry.warndata = {}
-
----@deprecated
---! this function will be removed
--- * puts a warning on the screen and logs it
----@param warning string
-guified.debug.warn = function(warning)
-    logger.warn(warning)
-    warning = "[wARNING] " .. warning
-    guifiedinternal.internalregistry.warndata[#guifiedinternal.internalregistry.warndata + 1] = warning
-    local ourpos = #guifiedinternal.internalregistry.warndata
-    guified.registry.register({
-        name = "Guified warning",
-        draw = function()
-            love.graphics.setColor(1, 0, 0)
-            love.graphics.print(warning, 0, ((ourpos - 1) * 12) + 2)
-        end
-    })
-end
-
----@deprecated
---! this function will be removed
--- * puts a error on the screen and logs it
----@param err string
-guified.debug.error = function(err)
-    logger.error(err)
-    err = "[ERROR] " .. err
-    guifiedinternal.internalregistry.warndata[#guifiedinternal.internalregistry.warndata + 1] = err
-    local ourpos = #guifiedinternal.internalregistry.warndata
-    guified.registry.register({
-        name = "Guified error",
-        draw = function()
-            love.graphics.setColor(1, 0, 0)
-            love.graphics.print(err, 0, ((ourpos - 1) * 12) + 2)
-        end
-    })
-end
 
 if love.window.getTitle():lower() == "untitled" and not(areweloaded) then
     logger.info("Window title set by guified")
