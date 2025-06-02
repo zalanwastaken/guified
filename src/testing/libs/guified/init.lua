@@ -57,8 +57,8 @@ if __GUIFIEDGLOBAL__ == nil then
         rootfolder = rootfolder,
         fontsize = 12, -- * default font size
         os = love.system.getOS():lower(),
-        __VER__ = "B-2.0.0: Repressed Memory Edition", -- ! GUIFIED VERSION CODENAME
-        __VERINT__ = "B-2.0.0" -- ! GUIFIED VERSION
+        __VER__ = "B-2.0.0: Repressed Memory Edition", -- ! GUIFIED VERSION AND CODENAME
+        __VERINT__ = "B-2.1.0" -- ! GUIFIED VERSION
     }
     rootfolder = nil
 else
@@ -92,7 +92,7 @@ love.graphics.setColor(1, 1, 1, 1)
 love.math.setRandomSeed(os.time())
 
 if love.system.getOS():lower() == "linux" then
-    logger.warn("Features that use FFI will not work on Linux !")
+    logger.warn("FFI features on Linux are not supported")
 elseif love.system.getOS():lower() == "macos" then
     -- ? If apple was not such a ass and let us run macOS on a vm this would have been supported
     -- ? Like why even lock down something that much ? Too much effort according to me
@@ -569,9 +569,8 @@ logger.ok("Exit function setup done")
 logger.info("Doing post init")
 
 if not (areweloaded) and OSinterop ~= nil then
-    guifiedinternal.setWindowToBeOnTop = OSinterop(logger.warn).setWindowToBeOnTop -- ? requires ffi so added by OSinterop here after (almost) everything is done
+    guifiedinternal.setWindowToBeOnTop = OSinterop -- ? requires ffi so added by OSinterop here after (almost) everything is done
 end
-guifiedinternal.internalregistry.warndata = {}
 
 if love.window.getTitle():lower() == "untitled" and not(areweloaded) then
     logger.info("Window title set by guified")
