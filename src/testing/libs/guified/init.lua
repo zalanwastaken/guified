@@ -66,12 +66,12 @@ else
 end
 
 -- ? requires
-local OSinterop = not(areweloaded) and love.filesystem.getInfo(getScriptFolder().."/os_interop.lua") and require(__GUIFIEDGLOBAL__.rootfolder..".os_interop") or nil
-local errorhandler = not(areweloaded) and love.filesystem.getInfo(getScriptFolder().."/errorhandler.lua") and require(__GUIFIEDGLOBAL__.rootfolder..".errorhandler") or nil
-errorhandler = nil --? we dont need this
 ---@type logger
 local logger = require(__GUIFIEDGLOBAL__.rootfolder .. ".dependencies.love2d-tools.modules.logger.init") -- * logger module
 local startlogger = not(logger.thread:isRunning()) and not(areweloaded) and logger.startSVC()
+local OSinterop = not(areweloaded) and love.filesystem.getInfo(getScriptFolder().."/os_interop.lua") and require(__GUIFIEDGLOBAL__.rootfolder..".os_interop") or nil
+local errorhandler = not(areweloaded) and love.filesystem.getInfo(getScriptFolder().."/errorhandler.lua") and require(__GUIFIEDGLOBAL__.rootfolder..".errorhandler") or nil
+errorhandler = nil --? we dont need this
 startlogger = nil --? we dont need this 
 
 -- ? init stuff
@@ -84,8 +84,7 @@ end
 
 logger.info("OS: "..love.system.getOS())
 logger.info("Guified Version: "..__GUIFIEDGLOBAL__.__VER__)
-
-logger.ok("Got guified root folder: " .. __GUIFIEDGLOBAL__.rootfolder)
+logger.info("Guified root folder: " .. __GUIFIEDGLOBAL__.rootfolder)
 
 love.graphics.setFont(font)
 love.graphics.setColor(1, 1, 1, 1)
@@ -122,26 +121,21 @@ local guifiedinternal = {
 
     ---@class internalregistry
     internalregistry = {
-        ---@class drawstack
         drawstack = {},
-        ---@class updatestack
         updatestack = {},
-        ---@class textinputstack
         textinputstack = {},
-        ---@class keypressedstack
         keypressedstack = {},
-        ---@class resizestack
         resizestack = {},
-        ---@class dataholder
         data = {},
-        ---@class idholder
         ids = {}
     },
 
     -- ? funcs
 
+    setWindowToBeOnTop = not(areweloaded) and OSinterop.setWindowToBeOnTop,
     ---@param dt number
-    ---@param updatestack updatestack
+    ---@param updatestack table
+    ---@param idtbl table
     ---@return table returns the data prossesed by the updatestack
     update = function(dt, updatestack, idtbl)
         local data = {}
@@ -152,8 +146,9 @@ local guifiedinternal = {
         end
         return (data)
     end,
-    ---@param drawstack drawstack
+    ---@param drawstack table
     ---@param data table
+    ---@param idtbl table
     draw = function(drawstack, data, idtbl)
         for i = 1, #idtbl, 1 do
             love.graphics.setColor(1, 1, 1, 1)
@@ -161,6 +156,9 @@ local guifiedinternal = {
             drawstack[idtbl[i]](data[i])
         end
     end,
+    ---@param key string
+    ---@param textinputstack table
+    ---@param idtbl table
     textinput = function(key, textinputstack, idtbl)
         for i = 1, #idtbl, 1 do
             if textinputstack[idtbl[i]] ~= nil then
@@ -168,6 +166,9 @@ local guifiedinternal = {
             end
         end
     end,
+    ---@param key string
+    ---@param keypressedstack table
+    ---@param idtbl table
     keypressed = function(key, keypressedstack, idtbl)
         for i = 1, #idtbl, 1 do
             if keypressedstack[idtbl[i]] ~= nil then
@@ -175,6 +176,10 @@ local guifiedinternal = {
             end
         end
     end,
+    ---@param w number
+    ---@param h number
+    ---@param resizestack table
+    ---@param idtbl table
     resize = function(w, h, resizestack, idtbl)
         for i = 1, #idtbl, 1 do
             if resizestack[idtbl[i]] ~= nil then
@@ -306,7 +311,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
                     if guifiedinternal.internalregistry.drawstack[element.id] ~= nil then
                         guifiedinternal.internalregistry.drawstack[element.id] = nil
                     else
-                        logger.warn("Broken element ? NAME:" .. element.name .. ":" .. element.id) -- ? this will only happen in like once in a mil
+                        logger.warn("Broken element ? " .. element.name .. ":" .. element.id) -- ? this will only happen in like once in a mil
                     end
                     if guifiedinternal.internalregistry.updatestack[element.id] ~= nil then
                         guifiedinternal.internalregistry.updatestack[element.id] = nil
@@ -369,6 +374,12 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
         getUpdateStatus = function()
             return (guifiedinternal.enableupdate)
         end,
+
+        -- * Returns the table containing IDs for registered elements.
+        ---@return table The table of IDs.
+        getIdTable = function()
+            return (guifiedinternal.internalregistry.ids)
+        end,
     },
 
     debug = {
@@ -391,7 +402,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
         --* Calls guifiedinternal.update
         --* update handler
         updatef = function()
-            guifiedinternal.update(love.timer.getAverageDelta(), guifiedinternal.internalregistry.updatestack,
+            guifiedinternal.internalregistry.data = guifiedinternal.update(love.timer.getAverageDelta(), guifiedinternal.internalregistry.updatestack,
                 guifiedinternal.internalregistry.ids)
         end,
 
@@ -422,25 +433,25 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
         end,
 
         -- * Returns the current drawstack.
-        ---@return drawstack The table containing drawable elements.
+        ---@return table The table containing drawable elements.
         getDrawStack = function()
             return (guifiedinternal.internalregistry.drawstack)
         end,
 
         -- * Returns the current updatestack.
-        ---@return updatestack The table containing updateable elements.
+        ---@return table The table containing updateable elements.
         getUpdateStack = function()
             return (guifiedinternal.internalregistry.updatestack)
         end,
 
         -- * Returns the current textinputstack.
-        ---@return textinputstack The table containing textinput handlers.
+        ---@return table The table containing textinput handlers.
         getTextInputStack = function()
             return (guifiedinternal.internalregistry.textinputstack)
         end,
 
         -- * returns the keypressedstack
-        ---@return keypressedstack The table containing keypressed handlers
+        ---@return table The table containing keypressed handlers
         getKeypressedStack = function()
             return(guifiedinternal.internalregistry.keypressedstack)
         end,
@@ -456,12 +467,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
         -- * Sets the window to always be on top.
         setWindowToBeOnTop = function()
             guifiedinternal.setWindowToBeOnTop(love.window.getTitle())
-        end,
-
-        -- * Returns the table containing IDs for registered elements.
-        ---@return table The table of IDs.
-        getIdTable = function()
-            return (guifiedinternal.internalregistry.ids)
         end,
 
         ---@param font string|number filepath to the font or the font size
@@ -511,8 +516,7 @@ function love.run()
         end
         -- * guified code
         if guifiedinternal.update and guifiedinternal.enableupdate then
-            guifiedinternal.internalregistry.data = guifiedinternal.update(dt, guifiedinternal.internalregistry
-                .updatestack, guifiedinternal.internalregistry.ids)
+            guified.extcalls.updatef()
         end
         -- * guified code end
         -- Call update and draw
@@ -527,8 +531,7 @@ function love.run()
             end
             -- * guified code
             if guifiedinternal.draw and guifiedinternal.enabledraw then
-                guifiedinternal.draw(guifiedinternal.internalregistry.drawstack, guifiedinternal.internalregistry.data,
-                    guifiedinternal.internalregistry.ids)
+                guified.extcalls.drawf()
             end
             -- * guified code end
             love.graphics.present()
@@ -543,18 +546,17 @@ logger.ok("main loop setup done")
 -- * textinput event function
 ---@param key any
 function love.textinput(key)
-    guifiedinternal.textinput(key, guifiedinternal.internalregistry.textinputstack, guifiedinternal.internalregistry.ids)
+    guified.extcalls.textinputf(key)
 end
 logger.ok("textinput hook setup done")
 
 function love.keypressed(key)
-    guifiedinternal.keypressed(key, guifiedinternal.internalregistry.keypressedstack,
-        guifiedinternal.internalregistry.ids)
+    guified.extcalls.keypressedf(key)
 end
 logger.ok("keypressed hook setup done")
 
 function love.resize(w, h)
-    guifiedinternal.resize(w, h, guifiedinternal.internalregistry.resizestack, guifiedinternal.internalregistry.ids)
+    guified.extcalls.resizef(w, h)
 end
 logger.ok("resize hook setup done")
 
@@ -568,21 +570,25 @@ logger.ok("Exit function setup done")
 -- * post init
 logger.info("Doing post init")
 
+--[[
+
 if not (areweloaded) and OSinterop ~= nil then
     guifiedinternal.setWindowToBeOnTop = OSinterop -- ? requires ffi so added by OSinterop here after (almost) everything is done
 end
+--]]
 
 if love.window.getTitle():lower() == "untitled" and not(areweloaded) then
     logger.info("Window title set by guified")
     logger.warn("Window title was set by guified this disables love.window.setTitle To prevent this set window title before calling guified init")
+
     local setTitle = love.window.setTitle
     love.window.setTitle = nil
     setTitle("Guified: " .. __GUIFIEDGLOBAL__.__VER__)
     local title = love.window.getTitle()
+
     guified.registry.register({
         name = "guified internal title SVC",
-        draw = function()
-        end,
+        draw = function()end,
         update = function()
             setTitle(title .. " FPS:" .. love.timer.getFPS())
         end

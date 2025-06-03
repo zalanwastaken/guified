@@ -40,7 +40,6 @@ if os == "windows" then
 elseif os == "linux" then
     ret = {
         setWindowToBeOnTop = function()
-            logger.warn("FFI features on Linux are not supported")
             logger.error("Attempt to access FFI feature on linux")
             return (false)
         end
