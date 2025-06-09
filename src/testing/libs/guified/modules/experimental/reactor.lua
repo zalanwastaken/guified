@@ -58,6 +58,7 @@ local reactor = {
         ---@param settings table
         ---@param element element
         ---@param idlen number optional
+        ---@return element use this element after registering
         register = function(settings, element, idlen)
             local elementIMPL = element
             local mt = {
@@ -78,6 +79,7 @@ local reactor = {
             return (element)
         end,
         ---@param element element
+        ---@return element use this element after removing
         remove = function(element)
             local ret = reactorinternal.internalregistry.IMPL[element.id]
             reactorinternal.internalregistry.IMPL[element.id] = nil
@@ -91,7 +93,8 @@ local reactor = {
         default = {
             setPOS = true,
             setWH = true,
-            setText = true
+            setText = true,
+            setClr = true
         },
         null = {}, -- ? bascially no settings
         ---@param setname table a array to gen settings for
@@ -151,7 +154,7 @@ function love.run()
         end -- will pass 0 if love.timer is disabled
         if love.graphics and love.graphics.isActive() then
             reactorinternal.funcs.draw(reactorinternal.dirty)
-            reactorinternal.dirty = reactorinternal.dirty and not (reactorinternal.dirty)
+            reactorinternal.dirty = false
         end
         if love.timer then
             love.timer.sleep(0.001)
@@ -159,6 +162,7 @@ function love.run()
     end
 end
 logger.ok("love.run override done")
+logger.warn("love.draw is diabled by Reactor")
 
 function love.resize(w, h)
     guified.extcalls.resizef(w, h)
