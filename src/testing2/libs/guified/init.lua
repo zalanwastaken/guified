@@ -58,7 +58,7 @@ if __GUIFIEDGLOBAL__ == nil then
         fontsize = 12, -- * default font size
         os = love.system.getOS():lower(),
         __VER__ = "B-2.0.0: Repressed Memory Edition", -- ! GUIFIED VERSION CODENAME
-        __VERINT__ = "B-2.0.0" -- ! GUIFIED VERSION
+        __VERINT__ = "B-2.0.1" -- ! GUIFIED VERSION
     }
     rootfolder = nil
 else
@@ -66,12 +66,12 @@ else
 end
 
 -- ? requires
-local OSinterop = not(areweloaded) and love.filesystem.getInfo(getScriptFolder().."/os_interop.lua") and require(__GUIFIEDGLOBAL__.rootfolder..".os_interop") or nil
-local errorhandler = not(areweloaded) and love.filesystem.getInfo(getScriptFolder().."/errorhandler.lua") and require(__GUIFIEDGLOBAL__.rootfolder..".errorhandler") or nil
-errorhandler = nil --? we dont need this
 ---@type logger
 local logger = require(__GUIFIEDGLOBAL__.rootfolder .. ".dependencies.love2d-tools.modules.logger.init") -- * logger module
 local startlogger = not(logger.thread:isRunning()) and not(areweloaded) and logger.startSVC()
+local OSinterop = not(areweloaded) and love.filesystem.getInfo(getScriptFolder().."/os_interop.lua") and require(__GUIFIEDGLOBAL__.rootfolder..".os_interop") or nil
+local errorhandler = not(areweloaded) and love.filesystem.getInfo(getScriptFolder().."/errorhandler.lua") and require(__GUIFIEDGLOBAL__.rootfolder..".errorhandler") or nil
+errorhandler = nil --? we dont need this
 startlogger = nil --? we dont need this 
 
 -- ? init stuff
