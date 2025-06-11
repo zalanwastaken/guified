@@ -7,5 +7,7 @@ txt.update = function()
     txt.setText("FPS:"..tostring(love.timer.getFPS()))
 end
 
-gridobj.addElement(txt, 90, __GUIFIEDGLOBAL__.fontsize, {type = "stack"})
-gridobj.addElement(guified.elements.text("Hi!", 0, 0), 40, __GUIFIEDGLOBAL__.fontsize, {type = "stack"})
+gridobj.addElement(txt, 90, __GUIFIEDGLOBAL__.fontsize, grid.aligners.stack)
+for i = 1, 10, 1 do
+    gridobj.addElement(guified.elements.text("Hi!", 0, 0), 40, __GUIFIEDGLOBAL__.fontsize, grid.aligners.stack)
+end
