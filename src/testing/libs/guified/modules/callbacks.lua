@@ -1,3 +1,6 @@
+---@deprecated
+--! THIS MODULE IS DEPRECATED AND WILL BE REMOVED
+
 if __GUIFIEDGLOBAL__ == nil then
     return nil
 end
