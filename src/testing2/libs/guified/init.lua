@@ -47,17 +47,16 @@ local areweloaded = false
 
 -- * setup global var
 if __GUIFIEDGLOBAL__ == nil then
-    local function setuprootfolder()
+    local rootfolder = (function()
         local folder = replaceSlashWithDot(getScriptFolder())
         return (os.getenv("GUIFIEDROOTFOLDER") or string.sub(folder, 1, #folder-1))
-    end
-    local rootfolder = setuprootfolder()
+    end)()
     -- ? global table containing vars for guified modules
     __GUIFIEDGLOBAL__ = {
         rootfolder = rootfolder,
         fontsize = 12, -- * default font size
         os = love.system.getOS():lower(),
-        __VER__ = "B-2.0.0: Repressed Memory Edition", -- ! GUIFIED VERSION CODENAME
+        __VER__ = "B-2.0.1: Repressed Memory Edition", -- ! GUIFIED VERSION AND CODENAME
         __VERINT__ = "B-2.0.1" -- ! GUIFIED VERSION
     }
     rootfolder = nil
@@ -84,8 +83,8 @@ end
 
 logger.info("OS: "..love.system.getOS())
 logger.info("Guified Version: "..__GUIFIEDGLOBAL__.__VER__)
-
-logger.ok("Got guified root folder: " .. __GUIFIEDGLOBAL__.rootfolder)
+logger.info("Processor Count: "..love.system.getProcessorCount())
+logger.info("Guified root folder: " .. __GUIFIEDGLOBAL__.rootfolder)
 
 love.graphics.setFont(font)
 love.graphics.setColor(1, 1, 1, 1)
