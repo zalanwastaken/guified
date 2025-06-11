@@ -17,8 +17,6 @@ local function init_interop(warnf)
             static const unsigned int SWP_NOMOVE = 0x0002;
             static const unsigned int SWP_SHOWWINDOW = 0x0040;
         ]]
-    elseif os == "linux" then
-        --warnf("FFI features on Linux are not supported")
     end
     local ret = {}
     if os == "windows" then

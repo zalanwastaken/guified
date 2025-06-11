@@ -47,18 +47,17 @@ local areweloaded = false
 
 -- * setup global var
 if __GUIFIEDGLOBAL__ == nil then
-    local function setuprootfolder()
+    local rootfolder = (function()
         local folder = replaceSlashWithDot(getScriptFolder())
         return (os.getenv("GUIFIEDROOTFOLDER") or string.sub(folder, 1, #folder-1))
-    end
-    local rootfolder = setuprootfolder()
+    end)()
     -- ? global table containing vars for guified modules
     __GUIFIEDGLOBAL__ = {
         rootfolder = rootfolder,
         fontsize = 12, -- * default font size
         os = love.system.getOS():lower(),
-        __VER__ = "B-2.0.0: Repressed Memory Edition", -- ! GUIFIED VERSION CODENAME
-        __VERINT__ = "B-2.0.0" -- ! GUIFIED VERSION
+        __VER__ = "B-2.0.1: Repressed Memory Edition", -- ! GUIFIED VERSION AND CODENAME
+        __VERINT__ = "B-2.0.1" -- ! GUIFIED VERSION
     }
     rootfolder = nil
 else
@@ -66,12 +65,12 @@ else
 end
 
 -- ? requires
-local OSinterop = not(areweloaded) and love.filesystem.getInfo(getScriptFolder().."/os_interop.lua") and require(__GUIFIEDGLOBAL__.rootfolder..".os_interop") or nil
-local errorhandler = not(areweloaded) and love.filesystem.getInfo(getScriptFolder().."/errorhandler.lua") and require(__GUIFIEDGLOBAL__.rootfolder..".errorhandler") or nil
-errorhandler = nil --? we dont need this
 ---@type logger
 local logger = require(__GUIFIEDGLOBAL__.rootfolder .. ".dependencies.love2d-tools.modules.logger.init") -- * logger module
 local startlogger = not(logger.thread:isRunning()) and not(areweloaded) and logger.startSVC()
+local OSinterop = not(areweloaded) and love.filesystem.getInfo(getScriptFolder().."/os_interop.lua") and require(__GUIFIEDGLOBAL__.rootfolder..".os_interop") or nil
+local errorhandler = not(areweloaded) and love.filesystem.getInfo(getScriptFolder().."/errorhandler.lua") and require(__GUIFIEDGLOBAL__.rootfolder..".errorhandler") or nil
+errorhandler = nil --? we dont need this
 startlogger = nil --? we dont need this 
 
 -- ? init stuff
@@ -84,8 +83,8 @@ end
 
 logger.info("OS: "..love.system.getOS())
 logger.info("Guified Version: "..__GUIFIEDGLOBAL__.__VER__)
-
-logger.ok("Got guified root folder: " .. __GUIFIEDGLOBAL__.rootfolder)
+logger.info("Processor Count: "..love.system.getProcessorCount())
+logger.info("Guified root folder: " .. __GUIFIEDGLOBAL__.rootfolder)
 
 love.graphics.setFont(font)
 love.graphics.setColor(1, 1, 1, 1)
