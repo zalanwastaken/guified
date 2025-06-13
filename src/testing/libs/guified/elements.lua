@@ -18,7 +18,6 @@ local elements = {
     ---@param fgclr Color Optional
     ---@param bgclr Color Optional
     ---@param activebtn number Optional
-    ---@return element
     button = function(text, x, y, w, h, bgclr, fgclr, activebtn)
         elementsinternal.funcs.checkArg(text, 1, elementsinternal.types.string, "button")
         elementsinternal.funcs.checkArg(x, 2, elementsinternal.types.int, "button")
@@ -90,7 +89,6 @@ local elements = {
     ---@param text string
     ---@param x number Optional
     ---@param y number Optional
-    ---@return element
     text = function(text, x, y)
         elementsinternal.funcs.checkArg(text, 1, elementsinternal.types.string, "text")
 
@@ -135,7 +133,6 @@ local elements = {
     ---@param y number Optional
     ---@param align string Optional
     ---@param maxalign number Optional
-    ---@return element
     textf = function(text, x, y, align, maxalign)
         elementsinternal.funcs.checkArg(text, 1, elementsinternal.types.string, "textf")
 
@@ -172,7 +169,6 @@ local elements = {
     ---@param x number
     ---@param y number
     ---@param image string|image image or the path to the image file
-    ---@return element
     image = function(x, y, image)
         elementsinternal.funcs.checkArg(x, 1, elementsinternal.types.number, "image")
         elementsinternal.funcs.checkArg(y, 2, elementsinternal.types.number, "image")
@@ -217,7 +213,6 @@ local elements = {
     ---@param activebtn number optional. 1 = left, btn 2 = right btn
     ---@param activebydefault boolean optional is the element active(selected) by default ?
     ---@param limit number optional limit of the enterable text
-    ---@return element
     textInput = function(x, y, w, h, mode, bgclr, fgclr, placeholderTXT, activebtn, activebydefault, limit)
         elementsinternal.funcs.checkArg(x, 1, elementsinternal.types.number, "textInput")
         elementsinternal.funcs.checkArg(y, 2, elementsinternal.types.number, "textInput")
@@ -355,7 +350,6 @@ local elements = {
     ---@param h number Optional
     ---@param mode string Optional
     ---@param clr Color Optional
-    ---@return element
     box = function(x, y, w, h, mode, clr)
         elementsinternal.funcs.checkArg(x, 2, elementsinternal.types.number, "box")
         elementsinternal.funcs.checkArg(y, 3, elementsinternal.types.number, "box")
@@ -446,7 +440,7 @@ local elements = {
     end,
     --]]
 
-    ---@return element
+    
     guifiedsplash = function()
         local largefont = love.graphics.newFont(20)
         local stdfont = __GUIFIEDGLOBAL__.font
