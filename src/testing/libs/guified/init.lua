@@ -383,8 +383,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
     },
 
     debug = {
-        -- ! more stuff is added in post init
-
         -- * provided by logger module of the love2d-tools lib
         ---@type logger
         logger = logger
@@ -483,6 +481,9 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
     },
 
     properties = {
+        --* Inits the property system for a element
+        --! This must be run on a element before adding properties to it
+        ---@param element element
         initPropertySys = function(element)
             local mt = {
                 __index = {},
@@ -501,6 +502,11 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
             setmetatable(element, mt)
         end,
 
+        --* adds a property to a element
+        ---@param element element
+        ---@param property string
+        ---@param initialVAL any
+        ---@param onchange function
         newProperty = function(element, property, initialVAL, onchange)
             local mt = getmetatable(element)
             mt.__index[property] = initialVAL
@@ -508,14 +514,21 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
             setmetatable(element, mt)
         end,
 
+        --* returns the value of a property
+        ---@param element element
         getProperty = function(element, property)
             return getmetatable(element).__index[property]
         end,
 
+        --* returns all properties as a dict.
+        ---@param element element
         getAllProperties = function(element)
             return getmetatable(element).__index
         end,
 
+        --* removes a property from a element
+        ---@param element element
+        ---@param property string
         removeProperty = function(element, property)
             local mt = getmetatable(element)
             mt.__index[property] = nil
@@ -611,7 +624,6 @@ logger.ok("Exit function setup done")
 
 -- * post init
 logger.info("Doing post init")
-
 
 if love.window.getTitle():lower() == "untitled" and not(areweloaded) then
     logger.info("Window title set by guified")
