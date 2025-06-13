@@ -47,17 +47,16 @@ local areweloaded = false
 
 -- * setup global var
 if __GUIFIEDGLOBAL__ == nil then
-    local function setuprootfolder()
+    local rootfolder = (function()
         local folder = replaceSlashWithDot(getScriptFolder())
         return (os.getenv("GUIFIEDROOTFOLDER") or string.sub(folder, 1, #folder-1))
-    end
-    local rootfolder = setuprootfolder()
+    end)()
     -- ? global table containing vars for guified modules
     __GUIFIEDGLOBAL__ = {
         rootfolder = rootfolder,
         fontsize = 12, -- * default font size
         os = love.system.getOS():lower(),
-        __VER__ = "B-2.0.0: Repressed Memory Edition", -- ! GUIFIED VERSION AND CODENAME
+        __VER__ = "B-2.1.0: Repressed Memory Edition", -- ! GUIFIED VERSION AND CODENAME
         __VERINT__ = "B-2.1.0" -- ! GUIFIED VERSION
     }
     rootfolder = nil
@@ -84,6 +83,7 @@ end
 
 logger.info("OS: "..love.system.getOS())
 logger.info("Guified Version: "..__GUIFIEDGLOBAL__.__VER__)
+logger.info("Processor Count: "..love.system.getProcessorCount())
 logger.info("Guified root folder: " .. __GUIFIEDGLOBAL__.rootfolder)
 
 love.graphics.setFont(font)
@@ -480,6 +480,48 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
             __GUIFIEDGLOBAL__.font = love.graphics.newFont(font, size)
             __GUIFIEDGLOBAL__.fontsize = size or font
         end
+    },
+
+    properties = {
+        initPropertySys = function(element)
+            local mt = {
+                __index = {},
+                __newindex = function(tbl, key, val)
+                    local mt = getmetatable(tbl)
+                    if mt.__index[key] then
+                        mt.__index[key] = val
+                        setmetatable(tbl, mt)
+                        mt.funcs[key](val)
+                    else
+                        rawset(tbl, key, val)
+                    end
+                end,
+                funcs = {}
+            }
+            setmetatable(element, mt)
+        end,
+
+        newProperty = function(element, property, initialVAL, onchange)
+            local mt = getmetatable(element)
+            mt.__index[property] = initialVAL
+            mt.funcs[property] = onchange
+            setmetatable(element, mt)
+        end,
+
+        getProperty = function(element, property)
+            return getmetatable(element).__index[property]
+        end,
+
+        getAllProperties = function(element)
+            return getmetatable(element).__index
+        end,
+
+        removeProperty = function(element, property)
+            local mt = getmetatable(element)
+            mt.__index[property] = nil
+            mt.funcs[property] = nil
+            setmetatable(element)
+        end
     }
 }
 logger.ok("setting up main return table done")
@@ -570,12 +612,6 @@ logger.ok("Exit function setup done")
 -- * post init
 logger.info("Doing post init")
 
---[[
-
-if not (areweloaded) and OSinterop ~= nil then
-    guifiedinternal.setWindowToBeOnTop = OSinterop -- ? requires ffi so added by OSinterop here after (almost) everything is done
-end
---]]
 
 if love.window.getTitle():lower() == "untitled" and not(areweloaded) then
     logger.info("Window title set by guified")

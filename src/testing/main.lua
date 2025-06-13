@@ -1,13 +1,40 @@
 local guified = require("libs.guified.init")
-local grid = require("libs.guified.modules.experimental.grid")
 
-local gridobj = grid.newGrid(0, 0, love.graphics.getWidth(), love.graphics.getHeight())
-local txt = guified.elements.text("FPS")
-txt.update = function()
-    txt.setText("FPS:"..tostring(love.timer.getFPS()))
-end
+local txt = guified.elements.text("hi", 0, 0)
 
-gridobj.addElement(txt, 90, __GUIFIEDGLOBAL__.fontsize, grid.aligners.stack)
-for i = 1, 10, 1 do
-    gridobj.addElement(guified.elements.text("Hi!", 0, 0), 40, __GUIFIEDGLOBAL__.fontsize, grid.aligners.stack)
+guified.properties.initPropertySys(txt)
+
+guified.properties.newProperty(txt, "textProp", "hi", function(val)
+    txt.setText(val)
+end)
+guified.properties.newProperty(txt, "x", 0, function(val)
+    local x, y = txt.getPOS()
+    txt.setPOS(val, y)
+end)
+guified.properties.newProperty(txt, "y", 0, function(val)
+    local x, y = txt.getPOS()
+    txt.setPOS(x, val)
+end)
+
+guified.registry.register(txt)
+
+function love.update(dt)
+    if love.keyboard.isDown("d") then
+        txt.textProp = "meow"
+    end
+    if love.keyboard.isDown("a") then
+        txt.textProp = "meow :3"
+    end
+    if love.keyboard.isDown("up") then
+        txt.y = txt.y - dt * 100
+    end
+    if love.keyboard.isDown("down") then
+        txt.y = txt.y + dt * 100
+    end
+    if love.keyboard.isDown("left") then
+        txt.x = txt.x - dt * 100
+    end
+    if love.keyboard.isDown("right") then
+        txt.x = txt.x + dt * 100
+    end
 end
