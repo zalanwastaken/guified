@@ -92,7 +92,7 @@ love.math.setRandomSeed(os.time())
 
 if love.system.getOS():lower() == "linux" then
     logger.warn("FFI features on Linux are not supported")
-elseif love.system.getOS():lower() == "macos" then
+elseif love.system.getOS():lower() == "os x" then
     -- ? If apple was not such a ass and let us run macOS on a vm this would have been supported
     -- ? Like why even lock down something that much ? Too much effort according to me
     -- ? Trust me i tired to run macOS on a vm but it just would not work. And im not buying a expensive piece of garbage computer
@@ -500,6 +500,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
                 funcs = {}
             }
             setmetatable(element, mt)
+
+            logger.info("property system init for "..element.name..":"..(element.id or ""))
         end,
 
         --* adds a property to a element
@@ -512,6 +514,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
             mt.__index[property] = initialVAL
             mt.funcs[property] = onchange
             setmetatable(element, mt)
+
+            logger.info("property added in element"..element.name..":"..(element.id or ""))
         end,
 
         --* returns the value of a property
@@ -534,6 +538,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
             mt.__index[property] = nil
             mt.funcs[property] = nil
             setmetatable(element)
+
+            logger.info("removed property from element "..element.name..":"..(element.id or ""))
         end
     }
 }
