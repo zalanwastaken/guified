@@ -151,9 +151,11 @@ local guifiedinternal = {
     ---@param idtbl table
     draw = function(drawstack, data, idtbl)
         for i = 1, #idtbl, 1 do
-            love.graphics.setColor(1, 1, 1, 1)
-            love.graphics.setFont(font)
-            drawstack[idtbl[i]](data[i])
+            if drawstack[idtbl[i]] ~= nil then
+                love.graphics.setColor(1, 1, 1, 1)
+                love.graphics.setFont(font)
+                drawstack[idtbl[i]](data[i])
+            end
         end
     end,
     ---@param key string
@@ -468,7 +470,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
         end,
 
         ---@param font string|number filepath to the font or the font size
-        ---@param size number size of the font
+        ---@param size? number size of the font
         updateFont = function(font, size)
             if font == nil then
                 font = size
