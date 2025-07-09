@@ -475,6 +475,16 @@ local elements = {
                 return (done)
             end
         })
+    end,
+
+    toggleButton = function(x, y)
+        return({
+            name = "toggle button",
+            draw = function()
+                love.graphics.rectangle("line", x, y, 50, 20)
+                love.graphics.rectangle("fill", x+5, y+5, 10, 10)
+            end
+        })
     end
 }
 return (elements)
