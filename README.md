@@ -13,7 +13,11 @@
 Guified is a ~~lightweight~~ GUI library/framework(depends on how you use it) for LÖVE (Love2D) that simplifies window management and UI element creation. With its easy-to-use features, Guified enables developers to craft intuitive and interactive graphical user interfaces without unnecessary complexity. 🚀 Whether you're building a small game or a large application, Guified provides the tools you need to streamline the process.
 
 ### Why Guified? 🤷
-Guified is a flexible, ~~lightweight~~ framework built for developers who want control without the bloat. It gives you powerful tools like a customizable registry, and efficient error handling, while leaving you the freedom to build exactly what you need. Guified doesn’t force patterns or hand-hold you through the process—it’s all about giving you the flexibility to create and optimize your own solutions, on your terms.
+Guified is a flexible, ~~lightweight~~ library/framework built for developers who want control without the bloat. It gives you powerful tools like a customizable registry, and efficient error handling, while leaving you the freedom to build exactly what you need. Guified doesn’t force patterns or hand-hold you through the process—it’s all about giving you the flexibility to create and optimize your own solutions, on your terms.
+
+### What is Guified? 🤷
+Guified is a easy to use flexiable and yet powerfull library/framework that puts the devs first.<br>
+Gufied provides easy to use powerfull tools to make UI/UX(or a entire game/app) based on the core LOVE2D modules
 
 ## Features ✨
 - **Window Management:**
@@ -75,6 +79,9 @@ Guified is a flexible, ~~lightweight~~ framework built for developers who want c
   ```lua
     local module = require("guified.modules.modulename")
   ```
+- **➕ ExtCalls**
+  - Guified depends on love.run but now you can modify it easily and still not break guified !
+  - `guified.extcalls` provide easy to use functions that handle things like draw calls, update calls etc. 
 - **🤷 Not satisfied ?**
   - Guified is still in beta so there is still more to come along
 
@@ -104,15 +111,15 @@ This version supports the following Love2d version(These versions are tested wit
 - 11.5 (Mysterious Mysteries)
   - Windows ✅ Full support
   - Linux ✅ Without FFI
-  - MacOS ❌ No support. Bugs on MacOS wont be fixed(Guified might still run. MacOS is not blocked)
+  - MacOS ❌ No support. Bugs on MacOS wont be fixed(Guified might still run. MacOS is not blocked)[COMING SOON IN B-2.1.0]
 - 11.4 (Mysterious Mysteries)
   - Windows ✅ Full support
   - Linux ✅ Without FFI
-  - MacOS ❌ No support. Bugs on MacOS wont be fixed(Guified might still run. MacOS is not blocked)
+  - MacOS ❌ No support. Bugs on MacOS wont be fixed(Guified might still run. MacOS is not blocked)[COMING SOOM IN B-2.1.0]
 - 11.3 (Mysterious Mysteries)
   - Windows ✅ Full support
   - Linux ✅ Without FFI
-  - MacOS ❌ No support. Bugs on MacOS wont be fixed(Guified might still run. MacOS is not blocked)
+  - MacOS ❌ No support. Bugs on MacOS wont be fixed(Guified might still run. MacOS is not blocked)[COMING SOOM IN B-2.1.0]
 
 ## 📍 Roadmap  
 
