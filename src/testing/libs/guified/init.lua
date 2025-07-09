@@ -67,11 +67,13 @@ end
 -- ? requires
 ---@type logger
 local logger = require(__GUIFIEDGLOBAL__.rootfolder .. ".dependencies.love2d-tools.modules.logger.init") -- * logger module
-local startlogger = not(logger.thread:isRunning()) and not(areweloaded) and logger.startSVC()
+coroutine.wrap((function()
+    if not(logger.thread:isRunning()) and not(areweloaded) then
+        logger.startSVC()
+    end
+end))()
 local OSinterop = not(areweloaded) and love.filesystem.getInfo(getScriptFolder().."/os_interop.lua") and require(__GUIFIEDGLOBAL__.rootfolder..".os_interop") or nil
 local errorhandler = not(areweloaded) and love.filesystem.getInfo(getScriptFolder().."/errorhandler.lua") and require(__GUIFIEDGLOBAL__.rootfolder..".errorhandler") or nil
-errorhandler = nil --? we dont need this
-startlogger = nil --? we dont need this 
 
 -- ? init stuff
 local font
@@ -93,10 +95,8 @@ love.math.setRandomSeed(os.time())
 if love.system.getOS():lower() == "linux" then
     logger.warn("FFI features on Linux are not supported")
 elseif love.system.getOS():lower() == "os x" then
-    -- ? If apple was not such a ass and let us run macOS on a vm this would have been supported
-    -- ? Like why even lock down something that much ? Too much effort according to me
-    -- ? Trust me i tired to run macOS on a vm but it just would not work. And im not buying a expensive piece of garbage computer
-    logger.warn("MacOS is not suppoorted !\nUse at your own caution")
+    logger.warn("MacOS is experimental")
+    logger.warn("FFI features on MacOS are not supported")
 end
 
 if os.getenv("GUIFIEDROOTFOLDER") == nil then
@@ -127,7 +127,10 @@ local guifiedinternal = {
         keypressedstack = {},
         resizestack = {},
         data = {},
-        ids = {}
+        ids = {},
+
+        fclr = {1, 1, 1, 1},
+        fclrenable = true
     },
 
     -- ? funcs
@@ -149,11 +152,11 @@ local guifiedinternal = {
     ---@param drawstack table
     ---@param data table
     ---@param idtbl table
-    draw = function(drawstack, data, idtbl)
+    draw = function(drawstack, data, idtbl, fclr)
         for i = 1, #idtbl, 1 do
             if drawstack[idtbl[i]] ~= nil then
-                love.graphics.setColor(1, 1, 1, 1)
-                love.graphics.setFont(font)
+                love.graphics.setColor(fclr or {1, 1, 1, 1})
+                love.graphics.setFont(__GUIFIEDGLOBAL__.font or font)
                 drawstack[idtbl[i]](data[i])
             end
         end
@@ -395,7 +398,11 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
         --* Calls guifiedinternal.draw
         --* draw handler
         drawf = function()
-            guifiedinternal.draw(guifiedinternal.internalregistry.drawstack, guifiedinternal.internalregistry.data, guifiedinternal.internalregistry.ids)
+            guifiedinternal.draw(guifiedinternal.internalregistry.drawstack, guifiedinternal.internalregistry.data, guifiedinternal.internalregistry.ids, coroutine.wrap(function()
+                if guifiedinternal.internalregistry.fclrenable == true then
+                    return guifiedinternal.internalregistry.fclr
+                end
+            end)())
         end,
 
         --* Handles update event
@@ -464,11 +471,16 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
     },
 
     funcs = {
+        ---@deprecated
+        --! deprecated due to cross-platform complexity
         -- * Sets the window to always be on top.
         setWindowToBeOnTop = function()
             guifiedinternal.setWindowToBeOnTop(love.window.getTitle())
+            logger.error("setWindowToBeOnTop is deprecated")
         end,
 
+        ---@deprecated
+        --! deprecated use __GUIFIEDGLOBAL__
         ---@param font string|number filepath to the font or the font size
         ---@param size? number size of the font
         updateFont = function(font, size)
@@ -479,6 +491,14 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
             end
             __GUIFIEDGLOBAL__.font = love.graphics.newFont(font, size)
             __GUIFIEDGLOBAL__.fontsize = size or font
+        end,
+
+        setfclr = function(clr)
+            guifiedinternal.internalregistry.fclr = clr or {1, 1, 1, 1}
+        end,
+
+        setfclrenable = function(enable)
+            guifiedinternal.internalregistry.fclrenable = enable
         end
     },
 
