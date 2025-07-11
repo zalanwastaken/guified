@@ -56,8 +56,8 @@ if __GUIFIEDGLOBAL__ == nil then
         rootfolder = rootfolder,
         fontsize = 12, -- * default font size
         os = love.system.getOS():lower(),
-        __VER__ = "B-2.0.1: Repressed Memory Edition", -- ! GUIFIED VERSION AND CODENAME
-        __VERINT__ = "B-2.0.1" -- ! GUIFIED VERSION
+        __VER__ = "B-2.0.2: Repressed Memory Edition", -- ! GUIFIED VERSION AND CODENAME
+        __VERINT__ = "B-2.0.2" -- ! GUIFIED VERSION
     }
     rootfolder = nil
 else
@@ -67,11 +67,13 @@ end
 -- ? requires
 ---@type logger
 local logger = require(__GUIFIEDGLOBAL__.rootfolder .. ".dependencies.love2d-tools.modules.logger.init") -- * logger module
-local startlogger = not(logger.thread:isRunning()) and not(areweloaded) and logger.startSVC()
+coroutine.wrap((function()
+    if not(logger.thread:isRunning()) and not(areweloaded) then
+        logger.startSVC()
+    end
+end))()
 local OSinterop = not(areweloaded) and love.filesystem.getInfo(getScriptFolder().."/os_interop.lua") and require(__GUIFIEDGLOBAL__.rootfolder..".os_interop") or nil
 local errorhandler = not(areweloaded) and love.filesystem.getInfo(getScriptFolder().."/errorhandler.lua") and require(__GUIFIEDGLOBAL__.rootfolder..".errorhandler") or nil
-errorhandler = nil --? we dont need this
-startlogger = nil --? we dont need this 
 
 -- ? init stuff
 local font
@@ -92,11 +94,8 @@ love.math.setRandomSeed(os.time())
 
 if love.system.getOS():lower() == "linux" then
     logger.warn("Features that use FFI will not work on Linux !")
-elseif love.system.getOS():lower() == "macos" then
-    -- ? If apple was not such a ass and let us run macOS on a vm this would have been supported
-    -- ? Like why even lock down something that much ? Too much effort according to me
-    -- ? Trust me i tired to run macOS on a vm but it just would not work. And im not buying a expensive piece of garbage computer
-    logger.warn("MacOS is not suppoorted !\nUse at your own caution")
+elseif love.system.getOS():lower() == "os x" then
+    logger.warn("MacOS is not supported !\nUse at your own caution")
 end
 
 if os.getenv("GUIFIEDROOTFOLDER") == nil then
@@ -105,6 +104,7 @@ end
 logger.ok("init setup done")
 
 if areweloaded then
+    -- log the second init
     logger.error("Guified init was called a second time !")
 else
     __GUIFIEDGLOBAL__.font = font
@@ -155,9 +155,11 @@ local guifiedinternal = {
     ---@param data table
     draw = function(drawstack, data, idtbl)
         for i = 1, #idtbl, 1 do
-            love.graphics.setColor(1, 1, 1, 1)
-            love.graphics.setFont(font)
-            drawstack[idtbl[i]](data[i])
+            if drawstack[idtbl[i]] ~= nil then
+                love.graphics.setColor(fclr or {1, 1, 1, 1})
+                love.graphics.setFont(__GUIFIEDGLOBAL__.font or font)
+                drawstack[idtbl[i]](data[i])
+            end
         end
     end,
     textinput = function(key, textinputstack, idtbl)
@@ -446,14 +448,17 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
         -- * Quit function the code that needs the be executed when the application quits
         quit = function()
-            logger.regular("Bye Bye !")
+            logger.regular(__GUIFIEDGLOBAL__.__VER__.." bids its farewell")
             logger.stopSVC()
         end
     },
 
     funcs = {
+        --! deprecated due to cross-platform complexity
+        ---@deprecated
         -- * Sets the window to always be on top.
         setWindowToBeOnTop = function()
+            logger.warn("setWindowToBeOnTop is deprecated")
             guifiedinternal.setWindowToBeOnTop(love.window.getTitle())
         end,
 
@@ -508,10 +513,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
             __GUIFIEDGLOBAL__.font = love.graphics.newFont(font, size)
             __GUIFIEDGLOBAL__.fontsize = size or font
         end
-    },
-
-    --! New thing Gufied Processed Event
-    GPE = {}
+    }
 }
 logger.ok("setting up main return table done")
 
