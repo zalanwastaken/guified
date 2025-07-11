@@ -101,6 +101,8 @@ end
 if os.getenv("GUIFIEDROOTFOLDER") == nil then
     logger.warn("ENV VAR GUIFIEDROOTFOLDER IS NOT SETUP ! This may cause issues")
 end
+logger.warn("ENV VAR GUIFIEDROOTFOLDER IS DEPRECATED")
+
 logger.ok("init setup done")
 
 if areweloaded then
