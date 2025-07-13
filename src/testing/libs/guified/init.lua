@@ -1,16 +1,19 @@
 -- * Type info
 ---@alias element table to silence warnings
 ---@alias image table to silence warnings
+
 -- * functions
 ---@param str string
 ---@return string
 local function replaceSlashWithDot(str)
     return str:gsub("/", ".") -- Replace all '/' with '.'
 end
+
 ---@return string
 local function getScriptFolder()
     return (debug.getinfo(1, "S").source:sub(2):match("(.*/)"))
 end
+
 ---@return number|nil
 local function getIndex(table, val)
     for i = 1, #table, 1 do
@@ -20,6 +23,7 @@ local function getIndex(table, val)
     end
     return (nil)
 end
+
 ---@param length number
 ---@return string
 local function idgen(length)
@@ -72,7 +76,6 @@ coroutine.wrap((function()
         logger.startSVC()
     end
 end))()
-local OSinterop = not(areweloaded) and love.filesystem.getInfo(getScriptFolder().."/os_interop.lua") and require(__GUIFIEDGLOBAL__.rootfolder..".os_interop") or nil
 local errorhandler = not(areweloaded) and love.filesystem.getInfo(getScriptFolder().."/errorhandler.lua") and require(__GUIFIEDGLOBAL__.rootfolder..".errorhandler") or nil
 
 -- ? init stuff
@@ -95,7 +98,7 @@ love.math.setRandomSeed(os.time())
 if love.system.getOS():lower() == "linux" then
     logger.warn("FFI features on Linux are not supported")
 elseif love.system.getOS():lower() == "os x" then
-    logger.warn("MacOS is experimental")
+    logger.warn("MacOS support is experimental")
     logger.warn("FFI features on MacOS are not supported")
 end
 
@@ -135,7 +138,6 @@ local guifiedinternal = {
 
     -- ? funcs
 
-    setWindowToBeOnTop = not(areweloaded) and OSinterop.setWindowToBeOnTop,
     ---@param dt number
     ---@param updatestack table
     ---@param idtbl table
@@ -471,16 +473,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
     },
 
     funcs = {
-        ---@deprecated
-        --! deprecated due to cross-platform complexity
-        -- * Sets the window to always be on top.
-        setWindowToBeOnTop = function()
-            guifiedinternal.setWindowToBeOnTop(love.window.getTitle())
-            logger.error("setWindowToBeOnTop is deprecated")
-        end,
-
-        ---@deprecated
-        --! deprecated use __GUIFIEDGLOBAL__
         ---@param font string|number filepath to the font or the font size
         ---@param size? number size of the font
         updateFont = function(font, size)
@@ -493,10 +485,12 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
             __GUIFIEDGLOBAL__.fontsize = size or font
         end,
 
+        --TODO test this
         setfclr = function(clr)
             guifiedinternal.internalregistry.fclr = clr or {1, 1, 1, 1}
         end,
 
+        --TODO test this
         setfclrenable = function(enable)
             guifiedinternal.internalregistry.fclrenable = enable
         end
