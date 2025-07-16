@@ -4,7 +4,7 @@ end
 
 ---@type guified
 local guified = require(__GUIFIEDGLOBAL__.rootfolder..".init") --? guified api
-local logger = guified.debug.logger
+local logger = guified.debug.asynclogger
 
 local function createSlider(x, y) --TODO
     return({

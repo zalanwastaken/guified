@@ -4,7 +4,7 @@ end
 
 ---@type guified
 local guified = require(__GUIFIEDGLOBAL__.rootfolder..".init")
-local logger = guified.debug.logger
+local logger = guified.debug.asynclogger
 
 local tween = {}
 
@@ -65,7 +65,7 @@ function tween.newElementTween(element, targetX, targetY, duration)
             completed = true
         end,
 
-        --* shows the element(element is shown be default)
+        --* shows the element(element is shown by default)
         show = function()
             guified.registry.register(element)
             hidden = false

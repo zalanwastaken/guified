@@ -3,11 +3,6 @@
 ---@alias image table to silence warnings
 
 -- * functions
----@param str string
----@return string
-local function replaceSlashWithDot(str)
-    return str:gsub("/", ".") -- Replace all '/' with '.'
-end
 
 ---@return string
 local function getScriptFolder()
@@ -51,10 +46,17 @@ local areweloaded = false
 
 -- * setup global var
 if __GUIFIEDGLOBAL__ == nil then
+    ---@param str string
+    ---@return string
+    local function replaceSlashWithDot(str)
+        return str:gsub("/", ".") -- Replace all '/' with '.'
+    end
+
     local rootfolder = (function()
         local folder = replaceSlashWithDot(getScriptFolder())
         return (os.getenv("GUIFIEDROOTFOLDER") or string.sub(folder, 1, #folder-1))
     end)()
+
     -- ? global table containing vars for guified modules
     __GUIFIEDGLOBAL__ = {
         rootfolder = rootfolder,
@@ -76,7 +78,7 @@ coroutine.wrap((function()
         logger.startSVC()
     end
 end))()
-local errorhandler = not(areweloaded) and love.filesystem.getInfo(getScriptFolder().."/errorhandler.lua") and require(__GUIFIEDGLOBAL__.rootfolder..".errorhandler") or nil
+local errorhandler = not(areweloaded) and love.filesystem.getInfo(getScriptFolder().."/errorhandler.lua") and require(__GUIFIEDGLOBAL__.rootfolder..".errorhandler") or nil --? check and load error handler
 
 -- ? init stuff
 local font
@@ -96,10 +98,9 @@ love.graphics.setColor(1, 1, 1, 1)
 love.math.setRandomSeed(os.time())
 
 if love.system.getOS():lower() == "linux" then
-    logger.warn("FFI features on Linux are not supported")
+    --logger.warn("FFI features on Linux are not supported")
 elseif love.system.getOS():lower() == "os x" then
     logger.warn("MacOS support is experimental")
-    logger.warn("FFI features on MacOS are not supported")
 end
 
 if os.getenv("GUIFIEDROOTFOLDER") == nil then
@@ -392,7 +393,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
     debug = {
         -- * provided by logger module of the love2d-tools lib
         ---@type logger
-        logger = logger
+        asynclogger = logger
     },
 
     extcalls = {
@@ -400,11 +401,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
         --* Calls guifiedinternal.draw
         --* draw handler
         drawf = function()
-            guifiedinternal.draw(guifiedinternal.internalregistry.drawstack, guifiedinternal.internalregistry.data, guifiedinternal.internalregistry.ids, coroutine.wrap(function()
-                if guifiedinternal.internalregistry.fclrenable == true then
-                    return guifiedinternal.internalregistry.fclr
-                end
-            end)())
+            guifiedinternal.draw(guifiedinternal.internalregistry.drawstack, guifiedinternal.internalregistry.data, guifiedinternal.internalregistry.ids, guifiedinternal.internalregistry.fclrenable and guifiedinternal.internalregistry.fclr)
         end,
 
         --* Handles update event
@@ -465,11 +462,12 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
             return(guifiedinternal.internalregistry.keypressedstack)
         end,
 
-        -- * Quit function the code that needs the be executed when the application quits
+        -- * Quit function, the code that needs the be executed when the application quits
         quit = function()
-            logger.regular("Bye Bye !")
+            logger.regular(__GUIFIEDGLOBAL__.__VER__.." bids its farewell")
             logger.stopSVC()
-        end
+            return false
+        end,
     },
 
     funcs = {
@@ -510,7 +508,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
                         setmetatable(tbl, mt)
                         mt.funcs[key](val)
                     else
-                        rawset(tbl, key, val)
+                        rawset(tbl, key, val) --? rawset so we dont cause stack overflow
                     end
                 end,
                 funcs = {}
@@ -556,6 +554,11 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
             setmetatable(element)
 
             logger.info("removed property from element "..element.name..":"..(element.id or ""))
+        end,
+
+        deInitPropertySys = function(element)
+            local mt = {}
+            setmetatable(element, mt) -- dump the mt
         end
     }
 }
@@ -592,7 +595,7 @@ function love.run()
             dt = love.timer.step()
         end
         -- * guified code
-        if guifiedinternal.update and guifiedinternal.enableupdate then
+        if guifiedinternal.enableupdate then
             guified.extcalls.updatef()
         end
         -- * guified code end
@@ -607,7 +610,7 @@ function love.run()
                 love.draw()
             end
             -- * guified code
-            if guifiedinternal.draw and guifiedinternal.enabledraw then
+            if guifiedinternal.enabledraw then
                 guified.extcalls.drawf()
             end
             -- * guified code end
@@ -639,8 +642,7 @@ logger.ok("resize hook setup done")
 
 -- * love quit function
 function love.quit()
-    guified.extcalls.quit()
-    return (false)
+    return guified.extcalls.quit()
 end
 logger.ok("Exit function setup done")
 
@@ -652,7 +654,7 @@ if love.window.getTitle():lower() == "untitled" and not(areweloaded) then
     logger.warn("Window title was set by guified this disables love.window.setTitle To prevent this set window title before calling guified init")
 
     local setTitle = love.window.setTitle
-    love.window.setTitle = nil
+    love.window.setTitle = nil -- kill it >:(
     setTitle("Guified: " .. __GUIFIEDGLOBAL__.__VER__)
     local title = love.window.getTitle()
 
@@ -667,7 +669,7 @@ end
 
 logger.ok("GUIFIED init success !")
 
-return (guified)
+return guified
 
 --[[
 * Made by Zalanwastaken with LÖVE and some 🎔

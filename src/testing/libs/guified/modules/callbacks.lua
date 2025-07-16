@@ -7,7 +7,7 @@ end
 
 ---@type guified
 local guified = require(__GUIFIEDGLOBAL__.rootfolder..".init")
-local logger = guified.debug.logger
+local logger = guified.debug.asynclogger
 
 local callbacks = {
     addCallback = function(element, eventname, callback)
