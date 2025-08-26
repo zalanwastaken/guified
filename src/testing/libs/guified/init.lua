@@ -132,8 +132,10 @@ local guifiedinternal = {
         resizestack = {},
         data = {},
         ids = {},
+        callbackids = {},
+        callbacks = {},
 
-        fclr = {1, 1, 1, 1},
+        fclr = {1, 1, 1, 1}, -- white and opaque 
         fclrenable = true
     },
 
@@ -193,6 +195,11 @@ local guifiedinternal = {
             if resizestack[idtbl[i]] ~= nil then
                 resizestack[idtbl[i]](w, h)
             end
+        end
+    end,
+    callbackupdate = function(idtbl, funcs)
+        for i = 1, #idtbl, 1 do
+            funcs[idtbl[i]]()
         end
     end
 }
@@ -388,6 +395,19 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
         getIdTable = function()
             return (guifiedinternal.internalregistry.ids)
         end,
+
+        registerCallback = function(firefunc, func)
+            local id = idgen(16)
+            
+            guifiedinternal.internalregistry.callbacks[id] = function()
+                local k = firefunc()
+                if k ~= nil then
+                    func(k)
+                end
+            end
+
+            guifiedinternal.internalregistry.callbackids[#guifiedinternal.internalregistry.callbackids + 1] = id
+        end
     },
 
     debug = {
@@ -408,6 +428,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
         --* Calls guifiedinternal.update
         --* update handler
         updatef = function()
+            guifiedinternal.callbackupdate(guifiedinternal.internalregistry.callbackids, guifiedinternal.internalregistry.callbacks)
+
             guifiedinternal.internalregistry.data = guifiedinternal.update(love.timer.getAverageDelta(), guifiedinternal.internalregistry.updatestack,
                 guifiedinternal.internalregistry.ids)
         end,
