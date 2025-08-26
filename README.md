@@ -1,23 +1,19 @@
 ```
- _______  __   __  ___   _______  ___   _______  ______     _______  _______  _______  _______    ___   ____   
-|       ||  | |  ||   | |       ||   | |       ||      |   |  _    ||       ||       ||   _   |  |   | |    |  
-|    ___||  | |  ||   | |    ___||   | |    ___||  _    |  | |_|   ||    ___||_     _||  |_|  |  |___| |_    | 
-|   | __ |  |_|  ||   | |   |___ |   | |   |___ | | |   |  |       ||   |___   |   |  |       |   ___    |   | 
-|   ||  ||       ||   | |    ___||   | |    ___|| |_|   |  |  _   | |    ___|  |   |  |       |  |   |   |   | 
-|   |_| ||       ||   | |   |    |   | |   |___ |       |  | |_|   ||   |___   |   |  |   _   |  |___|  _|   | 
-|_______||_______||___| |___|    |___| |_______||______|   |_______||_______|  |___|  |__| |__|        |____|  
-
+ ▗▄▄▖█  ▐▌▄ ▗▞▀▀▘▄ ▗▞▀▚▖   ▐▌    ▗▄▄▖ ▗▞▀▚▖   ■  ▗▞▀▜▌
+▐▌   ▀▄▄▞▘▄ ▐▌   ▄ ▐▛▀▀▘   ▐▌    ▐▌ ▐▌▐▛▀▀▘▗▄▟▙▄▖▝▚▄▟▌
+▐▌▝▜▌     █ ▐▛▀▘ █ ▝▚▄▄▖▗▞▀▜▌    ▐▛▀▚▖▝▚▄▄▖  ▐▌       
+▝▚▄▞▘     █ ▐▌   █      ▝▚▄▟▌    ▐▙▄▞▘       ▐▌       
+                                             ▐▌
 ```
 ###### The 3000+ lines of code so you only have to write 100
 
 Guified is a ~~lightweight~~ GUI library/framework(depends on how you use it) for LÖVE (Love2D) that simplifies window management and UI element creation. With its easy-to-use features, Guified enables developers to craft intuitive and interactive graphical user interfaces without unnecessary complexity. 🚀 Whether you're building a small game or a large application, Guified provides the tools you need to streamline the process.
 
 ### Why Guified? 🤷
-Guified is a flexible, ~~lightweight~~ library/framework built for developers who want control without the bloat. It gives you powerful tools like a customizable registry, and efficient error handling, while leaving you the freedom to build exactly what you need. Guified doesn’t force patterns or hand-hold you through the process—it’s all about giving you the flexibility to create and optimize your own solutions, on your terms.
+Because devs don’t need babysitters. Guified is built on power without bloat — a toolkit that gives you a registry, error handling, and control when you want it, without ever boxing you in. No forced patterns, no training wheels. Just more in less, so you can bend it to your will and ship what you want.
 
 ### What is Guified? 🤷
-Guified is a easy to use flexiable and yet powerfull library/framework that puts the devs first.<br>
-Gufied provides easy to use powerfull tools to make UI/UX(or a entire game/app) based on the core LOVE2D modules
+Guified is a dev-first library/framework that makes doing more with LOVE2D stupidly simple. From UI/UX to full apps, it gives you powerful tools that stay out of your way. It’s flexible, fast, and designed with one rule: power to devs.
 
 ## Features ✨
 - **Window Management:**
