@@ -455,6 +455,7 @@ local elements = {
         local w, h = 50, 20
         local toggle = defaultstate or false
         local toggleC = toggle
+
         return({
             name = "toggle button",
             draw = function()
