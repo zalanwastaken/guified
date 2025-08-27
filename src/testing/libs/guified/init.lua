@@ -368,39 +368,20 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
             end
         end,
 
-        --* Sets the draw functionality
-        ---@param set boolean
-        setDraw = function(set)
-            guifiedinternal.enabledraw = set or false
-        end,
-
-        --* Sets the update functionality
-        ---@param set boolean
-        setUpdate = function(set)
-            guifiedinternal.enableupdate = set or false
-        end,
-
-        -- * Returns the current draw status.
-        ---@return boolean True if drawing is enabled, false otherwise.
-        getDrawStatus = function()
-            return (guifiedinternal.enabledraw)
-        end,
-
-        -- * Returns the current update status.
-        ---@return boolean True if updating is enabled, false otherwise.
-        getUpdateStatus = function()
-            return (guifiedinternal.enableupdate)
-        end,
-
         -- * Returns the table containing IDs for registered elements.
         ---@return table The table of IDs.
         getIdTable = function()
             return (guifiedinternal.internalregistry.ids)
         end,
 
+        -- * registers callback and firefunc with internal registry
+        ---@param firefunc function
+        ---@param args table
+        ---@param func function
+        ---@return string id of registered callback
         registerCallback = function(firefunc, args, func)
             local id = idgen(16)
-            
+
             guifiedinternal.internalregistry.callbacks[id] = function()
                 local k = firefunc(unpack(args, 1, #args))
                 if k ~= nil then
@@ -413,12 +394,17 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
             return id
         end,
 
+        -- * removes callback and firefunc with internal registry
+        ---@param id string id of registered callback
         removeCallback = function(id)
             guifiedinternal.internalregistry.callbacks[id] = nil
             local idex = getIndex(guifiedinternal.internalregistry.callbackids, id)
             guifiedinternal.internalregistry.callbackids[idex] = nil
         end,
 
+        -- * checks if callback is registered
+        ---@param id string
+        ---@return boolean
         isCallbackRegistered = function(id)
             if getIndex(guifiedinternal.internalregistry.callbackids, id) then
                 return true
@@ -531,7 +517,31 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
         --TODO test this
         setfclrenable = function(enable)
             guifiedinternal.internalregistry.fclrenable = enable
-        end
+        end,
+
+        --* Sets the draw functionality
+        ---@param set boolean
+        setDraw = function(set)
+            guifiedinternal.enabledraw = set or false
+        end,
+
+        --* Sets the update functionality
+        ---@param set boolean
+        setUpdate = function(set)
+            guifiedinternal.enableupdate = set or false
+        end,
+
+        -- * Returns the current draw status.
+        ---@return boolean True if drawing is enabled, false otherwise.
+        getDrawStatus = function()
+            return (guifiedinternal.enabledraw)
+        end,
+
+        -- * Returns the current update status.
+        ---@return boolean True if updating is enabled, false otherwise.
+        getUpdateStatus = function()
+            return (guifiedinternal.enableupdate)
+        end,
     },
 
     properties = {
