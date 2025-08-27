@@ -199,7 +199,9 @@ local guifiedinternal = {
     end,
     callbackupdate = function(idtbl, funcs)
         for i = 1, #idtbl, 1 do
-            funcs[idtbl[i]]()
+            if funcs[idtbl[i]] ~= nil then
+                funcs[idtbl[i]]()
+            end
         end
     end
 }
@@ -396,17 +398,33 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
             return (guifiedinternal.internalregistry.ids)
         end,
 
-        registerCallback = function(firefunc, func)
+        registerCallback = function(firefunc, args, func)
             local id = idgen(16)
             
             guifiedinternal.internalregistry.callbacks[id] = function()
-                local k = firefunc()
+                local k = firefunc(unpack(args, 1, #args))
                 if k ~= nil then
                     func(k)
                 end
             end
 
             guifiedinternal.internalregistry.callbackids[#guifiedinternal.internalregistry.callbackids + 1] = id
+
+            return id
+        end,
+
+        removeCallback = function(id)
+            guifiedinternal.internalregistry.callbacks[id] = nil
+            local idex = getIndex(guifiedinternal.internalregistry.callbackids, id)
+            guifiedinternal.internalregistry.callbackids[idex] = nil
+        end,
+
+        isCallbackRegistered = function(id)
+            if getIndex(guifiedinternal.internalregistry.callbackids, id) then
+                return true
+            else
+                return false
+            end
         end
     },
 

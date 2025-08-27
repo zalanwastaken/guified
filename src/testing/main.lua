@@ -12,6 +12,12 @@ end)
 
 guified.registry.register(text)
 
-guified.registry.registerCallback(button.getState, function(val)
+local cb = guified.registry.registerCallback(button.getState, {""}, function(val)
     text.text = tostring(val)
+end)
+
+guified.registry.registerCallback(love.keyboard.isDown, {"a"}, function(val)
+    if val and guified.registry.isCallbackRegistered(cb) then
+        guified.registry.removeCallback(cb)
+    end
 end)
