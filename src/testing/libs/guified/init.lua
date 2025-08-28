@@ -159,11 +159,9 @@ local guifiedinternal = {
     ---@param idtbl table
     draw = function(drawstack, data, idtbl, fclr)
         for i = 1, #idtbl, 1 do
-            if drawstack[idtbl[i]] ~= nil then
-                love.graphics.setColor(fclr or {1, 1, 1, 1})
-                love.graphics.setFont(__GUIFIEDGLOBAL__.font or font)
-                drawstack[idtbl[i]](data[i])
-            end
+            love.graphics.setColor(fclr or {1, 1, 1, 1})
+            love.graphics.setFont(__GUIFIEDGLOBAL__.font or font)
+            drawstack[idtbl[i]](data[i])
         end
     end,
     ---@param key string
@@ -199,9 +197,7 @@ local guifiedinternal = {
     end,
     callbackupdate = function(idtbl, funcs)
         for i = 1, #idtbl, 1 do
-            if funcs[idtbl[i]] ~= nil then
-                funcs[idtbl[i]]()
-            end
+            funcs[idtbl[i]]()
         end
     end
 }
@@ -240,6 +236,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
         ---@return boolean Returns true on success, false on failure.
         register = function(element, id_length)
             if element ~= nil then
+                logger.info("registering element "..element.name)
                 if element.name == nil then
                     logger.error("Element name missing. Aborting")
                     return (false)
@@ -378,13 +375,35 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
         ---@param firefunc function
         ---@param args table
         ---@param func function
+        ---@param chkval any
+        ---@param chkvaltype string equal or nequal(not equal)
         ---@return string id of registered callback
-        registerCallback = function(firefunc, args, func)
+        registerCallback = function(firefunc, args, func, chkval, chkvaltype)
             local id = idgen(16)
+            local opr
+            chkvaltype = (chkvaltype or "equal"):lower()
+
+            logger.info("registering callback callback:"..id)
+
+            if chkval then
+                if chkvaltype == "equal" then
+                    opr = function(val)
+                        return chkval == val
+                    end
+                elseif chkvaltype == "nequal" then
+                    opr = function(val)
+                        return chkval ~= val
+                    end
+                end
+            else
+                opr = function(val)
+                    return val ~= nil
+                end
+            end
 
             guifiedinternal.internalregistry.callbacks[id] = function()
                 local k = firefunc(unpack(args, 1, #args))
-                if k ~= nil then
+                if opr(k) then
                     func(k)
                 end
             end
@@ -397,9 +416,11 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
         -- * removes callback and firefunc with internal registry
         ---@param id string id of registered callback
         removeCallback = function(id)
+            logger.info("removing callback callback"..id)
+
             guifiedinternal.internalregistry.callbacks[id] = nil
             local idex = getIndex(guifiedinternal.internalregistry.callbackids, id)
-            guifiedinternal.internalregistry.callbackids[idex] = nil
+            table.remove(guifiedinternal.internalregistry.callbackids, idex)
         end,
 
         -- * checks if callback is registered
@@ -418,6 +439,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
         -- * provided by logger module of the love2d-tools lib
         ---@type logger
         asynclogger = logger
+
+        --TODO add single threadded logger
     },
 
     extcalls = {

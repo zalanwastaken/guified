@@ -1,4 +1,8 @@
 local guified = require("libs.guified.init")
+local logger = guified.debug.asynclogger
+
+local profile = require("profile")
+profile.start()
 
 local button = guified.elements.toggleButton(0, 0)
 
@@ -12,12 +16,16 @@ end)
 
 guified.registry.register(text)
 
-local cb = guified.registry.registerCallback(button.getState, {""}, function(val)
+local cb = guified.registry.registerCallback(button.getState, {}, function(val)
     text.text = tostring(val)
 end)
 
 guified.registry.registerCallback(love.keyboard.isDown, {"a"}, function(val)
-    if val and guified.registry.isCallbackRegistered(cb) then
+    if guified.registry.isCallbackRegistered(cb) then
         guified.registry.removeCallback(cb)
     end
-end)
+end, true)
+
+profile.stop()
+
+logger.info(profile.report(20))
