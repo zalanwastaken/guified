@@ -72,7 +72,7 @@ end
 
 -- ? requires
 ---@type logger
-local logger = require(__GUIFIEDGLOBAL__.rootfolder .. ".dependencies.love2d-tools.modules.logger.init") -- * logger module
+local logger = require(__GUIFIEDGLOBAL__.rootfolder .. ".dependencies.logger.init") -- * logger module
 coroutine.wrap((function()
     if not(logger.thread:isRunning()) and not(areweloaded) then
         logger.startSVC()
