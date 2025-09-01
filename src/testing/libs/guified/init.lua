@@ -578,7 +578,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
                     local mt = getmetatable(tbl)
                     if mt.__index[key] then
                         mt.__index[key] = val
-                        setmetatable(tbl, mt)
                         mt.funcs[key](val)
                     else
                         rawset(tbl, key, val) --? rawset so we dont cause stack overflow
@@ -600,7 +599,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
             local mt = getmetatable(element)
             mt.__index[property] = initialVAL
             mt.funcs[property] = onchange
-            setmetatable(element, mt)
 
             logger.info("property added in element"..element.name..":"..(element.id or ""))
         end,
@@ -624,14 +622,12 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
             local mt = getmetatable(element)
             mt.__index[property] = nil
             mt.funcs[property] = nil
-            setmetatable(element)
 
             logger.info("removed property from element "..element.name..":"..(element.id or ""))
         end,
 
         deInitPropertySys = function(element)
-            local mt = {}
-            setmetatable(element, mt) -- dump the mt
+            setmetatable(element, nil) -- yeet the mt
         end
     }
 }
