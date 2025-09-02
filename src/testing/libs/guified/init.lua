@@ -62,8 +62,8 @@ if __GUIFIEDGLOBAL__ == nil then
         rootfolder = rootfolder,
         fontsize = 12, -- * default font size
         os = love.system.getOS():lower(),
-        __VER__ = "B-2.1.0: Repressed Memory Edition", -- ! GUIFIED VERSION AND CODENAME
-        __VERINT__ = "B-2.1.0" -- ! GUIFIED VERSION
+        __VER__ = "B-3.0.0: Segfault Chic Edition", -- ! GUIFIED VERSION AND CODENAME
+        __VERINT__ = "B-3.0.0" -- ! GUIFIED VERSION
     }
     rootfolder = nil
 else
@@ -77,7 +77,7 @@ coroutine.wrap((function()
     if not(logger.thread:isRunning()) and not(areweloaded) then
         logger.startSVC()
     end
-end))()
+end))() -- idc it works
 local errorhandler = not(areweloaded) and love.filesystem.getInfo(getScriptFolder().."/errorhandler.lua") and require(__GUIFIEDGLOBAL__.rootfolder..".errorhandler") or nil --? check and load error handler
 
 -- ? init stuff
@@ -98,7 +98,7 @@ love.graphics.setColor(1, 1, 1, 1)
 love.math.setRandomSeed(os.time())
 
 if love.system.getOS():lower() == "linux" then
-    --logger.warn("FFI features on Linux are not supported")
+    --logger.warn("FFI features on Linux are not supported") --? what FFI features. I sent them to the void realm
 elseif love.system.getOS():lower() == "os x" then
     logger.warn("MacOS support is experimental")
 end
@@ -378,7 +378,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
         ---@param chkval any
         ---@param chkvaltype string equal or nequal(not equal)
         ---@return string id of registered callback
-        registerCallback = function(firefunc, args, func, chkval, chkvaltype)
+        registerPollingCallback = function(firefunc, args, func, chkval, chkvaltype)
             local id = idgen(16)
             local opr
             chkvaltype = (chkvaltype or "equal"):lower()
@@ -415,7 +415,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
         -- * removes callback and firefunc with internal registry
         ---@param id string id of registered callback
-        removeCallback = function(id)
+        removePollingCallback = function(id)
             logger.info("removing callback callback"..id)
 
             guifiedinternal.internalregistry.callbacks[id] = nil
@@ -427,11 +427,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
         ---@param id string
         ---@return boolean
         isCallbackRegistered = function(id)
-            if getIndex(guifiedinternal.internalregistry.callbackids, id) then
-                return true
-            else
-                return false
-            end
+            return (getIndex(guifiedinternal.internalregistry.callbackids, id) or false) and true -- basically a if true return true if false return false
         end
     },
 
@@ -439,8 +435,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
         -- * provided by logger module of the love2d-tools lib
         ---@type logger
         asynclogger = logger
-
-        --TODO add single threadded logger
     },
 
     extcalls = {
@@ -736,7 +730,7 @@ if love.window.getTitle():lower() == "untitled" and not(areweloaded) then
     })
 end
 
-logger.ok("GUIFIED init success !")
+logger.ok("GUIFIED init success ! YAY!")
 
 return guified
 

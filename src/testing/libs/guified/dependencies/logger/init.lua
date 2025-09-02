@@ -8,6 +8,7 @@ local logtypes = {
     regular = "\x1B[38;5;15m"
 }
 
+---@class logger
 local logger = {
     channel = love.thread.getChannel("loggerdata"),
     thread = love.thread.newThread(string.gsub(__GUIFIEDGLOBAL__.rootfolder..".dependencies.logger.thread", "[.]", "/")..".lua")

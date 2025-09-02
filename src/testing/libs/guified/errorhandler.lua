@@ -1,11 +1,11 @@
 --* Error handling
+
 local utf8 = require("utf8")
 
 ---@type logger
 local logger = require(__GUIFIEDGLOBAL__.rootfolder..".dependencies.logger.init")
 
 local function error_printer(msg, layer)
-	--print((debug.traceback("Error: " .. tostring(msg), 1+(layer or 1)):gsub("\n[^\n]+$", "")))
 	logger.fatal(msg)
 	logger.trace(debug.traceback("Error: " .. tostring(msg), 1+(layer or 1)):gsub("\n[^\n]+$", ""))
 	logger.regular("Found a bug ?\nPlease report it to the Guified repo as a issue !\nThanks !")
@@ -121,10 +121,10 @@ end
 
 function love.threaderror(thread, errorstr)
 	if not(logger.thread:isRunning()) then
-		logger.startSVC()
+		print("Thread error!\n"..errorstr)
+	else
+		logger.error("Thread error!\n"..errorstr)
 	end
-	logger.error("Thread error!\n"..errorstr)
-	thread:start()
 end
 
 return true

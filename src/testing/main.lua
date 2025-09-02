@@ -16,16 +16,16 @@ end)
 
 guified.registry.register(text)
 
-local cb = guified.registry.registerCallback(button.getState, {}, function(val)
+local cb = guified.registry.registerPollingCallback(button.getState, {}, function(val)
     text.text = tostring(val)
 end)
 
-guified.registry.registerCallback(love.keyboard.isDown, {"a"}, function(val)
+guified.registry.registerPollingCallback(love.keyboard.isDown, {"a"}, function(val)
     if guified.registry.isCallbackRegistered(cb) then
-        guified.registry.removeCallback(cb)
+        --guified.registry.removePollingCallback(cb)
+        error("THIS IS A TEST")
     end
 end, true)
 
 profile.stop()
-
 logger.info(profile.report(20))
