@@ -12,6 +12,25 @@ local function error_printer(msg, layer)
 	logger.stopSVC()
 end
 
+local fun_messages = {
+	"oops !",
+	"did i do this?",
+	"meow",
+	"hi im guified i LOVE to crash",
+	"Crashaholic edition",
+	"Ayooo",
+	"hmmm",
+	"*villager noises*",
+	"huh?",
+	"not my fault!",
+	"runtime error? more like runSOMETIMES error",
+	"function not found, just like my motivation",
+	"your code called, it wants a lawyer",
+	"ok but why did YOU trust me with your UI?",
+	"hello darkness my old friend"
+}
+fun_messages = fun_messages[love.math.random(1, #fun_messages)]
+
 function love.errorhandler(msg)
 	msg = tostring(msg)
 	error_printer(msg, 2)
@@ -73,7 +92,7 @@ function love.errorhandler(msg)
         love.graphics.setFont(largefont)
         love.graphics.printf("GUIFIED", 0, 44, love.graphics.getWidth(), "center")
         love.graphics.setFont(font)
-		love.graphics.printf(__GUIFIEDGLOBAL__.__VER__ or "Unknown version", 0, 88, love.graphics.getWidth(), "center")
+		love.graphics.printf((__GUIFIEDGLOBAL__.__VER__ or "Unknown version").."\n"..fun_messages, 0, 88, love.graphics.getWidth(), "center")
 		love.graphics.printf(p, 0, love.graphics.getHeight() / 4, love.graphics.getWidth(), "center")
 		love.graphics.present()
 	end
@@ -86,10 +105,12 @@ function love.errorhandler(msg)
 	if love.system then
 		p = p .. "\n\nPress Ctrl+C or tap to copy this error"
 	end
-    local name = love.window.getTitle()
+	local name = love.window.getTitle()
+	--[[
     if #name == 0 or name == "Untitled" then 
         love.window.setTitle("Guified error")
     end
+	--]]
 	return function()
 		love.event.pump()
 		for e, a, b, c in love.event.poll() do

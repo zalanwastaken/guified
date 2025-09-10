@@ -7,10 +7,8 @@
 local function replaceSlashWithDot(str)
     return str:gsub("/", ".") -- Replace all '/' with '.'
 end
----@return string
-local function getScriptFolder()
-    return (debug.getinfo(1, "S").source:sub(2):match("(.*/)"))
-end
+local sciptFolder = debug.getinfo(1, "S").source:sub(2):match("(.*/)")
+
 ---@return number|nil
 local function getIndex(table, val)
     for i = 1, #table, 1 do
@@ -47,8 +45,8 @@ local areweloaded = false
 
 -- * setup global var
 if __GUIFIEDGLOBAL__ == nil then
-    local rootfolder = (function()
-        local folder = replaceSlashWithDot(getScriptFolder())
+    local rootfolder = (function() --! drop the ENV var
+        local folder = replaceSlashWithDot(sciptFolder)
         return (os.getenv("GUIFIEDROOTFOLDER") or string.sub(folder, 1, #folder-1))
     end)()
     -- ? global table containing vars for guified modules
@@ -56,8 +54,8 @@ if __GUIFIEDGLOBAL__ == nil then
         rootfolder = rootfolder,
         fontsize = 12, -- * default font size
         os = love.system.getOS():lower(),
-        __VER__ = "B-2.0.2: Repressed Memory Edition", -- ! GUIFIED VERSION AND CODENAME
-        __VERINT__ = "B-2.0.2" -- ! GUIFIED VERSION
+        __VER__ = "B-2.0.3: Repressed Memory Edition", -- ! GUIFIED VERSION AND CODENAME
+        __VERINT__ = "B-2.0.3" -- ! GUIFIED VERSION
     }
     rootfolder = nil
 else
@@ -66,19 +64,19 @@ end
 
 -- ? requires
 ---@type logger
-local logger = require(__GUIFIEDGLOBAL__.rootfolder .. ".dependencies.love2d-tools.modules.logger.init") -- * logger module
+local logger = require(__GUIFIEDGLOBAL__.rootfolder .. ".dependencies.logger.init") -- * logger module
 coroutine.wrap((function()
     if not(logger.thread:isRunning()) and not(areweloaded) then
         logger.startSVC()
     end
 end))()
-local OSinterop = not(areweloaded) and love.filesystem.getInfo(getScriptFolder().."/os_interop.lua") and require(__GUIFIEDGLOBAL__.rootfolder..".os_interop") or nil
-local errorhandler = not(areweloaded) and love.filesystem.getInfo(getScriptFolder().."/errorhandler.lua") and require(__GUIFIEDGLOBAL__.rootfolder..".errorhandler") or nil
+local OSinterop = not(areweloaded) and love.filesystem.getInfo(sciptFolder.."/os_interop.lua") and require(__GUIFIEDGLOBAL__.rootfolder..".os_interop") or nil
+local errorhandler = not(areweloaded) and love.filesystem.getInfo(sciptFolder.."/errorhandler.lua") and require(__GUIFIEDGLOBAL__.rootfolder..".errorhandler") or nil
 
 -- ? init stuff
 local font
-if love.filesystem.getInfo(getScriptFolder() .. "Ubuntu-L.ttf") then
-    font = love.graphics.newFont(getScriptFolder() .. "Ubuntu-L.ttf", __GUIFIEDGLOBAL__.fontsize)
+if love.filesystem.getInfo(sciptFolder .. "Ubuntu-L.ttf") then
+    font = love.graphics.newFont(sciptFolder .. "Ubuntu-L.ttf", __GUIFIEDGLOBAL__.fontsize)
 else
     font = love.graphics.newFont(__GUIFIEDGLOBAL__.fontsize)
 end
@@ -211,7 +209,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
     -- * Contains the element constructor functions
     ---@type elements
-    elements = love.filesystem.getInfo(getScriptFolder().."elements.lua") and require(__GUIFIEDGLOBAL__.rootfolder..".elements") or nil,
+    elements = love.filesystem.getInfo(sciptFolder.."elements.lua") and require(__GUIFIEDGLOBAL__.rootfolder..".elements") or nil,
     registry = {
         -- * Registers an element with the internal registry.
         -- * Validates the element's ID length, generates a unique ID, and adds it to the appropriate stacks.
@@ -609,7 +607,7 @@ logger.ok("Exit function setup done")
 logger.info("Doing post init")
 
 if not (areweloaded) and OSinterop ~= nil then
-    guifiedinternal.setWindowToBeOnTop = OSinterop(logger.warn).setWindowToBeOnTop -- ? requires ffi so added by OSinterop here after (almost) everything is done
+    guifiedinternal.setWindowToBeOnTop = OSinterop().setWindowToBeOnTop -- ? requires ffi so added by OSinterop here after (almost) everything is done
 end
 guifiedinternal.internalregistry.warndata = {}
 

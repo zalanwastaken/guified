@@ -23,7 +23,7 @@ end)
 guified.registry.registerPollingCallback(love.keyboard.isDown, {"a"}, function(val)
     if guified.registry.isCallbackRegistered(cb) then
         --guified.registry.removePollingCallback(cb)
-        error("THIS IS A TEST")
+        ff() -- will cause a attempt to call a nil val
     end
 end, true)
 
