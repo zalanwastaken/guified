@@ -224,7 +224,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
                     return (false)
                 end
                 if id_length or 16 < 6 then
-                    warnf("ID REG for " .. element.name .. " is too short")
+                    logger.warn("ID REG for " .. element.name .. " is too short")
                 end
                 local id = idgen(id_length or 16)
                 for i = 1, #guifiedinternal.internalregistry.ids, 1 do
