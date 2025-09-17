@@ -1,3 +1,5 @@
+--! THIS WILL BE REMOVED
+
 if __GUIFIEDGLOBAL__ == nil then
     return nil
 end

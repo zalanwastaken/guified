@@ -2,7 +2,7 @@
 local utf8 = require("utf8")
 
 ---@type logger
-local logger = require(__GUIFIEDGLOBAL__.rootfolder..".dependencies.love2d-tools.modules.logger.init")
+local logger = require(__GUIFIEDGLOBAL__.rootfolder..".dependencies.logger.init")
 
 local function error_printer(msg, layer)
 	--print((debug.traceback("Error: " .. tostring(msg), 1+(layer or 1)):gsub("\n[^\n]+$", "")))

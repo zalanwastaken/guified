@@ -656,8 +656,7 @@ if love.window.getTitle():lower() == "untitled" and not(areweloaded) then
     local title = love.window.getTitle()
     guified.registry.register({
         name = "guified internal title SVC",
-        draw = function()
-        end,
+        draw = function()end,
         update = function()
             setTitle(title .. " FPS:" .. love.timer.getFPS())
         end

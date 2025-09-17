@@ -1,10 +1,10 @@
 --TODO do something about linux with ffi
 
-local logger = require("libs.guified.dependencies.love2d-tools.modules.logger.init")
+---@type logger
+local logger = require(__GUIFIEDGLOBAL__.rootfolder..".dependencies.logger.init") --! fixed
 
----@param warnf function
 ---@return table
-local function init_interop(warnf)
+local function init_interop()
     local os = love.system.getOS():lower()
     local ffi = require("ffi")
     if os == "windows" then
@@ -43,7 +43,7 @@ local function init_interop(warnf)
     elseif os == "linux" then
         ret = {
             setWindowToBeOnTop = function() 
-                warnf("FFI features on Linux are not supported")
+                logger.warn("FFI features on Linux are not supported")
                 logger.error("Attempt to access FFI feature on linux")
                 return(false)
             end
