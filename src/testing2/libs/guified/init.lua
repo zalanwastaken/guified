@@ -54,8 +54,8 @@ if __GUIFIEDGLOBAL__ == nil then
         rootfolder = rootfolder,
         fontsize = 12, -- * default font size
         os = love.system.getOS():lower(),
-        __VER__ = "B-2.0.3: Repressed Memory Edition", -- ! GUIFIED VERSION AND CODENAME
-        __VERINT__ = "B-2.0.3" -- ! GUIFIED VERSION
+        __VER__ = "B-2.0.4: Repressed Memory Edition", -- ! GUIFIED VERSION AND CODENAME
+        __VERINT__ = "B-2.0.4" -- ! GUIFIED VERSION
     }
     rootfolder = nil
 else
@@ -157,7 +157,7 @@ local guifiedinternal = {
         for i = 1, #idtbl, 1 do
             if drawstack[idtbl[i]] ~= nil then
                 love.graphics.setColor(fclr or {1, 1, 1, 1})
-                love.graphics.setFont(__GUIFIEDGLOBAL__.font or font)
+                love.graphics.setFont(__GUIFIEDGLOBAL__.font)
                 drawstack[idtbl[i]](data[i])
             end
         end

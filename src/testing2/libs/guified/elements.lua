@@ -165,6 +165,42 @@ local elements = {
             ---@return number
             getPOS = function()
                 return x, y
+            end,
+
+            ---@param argtext string
+            setText = function(argtext)
+                elementsinternal.funcs.checkArg(argtext, 1, elementsinternal.types.number, "setText")
+
+                text = argtext
+            end,
+
+            ---@return string
+            getText = function()
+                return text
+            end,
+
+            ---@param argalign string
+            setAlign = function(argalign)
+                elementsinternal.funcs.checkArg(argalign, 1, elementsinternal.types.string, "setAlign")
+
+                align = argalign
+            end,
+
+            ---@param argmaxalign number
+            setMaxAlign = function(argmaxalign)
+                elementsinternal.funcs.checkArg(argmaxalign, 1, elementsinternal.types.number, "setMaxAlign")
+
+                maxalign = argmaxalign
+            end,
+
+            ---@return string
+            getAlign = function()
+                return align
+            end,
+
+            ---@return number
+            getMaxAlign = function()
+                return maxalign
             end
         })
     end,
@@ -202,6 +238,13 @@ local elements = {
             ---@return number
             getPOS = function()
                 return x, y
+            end,
+
+            setImage = function(argimg)
+                if type(argimg):lower() == "string" then
+                    argimg = love.graphics.newImage(argimg)
+                end
+                image = argimg
             end
         })
     end,
@@ -345,6 +388,18 @@ local elements = {
             ---@return number
             getPOS = function()
                 return x, y
+            end,
+
+            ---@param argtext string
+            setText = function(argtext)
+                elementsinternal.funcs.checkArg(argtext, 1, elementsinternal.types.string, "setText")
+
+                txt = argtext
+            end,
+
+            ---@param argactive boolean
+            setActive = function(argactive)
+                active = argactive
             end
         })
     end,
@@ -366,6 +421,8 @@ local elements = {
         clr = clr or {1, 1, 1, 1}
 
         return({
+            name = "box",
+
             draw = function()
                 love.graphics.setColor(clr)
                 love.graphics.rectangle(mode, x, y, w, h)
@@ -394,6 +451,12 @@ local elements = {
 
                 w = argw
                 h = argh
+            end,
+
+            setColor = function(argclr)
+                elementsinternal.funcs.checkArg(argclr, 1, elementsinternal.types.table, "setColor")
+
+                clr = argclr
             end
         })
     end,
