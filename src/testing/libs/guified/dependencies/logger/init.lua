@@ -5,7 +5,8 @@ local logtypes = {
     trace = "\x1B[38;5;13m",
     fatal = "\x1B[38;5;12m",
     warn = "\x1B[38;5;11m",
-    regular = "\x1B[38;5;15m"
+    regular = "\x1B[38;5;15m",
+    debug = "\x1B[38;5;7m"
 }
 
 ---@class logger

@@ -18,6 +18,7 @@ local elements = {
     ---@param fgclr? Color Optional
     ---@param bgclr? Color Optional
     ---@param activebtn? number Optional
+    ---@return element
     button = function(text, x, y, w, h, bgclr, fgclr, activebtn)
         elementsinternal.funcs.checkArg(text, 1, elementsinternal.types.string, "button")
         elementsinternal.funcs.checkArg(x, 2, elementsinternal.types.int, "button")
@@ -89,6 +90,7 @@ local elements = {
     ---@param text string
     ---@param x? number Optional
     ---@param y? number Optional
+    ---@return element
     text = function(text, x, y)
         elementsinternal.funcs.checkArg(text, 1, elementsinternal.types.string, "text")
 
@@ -107,12 +109,6 @@ local elements = {
                 elementsinternal.funcs.checkArg(argtext, 1, elementsinternal.types.string, "setText")
 
                 text = argtext
-            end,
-
-            --? returns the current text
-            ---@return string
-            getText = function()
-                return text
             end,
 
             --? changes the position of the element
@@ -135,10 +131,11 @@ local elements = {
     end,
 
     ---@param text string
-    ---@param x? number Optional. Defaults to 0
-    ---@param y? number Optional. Defaults to 0
-    ---@param align? string Optional. Defaults to windows width
-    ---@param maxalign? number Optional. Defaults to center
+    ---@param x? number Optional
+    ---@param y? number Optional
+    ---@param align? string Optional
+    ---@param maxalign? number Optional
+    ---@return element
     textf = function(text, x, y, align, maxalign)
         elementsinternal.funcs.checkArg(text, 1, elementsinternal.types.string, "textf")
 
@@ -170,15 +167,40 @@ local elements = {
                 return x, y
             end,
 
+            ---@param argtext string
+            setText = function(argtext)
+                elementsinternal.funcs.checkArg(argtext, 1, elementsinternal.types.number, "setText")
+
+                text = argtext
+            end,
+
+            ---@return string
+            getText = function()
+                return text
+            end,
+
             ---@param argalign string
             setAlign = function(argalign)
                 elementsinternal.funcs.checkArg(argalign, 1, elementsinternal.types.string, "setAlign")
+
                 align = argalign
+            end,
+
+            ---@param argmaxalign number
+            setMaxAlign = function(argmaxalign)
+                elementsinternal.funcs.checkArg(argmaxalign, 1, elementsinternal.types.number, "setMaxAlign")
+
+                maxalign = argmaxalign
             end,
 
             ---@return string
             getAlign = function()
                 return align
+            end,
+
+            ---@return number
+            getMaxAlign = function()
+                return maxalign
             end
         })
     end,
@@ -186,6 +208,7 @@ local elements = {
     ---@param x number
     ---@param y number
     ---@param image string|image image or the path to the image file
+    ---@return element
     image = function(x, y, image)
         elementsinternal.funcs.checkArg(x, 1, elementsinternal.types.number, "image")
         elementsinternal.funcs.checkArg(y, 2, elementsinternal.types.number, "image")
@@ -215,6 +238,13 @@ local elements = {
             ---@return number
             getPOS = function()
                 return x, y
+            end,
+
+            setImage = function(argimg)
+                if type(argimg):lower() == "string" then
+                    argimg = love.graphics.newImage(argimg)
+                end
+                image = argimg
             end
         })
     end,
@@ -230,6 +260,7 @@ local elements = {
     ---@param activebtn? number optional. 1 = left, btn 2 = right btn
     ---@param activebydefault? boolean optional is the element active(selected) by default ?
     ---@param limit? number optional limit of the enterable text
+    ---@return element
     textInput = function(x, y, w, h, mode, bgclr, fgclr, placeholderTXT, activebtn, activebydefault, limit)
         elementsinternal.funcs.checkArg(x, 1, elementsinternal.types.number, "textInput")
         elementsinternal.funcs.checkArg(y, 2, elementsinternal.types.number, "textInput")
@@ -357,6 +388,18 @@ local elements = {
             ---@return number
             getPOS = function()
                 return x, y
+            end,
+
+            ---@param argtext string
+            setText = function(argtext)
+                elementsinternal.funcs.checkArg(argtext, 1, elementsinternal.types.string, "setText")
+
+                txt = argtext
+            end,
+
+            ---@param argactive boolean
+            setActive = function(argactive)
+                active = argactive
             end
         })
     end,
@@ -367,6 +410,7 @@ local elements = {
     ---@param h? number Optional
     ---@param mode? string Optional
     ---@param clr? Color Optional
+    ---@return element
     box = function(x, y, w, h, mode, clr)
         elementsinternal.funcs.checkArg(x, 2, elementsinternal.types.number, "box")
         elementsinternal.funcs.checkArg(y, 3, elementsinternal.types.number, "box")
@@ -377,6 +421,8 @@ local elements = {
         clr = clr or {1, 1, 1, 1}
 
         return({
+            name = "box",
+
             draw = function()
                 love.graphics.setColor(clr)
                 love.graphics.rectangle(mode, x, y, w, h)
@@ -405,16 +451,71 @@ local elements = {
 
                 w = argw
                 h = argh
+            end,
+
+            setColor = function(argclr)
+                elementsinternal.funcs.checkArg(argclr, 1, elementsinternal.types.table, "setColor")
+
+                clr = argclr
             end
         })
     end,
 
+    --[[
+    dropDown = function(x, y, w, h, content, bgclr, fgclr, activebtn)
+        fgclr = fgclr or {0, 0, 0, 1}
+        bgclr = bgclr or {1, 1, 1, 1}
+        activebtn = activebtn or 1
+
+        local selcont = content[1]
+        local active = false
+        local wasdownbefore = false
+
+        return({
+            name = "dropdown",
+            draw = function()
+                if active then
+                    for i = 1, #content, 1 do
+                        love.graphics.setColor(bgclr)
+                        love.graphics.rectangle("fill", x, (y+h)*i, w, h)
+
+                        love.graphics.setColor(fgclr)
+                        love.graphics.printf(content[i], x, ((y+h)*i)+__GUIFIEDGLOBAL__.fontsize/4, x+w, "center")
+                    end
+                else
+                    love.graphics.setColor(bgclr)
+                    love.graphics.rectangle("fill", x, y, w, h)
+
+                    love.graphics.setColor(fgclr)
+                    love.graphics.printf(selcont, x, y+(h/4), x+w, "center")
+                end
+            end,
+
+            update = function()
+                if love.mouse.isDown(activebtn) then
+                    local mouseX, mouseY = love.mouse.getPosition()
+                    if mouseX > x and mouseX < x+w and mouseY > y and mouseY < y+h then
+                        if not(wasdownbefore) then
+                            wasdownbefore = true
+                            active = true
+                        end
+                    elseif wasdownbefore then
+                        wasdownbefore = false
+                        active = false
+                    end
+                end
+            end
+        })
+    end,
+    --]]
+
+    ---@return element
     guifiedsplash = function()
         local largefont = love.graphics.newFont(20)
         local stdfont = __GUIFIEDGLOBAL__.font
         local quotes = {"Meow", "ZWT", "The CPU is a rock", "Lua > JS = true. Lua < JS = true. JS logic",
                         "{something = something}", "pog", "segfault(core dumped)", "404 quote not found", "OwO", ">_O",
-                        "Miku", "Teto", "Hmmmmmmm", __GUIFIEDGLOBAL__.__VER__, "BOOM! FFI is gone"}
+                        "Miku", "Teto", "Hmmmmmmm", __GUIFIEDGLOBAL__.__VER__}
         local alpha = 1
         local quote = quotes[love.math.random(1, #quotes)]
         local done = false
@@ -438,69 +539,11 @@ local elements = {
                 end
             end,
 
-            ---@return boolean Is the element done
+            ---@return boolean is the element done
             completed = function()
                 return (done)
             end
         })
-    end,
-
-    ---@param x number
-    ---@param y number
-    ---@param defaultstate? boolean Optional
-    toggleButton = function(x, y, defaultstate)
-        elementsinternal.funcs.checkArg(x, 1, elementsinternal.types.number, "toggleButton")
-        elementsinternal.funcs.checkArg(y, 2, elementsinternal.types.number, "toggleButton")
-
-        local w, h = 50, 20
-        local toggle = defaultstate or false
-        local toggleC = toggle
-
-        return({
-            name = "toggle button",
-            draw = function()
-                local offsetX = 5
-                if toggle then
-                    offsetX = w-5-10
-                end
-
-                love.graphics.setColor(0.5, 0.5, 0.5)
-                love.graphics.rectangle("fill", x, y, w, h)
-                love.graphics.setColor(1, 1, 1)
-                love.graphics.rectangle("line", x, y, w, h)
-                love.graphics.rectangle("fill", x+offsetX, y+5, 10, 10)
-            end,
-            update = function(dt)
-                if love.mouse.isDown(1) then
-                    local mouseX, mouseY = love.mouse.getPosition()
-                    if mouseX >= x and mouseX <= x+w and mouseY >= y and mouseY <= y+h then
-                        if toggleC == toggle then
-                            toggle = not(toggle)
-                        end
-                    end
-                else
-                    toggleC = toggle
-                end
-            end,
-
-            getState = function()
-                return toggle
-            end,
-
-            setState = function(state)
-                toggle = state
-            end,
-
-            getPOS = function()
-                return x, y
-            end,
-
-            setPOS = function(argx, argy)
-                x = argx
-                y = argy
-            end
-        })
     end
 }
-
-return elements
+return (elements)
