@@ -544,6 +544,63 @@ local elements = {
                 return (done)
             end
         })
+    end,
+
+    ---@param x number
+    ---@param y number
+    ---@param defaultstate? boolean Optional
+    toggleButton = function(x, y, defaultstate)
+        elementsinternal.funcs.checkArg(x, 1, elementsinternal.types.number, "toggleButton")
+        elementsinternal.funcs.checkArg(y, 2, elementsinternal.types.number, "toggleButton")
+
+        local w, h = 50, 20
+        local toggle = defaultstate or false
+        local toggleC = toggle
+
+        return({
+            name = "toggle button",
+            draw = function()
+                local offsetX = 5
+                if toggle then
+                    offsetX = w-5-10
+                end
+
+                love.graphics.setColor(0.5, 0.5, 0.5)
+                love.graphics.rectangle("fill", x, y, w, h)
+                love.graphics.setColor(1, 1, 1)
+                love.graphics.rectangle("line", x, y, w, h)
+                love.graphics.rectangle("fill", x+offsetX, y+5, 10, 10)
+            end,
+            update = function(dt)
+                if love.mouse.isDown(1) then
+                    local mouseX, mouseY = love.mouse.getPosition()
+                    if mouseX >= x and mouseX <= x+w and mouseY >= y and mouseY <= y+h then
+                        if toggleC == toggle then
+                            toggle = not(toggle)
+                        end
+                    end
+                else
+                    toggleC = toggle
+                end
+            end,
+
+            getState = function()
+                return toggle
+            end,
+
+            setState = function(state)
+                toggle = state
+            end,
+
+            getPOS = function()
+                return x, y
+            end,
+
+            setPOS = function(argx, argy)
+                x = argx
+                y = argy
+            end
+        })
     end
 }
 return (elements)
