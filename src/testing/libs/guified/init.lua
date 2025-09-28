@@ -54,7 +54,7 @@ if __GUIFIEDGLOBAL__ == nil then
 
     local rootfolder = (function()
         local folder = replaceSlashWithDot(getScriptFolder())
-        return (os.getenv("GUIFIEDROOTFOLDER") or string.sub(folder, 1, #folder-1))
+        return (string.sub(folder, 1, #folder-1))
     end)()
 
     -- ? global table containing vars for guified modules
@@ -62,8 +62,8 @@ if __GUIFIEDGLOBAL__ == nil then
         rootfolder = rootfolder,
         fontsize = 12, -- * default font size
         os = love.system.getOS():lower(),
-        __VER__ = "B-3.0.0: Segfault Chic Edition", -- ! GUIFIED VERSION AND CODENAME
-        __VERINT__ = "B-3.0.0" -- ! GUIFIED VERSION
+        __VERINT__ = "B-3.0.0", -- ! GUIFIED VERSION
+        __VER__ = "B-3.0.0: Segfault Chic Edition" -- ! GUIFIED VERSION AND CODENAME
     }
     rootfolder = nil
 else
@@ -103,9 +103,6 @@ elseif love.system.getOS():lower() == "os x" then
     logger.warn("MacOS support is experimental")
 end
 
-if os.getenv("GUIFIEDROOTFOLDER") == nil then
-    logger.warn("ENV VAR GUIFIEDROOTFOLDER IS NOT SETUP ! This may cause issues")
-end
 logger.ok("init setup done")
 
 if areweloaded then
@@ -433,8 +430,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
     debug = {
         -- * provided by logger module of the love2d-tools lib
-        ---@type logger
-        asynclogger = logger
+        logger = logger
     },
 
     extcalls = {

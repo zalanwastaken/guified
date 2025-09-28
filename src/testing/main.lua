@@ -1,5 +1,5 @@
 local guified = require("libs.guified.init")
-local logger = guified.debug.asynclogger
+local logger = guified.debug.logger
 
 local profile = require("profile")
 profile.start()
