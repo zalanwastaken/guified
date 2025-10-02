@@ -25,12 +25,12 @@ local function idgen(length)
     local chars = {
         -- * Small chars
         "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w",
-        "x", "y", "z", 
+        "x", "y", "z",
         -- * Capital chars
         "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W",
-        "X", "Y", "Z", 
+        "X", "Y", "Z",
         -- * Numbers
-        "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", 
+        "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
         -- * Special chars
         "!", "@", "#", "$", "%", "^", "&", "*", "(", ")", "-", "_", "=", "+", "{", "}", "[", "]", ":", ";", "'", "<", ">",
         ",", ".", "?", "/"
@@ -127,12 +127,20 @@ local guifiedinternal = {
         textinputstack = {},
         keypressedstack = {},
         resizestack = {},
+        --mousemovedstack = {}, --TODO add this
         data = {},
         ids = {},
-        callbackids = {},
-        callbacks = {},
 
-        fclr = {1, 1, 1, 1}, -- white and opaque 
+        pollingcallbackids = {},
+        pollingcallbacks = {},
+        callbacks = {
+            keypressed = {},
+            textinput = {},
+            keypressedIDS = {},
+            textinputIDS = {}
+        },
+
+        fclr = {1, 1, 1, 1}, -- white and opaque
         fclrenable = true
     },
 
@@ -192,9 +200,20 @@ local guifiedinternal = {
             end
         end
     end,
+
     callbackupdate = function(idtbl, funcs)
         for i = 1, #idtbl, 1 do
             funcs[idtbl[i]]()
+        end
+    end,
+    keypressedcallback = function(key, idtbl, funcs)
+        for i = 1, #idtbl, 1 do
+            funcs[idtbl[i]](key)
+        end
+    end,
+    textinputcallback = function(key, idtbl, funcs)
+        for i = 1, #idtbl, 1 do
+            funcs[idtbl[i]](key)
         end
     end
 }
@@ -229,7 +248,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
         -- * Validates the element's ID length, generates a unique ID, and adds it to the appropriate stacks.
         -- * Logs errors if non-function types are found for required fields.
         ---@param element element The element to register.
-        ---@param id_length number Optional length of the ID to be generated (default is 16).
+        ---@param id_length? number Optional length of the ID to be generated (default is 16).
         ---@return boolean Returns true on success, false on failure.
         register = function(element, id_length)
             if element ~= nil then
@@ -398,14 +417,14 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
                 end
             end
 
-            guifiedinternal.internalregistry.callbacks[id] = function()
+            guifiedinternal.internalregistry.pollingcallbacks[id] = function()
                 local k = firefunc(unpack(args, 1, #args))
                 if opr(k) then
                     func(k)
                 end
             end
 
-            guifiedinternal.internalregistry.callbackids[#guifiedinternal.internalregistry.callbackids + 1] = id
+            guifiedinternal.internalregistry.pollingcallbackids[#guifiedinternal.internalregistry.pollingcallbackids + 1] = id
 
             return id
         end,
@@ -415,16 +434,27 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
         removePollingCallback = function(id)
             logger.info("removing callback callback"..id)
 
-            guifiedinternal.internalregistry.callbacks[id] = nil
-            local idex = getIndex(guifiedinternal.internalregistry.callbackids, id)
-            table.remove(guifiedinternal.internalregistry.callbackids, idex)
+            guifiedinternal.internalregistry.pollingcallbacks[id] = nil
+            local idex = getIndex(guifiedinternal.internalregistry.pollingcallbackids, id)
+            table.remove(guifiedinternal.internalregistry.pollingcallbackids, idex)
         end,
 
         -- * checks if callback is registered
         ---@param id string
         ---@return boolean
         isCallbackRegistered = function(id)
-            return (getIndex(guifiedinternal.internalregistry.callbackids, id) or false) and true -- basically a if true return true if false return false
+            return (getIndex(guifiedinternal.internalregistry.pollingcallbackids, id) or false) and true -- basically a if true return true if false return false
+        end,
+
+        registerCallback = function(cbtype, run)
+            local cbreg = guifiedinternal.internalregistry.callbacks[cbtype]
+            if cbreg ~= nil then
+                local id = idgen(16)
+                guifiedinternal.internalregistry.callbacks[cbtype][id] = run
+                guifiedinternal.internalregistry.callbacks[cbtype.."IDS"][#guifiedinternal.internalregistry.callbacks[cbtype.."IDS"] + 1] = id
+            else
+                logger.error("Attempt to register unknown callback")
+            end
         end
     },
 
@@ -445,7 +475,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
         --* Calls guifiedinternal.update
         --* update handler
         updatef = function()
-            guifiedinternal.callbackupdate(guifiedinternal.internalregistry.callbackids, guifiedinternal.internalregistry.callbacks)
+            guifiedinternal.callbackupdate(guifiedinternal.internalregistry.pollingcallbackids, guifiedinternal.internalregistry.pollingcallbacks)
 
             guifiedinternal.internalregistry.data = guifiedinternal.update(love.timer.getAverageDelta(), guifiedinternal.internalregistry.updatestack,
                 guifiedinternal.internalregistry.ids)
@@ -456,8 +486,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
         -- * Passes the input to the guifiedinternal.textinput method
         -- * textinput handler
         textinputf = function(key)
-            guifiedinternal.textinput(key, guifiedinternal.internalregistry.textinputstack,
-                guifiedinternal.internalregistry.ids)
+            guifiedinternal.textinputcallback(key, guifiedinternal.internalregistry.callbacks.textinput, guifiedinternal.internalregistry.callbacks.keypressedIDS)
+            guifiedinternal.textinput(key, guifiedinternal.internalregistry.textinputstack, guifiedinternal.internalregistry.ids)
         end,
 
         -- * handles keypressed events
@@ -465,7 +495,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
         -- * Passes the input to the guifiedinternal.keypressed methord
         -- * keypressed handler
         keypressedf = function(key)
-            guifiedinternal.textinput(key, guifiedinternal.internalregistry.keypressedstack, guifiedinternal.internalregistry.ids)
+            guifiedinternal.keypressedcallback(key, guifiedinternal.internalregistry.callbacks.keypressedIDS, guifiedinternal.internalregistry.callbacks.keypressed)
+            guifiedinternal.keypressed(key, guifiedinternal.internalregistry.keypressedstack, guifiedinternal.internalregistry.ids)
         end,
 
         --* Handles resize event.
@@ -522,12 +553,10 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
             __GUIFIEDGLOBAL__.fontsize = size or font
         end,
 
-        --TODO test this
         setfclr = function(clr)
             guifiedinternal.internalregistry.fclr = clr or {1, 1, 1, 1}
         end,
 
-        --TODO test this
         setfclrenable = function(enable)
             guifiedinternal.internalregistry.fclrenable = enable
         end,
@@ -732,12 +761,12 @@ return guified
 
 --[[
 * Made by Zalanwastaken with LÖVE and some 🎔
-! ________  ________  ___       ________  ________   ___       __   ________  ________  _________  ________  ___  __    _______   ________      
-!|\_____  \|\   __  \|\  \     |\   __  \|\   ___  \|\  \     |\  \|\   __  \|\   ____\|\___   ___\\   __  \|\  \|\  \ |\  ___ \ |\   ___  \    
-! \|___/  /\ \  \|\  \ \  \    \ \  \|\  \ \  \\ \  \ \  \    \ \  \ \  \|\  \ \  \___|\|___ \  \_\ \  \|\  \ \  \/  /|\ \   __/|\ \  \\ \  \   
-!     /  / /\ \   __  \ \  \    \ \   __  \ \  \\ \  \ \  \  __\ \  \ \   __  \ \_____  \   \ \  \ \ \   __  \ \   ___  \ \  \_|/_\ \  \\ \  \  
-!    /  /_/__\ \  \ \  \ \  \____\ \  \ \  \ \  \\ \  \ \  \|\__\_\  \ \  \ \  \|____|\  \   \ \  \ \ \  \ \  \ \  \\ \  \ \  \_|\ \ \  \\ \  \ 
+! ________  ________  ___       ________  ________   ___       __   ________  ________  _________  ________  ___  __    _______   ________
+!|\_____  \|\   __  \|\  \     |\   __  \|\   ___  \|\  \     |\  \|\   __  \|\   ____\|\___   ___\\   __  \|\  \|\  \ |\  ___ \ |\   ___  \
+! \|___/  /\ \  \|\  \ \  \    \ \  \|\  \ \  \\ \  \ \  \    \ \  \ \  \|\  \ \  \___|\|___ \  \_\ \  \|\  \ \  \/  /|\ \   __/|\ \  \\ \  \
+!     /  / /\ \   __  \ \  \    \ \   __  \ \  \\ \  \ \  \  __\ \  \ \   __  \ \_____  \   \ \  \ \ \   __  \ \   ___  \ \  \_|/_\ \  \\ \  \
+!    /  /_/__\ \  \ \  \ \  \____\ \  \ \  \ \  \\ \  \ \  \|\__\_\  \ \  \ \  \|____|\  \   \ \  \ \ \  \ \  \ \  \\ \  \ \  \_|\ \ \  \\ \  \
 !   |\________\ \__\ \__\ \_______\ \__\ \__\ \__\\ \__\ \____________\ \__\ \__\____\_\  \   \ \__\ \ \__\ \__\ \__\\ \__\ \_______\ \__\\ \__\
 !    \|_______|\|__|\|__|\|_______|\|__|\|__|\|__| \|__|\|____________|\|__|\|__|\_________\   \|__|  \|__|\|__|\|__| \|__|\|_______|\|__| \|__|
-!                                                                                \|_________|                                                   
+!                                                                                \|_________|
 --]]

@@ -23,9 +23,13 @@ end)
 guified.registry.registerPollingCallback(love.keyboard.isDown, {"a"}, function(val)
     if guified.registry.isCallbackRegistered(cb) then
         --guified.registry.removePollingCallback(cb)
-        ff() -- will cause a attempt to call a nil val
+        --ff() -- will cause a attempt to call a nil val
     end
 end, true)
+
+guified.registry.registerCallback("textinput", function(key)
+    print(key.." was pressed")
+end)
 
 profile.stop()
 logger.info(profile.report(20))
