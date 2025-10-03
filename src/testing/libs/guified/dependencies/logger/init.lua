@@ -1,3 +1,5 @@
+local loudErrors = false
+
 local logtypes = {
     info = "\x1B[38;5;7m",
     error = "\x1B[38;5;9m",
@@ -12,7 +14,11 @@ local logtypes = {
 ---@class logger
 local logger = {
     channel = love.thread.getChannel("loggerdata"),
-    thread = love.thread.newThread(string.gsub(__GUIFIEDGLOBAL__.rootfolder..".dependencies.logger.thread", "[.]", "/")..".lua")
+    thread = love.thread.newThread(string.gsub(__GUIFIEDGLOBAL__.rootfolder..".dependencies.logger.thread", "[.]", "/")..".lua"),
+    ---@param set boolean
+    setLoudErrors = function(set)
+        loudErrors = set or false
+    end
 }
 
 logger.startSVC = function()
@@ -31,6 +37,9 @@ end
 for k, v in pairs(logtypes) do
     logger[k] = function(X)
         logger.channel:push("\x1B[38;5;10m ["..os.date('%Y-%m-%d %H:%M:%S').."]"..v.." ["..k:upper().."] "..X)
+        if k == "error" and loudErrors then
+            error(X)
+        end
     end
 end
 
