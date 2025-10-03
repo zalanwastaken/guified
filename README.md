@@ -5,9 +5,9 @@
 ▝▚▄▞▘     █ ▐▌   █      ▝▚▄▟▌    ▐▙▄▞▘       ▐▌       
                                              ▐▌
 ```
-###### The 3000+ lines of code so you only have to write 100
+###### The 2000+ lines of code so you only have to write 100
 
-Guified is a ~~lightweight~~ GUI library/framework(depends on how you use it) for LÖVE (Love2D) that simplifies window management and UI element creation. With its easy-to-use features, Guified enables developers to craft intuitive and interactive graphical user interfaces without unnecessary complexity. 🚀 Whether you're building a small game or a large application, Guified provides the tools you need to streamline the process.
+Guified is a GUI library/framework(depends on how you use it) for LÖVE (Love2D) that simplifies window management and UI element creation. With its easy-to-use features, Guified enables developers to craft intuitive and interactive graphical user interfaces without unnecessary complexity. 🚀 Whether you're building a small game or a large application, Guified provides the tools you need to streamline the process.
 
 ### Why Guified? 🤷
 Because devs don’t need babysitters. Guified is built on power without bloat — a toolkit that gives you a registry, error handling, and control when you want it, without ever boxing you in. No forced patterns, no training wheels. Just more in less, so you can bend it to your will and ship what you want.
@@ -95,24 +95,16 @@ cp -r guified <your project folder>
 ```lua
 local guified = require(<path to guified>)
 ```
-### 4) Setup ENV variable(Optional but highly recommended if you want to use modules)
-```bash
-export GUIFIEDROOTFOLDER=<Same as the require path in main.lua>
-```
 ### Done! ✨ Enjoy creating with Guified! 😎
 
 ## Latest Guified version
-Latest Guified version is currently B-2.0.1 "Repressed Memory Edition".<br>
+Latest Guified version is currently B-2.0.3 "Repressed Memory Edition".<br>
 This version supports the following Love2d version(These versions are tested with Guifed other versions might also run Guified fine):-
 - 11.5 (Mysterious Mysteries)
   - Windows ✅ Full support
   - Linux ✅ Without FFI
   - MacOS ❌ No support. Bugs on MacOS wont be fixed(Guified might still run. MacOS is not blocked)[COMING SOON IN B-2.1.0]
 - 11.4 (Mysterious Mysteries)
-  - Windows ✅ Full support
-  - Linux ✅ Without FFI
-  - MacOS ❌ No support. Bugs on MacOS wont be fixed(Guified might still run. MacOS is not blocked)[COMING SOOM IN B-2.1.0]
-- 11.3 (Mysterious Mysteries)
   - Windows ✅ Full support
   - Linux ✅ Without FFI
   - MacOS ❌ No support. Bugs on MacOS wont be fixed(Guified might still run. MacOS is not blocked)[COMING SOOM IN B-2.1.0]
@@ -142,7 +134,6 @@ This version supports the following Love2d version(These versions are tested wit
 
 ### 🎯 **Side Quests (Ongoing Tasks)**
 🔸 Ensure removing unused modules doesn’t break everything.<br>
-🔸 Maintain FFI compatibility (or at least try to).<br>
 🔸 Improve documentation so new users don’t suffer.<br>
 🔸 Test Guified on different LÖVE versions (including ancient ones for no reason).<br>
 🔸 Find and fix the weirdest possible edge cases.<br>
@@ -150,5 +141,4 @@ This version supports the following Love2d version(These versions are tested wit
 ## Notes
 1. ⚙️ Encountered bugs? Report them to help speed up development and improve the library for everyone.
 2. 🔢 Check out the examples folder to quickly familiarize yourself with Guified's capabilities and jumpstart your project.
-3. ⚠ **Currently, there are no plans to support MacOS.**
-4. ❄ **Features that use FFI are not supported on Linux due to FFI features using os dependent code**
+3. ❄ **Features that use FFI are not supported on Linux due to FFI features using os dependent code**
