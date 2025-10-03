@@ -4,10 +4,7 @@
 
 -- * functions
 
----@return string
-local function getScriptFolder()
-    return (debug.getinfo(1, "S").source:sub(2):match("(.*/)"))
-end
+local scriptFolder = debug.getinfo(1, "S").source:sub(2):match("(.*/)")
 
 ---@return number|nil
 local function getIndex(table, val)
@@ -53,7 +50,7 @@ if __GUIFIEDGLOBAL__ == nil then
     end
 
     local rootfolder = (function()
-        local folder = replaceSlashWithDot(getScriptFolder())
+        local folder = replaceSlashWithDot(scriptFolder)
         return (string.sub(folder, 1, #folder-1))
     end)()
 
@@ -78,12 +75,12 @@ coroutine.wrap((function()
         logger.startSVC()
     end
 end))() -- idc it works
-local errorhandler = not(areweloaded) and love.filesystem.getInfo(getScriptFolder().."/errorhandler.lua") and require(__GUIFIEDGLOBAL__.rootfolder..".errorhandler") or nil --? check and load error handler
+local errorhandler = not(areweloaded) and love.filesystem.getInfo(scriptFolder.."/errorhandler.lua") and require(__GUIFIEDGLOBAL__.rootfolder..".errorhandler") or nil --? check and load error handler
 
 -- ? init stuff
 local font
-if love.filesystem.getInfo(getScriptFolder() .. "Ubuntu-L.ttf") then
-    font = love.graphics.newFont(getScriptFolder() .. "Ubuntu-L.ttf", __GUIFIEDGLOBAL__.fontsize)
+if love.filesystem.getInfo(scriptFolder .. "Ubuntu-L.ttf") then
+    font = love.graphics.newFont(scriptFolder .. "Ubuntu-L.ttf", __GUIFIEDGLOBAL__.fontsize)
 else
     font = love.graphics.newFont(__GUIFIEDGLOBAL__.fontsize)
 end
@@ -244,7 +241,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
     -- * Contains the element constructor functions
     ---@type elements
-    elements = love.filesystem.getInfo(getScriptFolder().."elements.lua") and require(__GUIFIEDGLOBAL__.rootfolder..".elements") or nil,
+    elements = love.filesystem.getInfo(scriptFolder.."elements.lua") and require(__GUIFIEDGLOBAL__.rootfolder..".elements") or nil,
     registry = {
         -- * Registers an element with the internal registry.
         -- * Validates the element's ID length, generates a unique ID, and adds it to the appropriate stacks.
