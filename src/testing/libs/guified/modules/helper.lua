@@ -57,8 +57,5 @@ local helper = {
             guified.registry.register(element)
             return true
         end
-    end,
-
-    ---@type math
-    math = require(__GUIFIEDGLOBAL__.rootfolder..".dependencies.love2d-tools.modules.math")
+    end
 }
