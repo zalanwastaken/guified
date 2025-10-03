@@ -29,7 +29,7 @@ We take the security of Guified seriously. If you have discovered a security vul
 
 ## Scope 🎯
 
-This security policy applies to the latest stable release of Guified. Please ensure you are using the most recent version before reporting security issues.
+This security policy applies to the supported stable releases of Guified.
 
 ## Safe Harbor ⚓
 
