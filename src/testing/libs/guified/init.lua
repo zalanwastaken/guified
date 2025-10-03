@@ -122,12 +122,14 @@ local guifiedinternal = {
 
     ---@class internalregistry
     internalregistry = {
-        drawstack = {},
-        updatestack = {},
-        textinputstack = {},
-        keypressedstack = {},
-        resizestack = {},
-        --mousemovedstack = {}, --TODO add this
+        elements = {
+            drawstack = {},
+            updatestack = {},
+            textinputstack = {},
+            keypressedstack = {},
+            resizestack = {},
+            --mousemovedstack = {}, --TODO add this
+        },
         data = {},
         ids = {},
 
@@ -250,7 +252,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
         ---@param element element The element to register.
         ---@param id_length? number Optional length of the ID to be generated (default is 16).
         ---@return boolean Returns true on success, false on failure.
-        register = function(element, id_length)
+        registerOLD = function(element, id_length)
             if element ~= nil then
                 logger.info("registering element "..element.name)
                 if element.name == nil then
@@ -326,7 +328,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
         -- * Cleans up the element from all relevant stacks and logs the action.
         ---@param element element The element or its ID to remove.
         ---@return boolean Returns true on success, false on failure.
-        remove = function(element)
+        removeOLD = function(element)
             if element ~= nil then
                 if type(element) == "string" then
                     local id = element
@@ -370,11 +372,67 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
             end
         end,
 
+        ---@param element element
+        ---@param idlen? number
+        ---@return boolean true for success, false for failure
+        register = function(element, idlen)
+            if not(element) then
+                logger.error("No element provided to register. Aborting")
+                return false
+            end
+
+            local id = idgen(idlen or 16)
+            local hooks = element._guified
+            for k, v in pairs(hooks) do
+                if guifiedinternal.internalregistry.elements[k.."stack"] == nil then
+                    if k ~= "name" and k ~= "id" then
+                        logger.error("unknown hook: "..k.." in element: "..hooks.name)
+                    end
+                else
+                    guifiedinternal.internalregistry.elements[k.."stack"][id] = v
+                end
+            end
+
+            guifiedinternal.internalregistry.ids[#guifiedinternal.internalregistry.ids + 1] = id
+            element._guified.id = id
+
+            logger.info("Element "..element._guified.name..":"..element._guified.id.." registered")
+
+            return true
+        end,
+
+        ---@param element element
+        ---@return boolean
+        remove = function(element)
+            if element._guified.id == nil then
+                logger.error("Element "..element._guified.name.." is not registed. Aborting")
+                return false
+            end
+
+            table.remove(guifiedinternal.internalregistry.ids, getIndex(guifiedinternal.internalregistry.ids, element.id)) -- bye bye :)
+
+            local hooks = element._guified
+            for k, v in pairs(hooks) do
+                if guifiedinternal.internalregistry.elements[k.."stack"] == nil then
+                    if k ~= "name" and k ~= "id" then
+                        logger.error("unknown hook: "..k.." in element: "..hooks.name)
+                    end
+                else
+                    guifiedinternal.internalregistry.elements[k.."stack"][hooks.id] = nil
+                end
+            end
+
+            element._guified.id = nil
+            logger.info("Element "..element._guified.name.." removed")
+
+            return true
+        end,
+
         -- * checks if the element provided is registered or not
         ---@param element element
         ---@return boolean
         isRegistered = function(element)
-            if element.id then
+            if element._guified.id then
                 return true
             else
                 return false
@@ -446,6 +504,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
             return (getIndex(guifiedinternal.internalregistry.pollingcallbackids, id) or false) and true -- basically a if true return true if false return false
         end,
 
+        --TODO fix this
         registerCallback = function(cbtype, run)
             local cbreg = guifiedinternal.internalregistry.callbacks[cbtype]
             if cbreg ~= nil then
@@ -468,7 +527,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
         --* Calls guifiedinternal.draw
         --* draw handler
         drawf = function()
-            guifiedinternal.draw(guifiedinternal.internalregistry.drawstack, guifiedinternal.internalregistry.data, guifiedinternal.internalregistry.ids, guifiedinternal.internalregistry.fclrenable and guifiedinternal.internalregistry.fclr)
+            guifiedinternal.draw(guifiedinternal.internalregistry.elements.drawstack, guifiedinternal.internalregistry.data, guifiedinternal.internalregistry.ids, guifiedinternal.internalregistry.fclrenable and guifiedinternal.internalregistry.fclr)
         end,
 
         --* Handles update event
@@ -477,7 +536,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
         updatef = function()
             guifiedinternal.callbackupdate(guifiedinternal.internalregistry.pollingcallbackids, guifiedinternal.internalregistry.pollingcallbacks)
 
-            guifiedinternal.internalregistry.data = guifiedinternal.update(love.timer.getAverageDelta(), guifiedinternal.internalregistry.updatestack,
+            guifiedinternal.internalregistry.data = guifiedinternal.update(love.timer.getAverageDelta(), guifiedinternal.internalregistry.elements.updatestack,
                 guifiedinternal.internalregistry.ids)
         end,
 
@@ -487,7 +546,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
         -- * textinput handler
         textinputf = function(key)
             guifiedinternal.textinputcallback(key, guifiedinternal.internalregistry.callbacks.textinput, guifiedinternal.internalregistry.callbacks.keypressedIDS)
-            guifiedinternal.textinput(key, guifiedinternal.internalregistry.textinputstack, guifiedinternal.internalregistry.ids)
+            guifiedinternal.textinput(key, guifiedinternal.internalregistry.elements.textinputstack, guifiedinternal.internalregistry.ids)
         end,
 
         -- * handles keypressed events
@@ -496,7 +555,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
         -- * keypressed handler
         keypressedf = function(key)
             guifiedinternal.keypressedcallback(key, guifiedinternal.internalregistry.callbacks.keypressedIDS, guifiedinternal.internalregistry.callbacks.keypressed)
-            guifiedinternal.keypressed(key, guifiedinternal.internalregistry.keypressedstack, guifiedinternal.internalregistry.ids)
+            guifiedinternal.keypressed(key, guifiedinternal.internalregistry.elements.keypressedstack, guifiedinternal.internalregistry.ids)
         end,
 
         --* Handles resize event.
@@ -505,7 +564,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
         --* Passes input to guifiedinternal.resize methord
         --* resize handler
         resizef = function(w, h)
-            guifiedinternal.resize(w, h, guifiedinternal.internalregistry.resizestack, guifiedinternal.internalregistry.ids)
+            guifiedinternal.resize(w, h, guifiedinternal.internalregistry.elements.resizestack, guifiedinternal.internalregistry.ids)
         end,
 
         -- * Returns the current drawstack.
@@ -606,7 +665,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
             }
             setmetatable(element, mt)
 
-            logger.info("property system init for "..element.name..":"..(element.id or ""))
+            logger.info("property system init for "..element._guified.name..":"..(element._guified.id or ""))
         end,
 
         --* adds a property to a element
@@ -619,7 +678,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
             mt.__index[property] = initialVAL
             mt.funcs[property] = onchange
 
-            logger.info("property added in element"..element.name..":"..(element.id or ""))
+            logger.info("property added in element"..element._guified.name..":"..(element._guified.id or ""))
         end,
 
         --* returns the value of a property
@@ -642,7 +701,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
             mt.__index[property] = nil
             mt.funcs[property] = nil
 
-            logger.info("removed property from element "..element.name..":"..(element.id or ""))
+            logger.info("removed property from element "..element._guified.name..":"..(element._guified.id or ""))
         end,
 
         deInitPropertySys = function(element)
@@ -747,11 +806,13 @@ if love.window.getTitle():lower() == "untitled" and not(areweloaded) then
     local title = love.window.getTitle()
 
     guified.registry.register({
-        name = "guified internal title SVC",
-        draw = function()end,
-        update = function()
-            setTitle(title .. " FPS:" .. love.timer.getFPS())
-        end
+        _guified = {
+            name = "guified internal title SVC",
+            draw = function()end,
+            update = function()
+                setTitle(title .. " FPS:" .. love.timer.getFPS())
+            end
+        }
     })
 end
 

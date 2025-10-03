@@ -33,13 +33,15 @@ local elements = {
         local isPressed = false
 
         return ({
-            name = "button",
-            draw = function()
-                love.graphics.setColor(bgclr)
-                love.graphics.rectangle("fill", x, y, w, h)
-                love.graphics.setColor(fgclr)
-                love.graphics.printf(text, x, y + h / 5, w, "center")
-            end,
+            _guified = {
+                name = "button",
+                draw = function()
+                    love.graphics.setColor(bgclr)
+                    love.graphics.rectangle("fill", x, y, w, h)
+                    love.graphics.setColor(fgclr)
+                    love.graphics.printf(text, x, y + h / 5, w, "center")
+                end
+            },
 
             ---@return boolean
             pressed = function()
@@ -98,10 +100,12 @@ local elements = {
         y = y or 0
 
         return ({
-            name = "text: " .. text,
-            draw = function()
-                love.graphics.print(text, x, y)
-            end,
+            _guified = {
+                name = "text: " .. text,
+                draw = function()
+                    love.graphics.print(text, x, y)
+                end
+            },
 
             --? changes the text to display
             ---@param argtext string
@@ -145,10 +149,12 @@ local elements = {
         align = align or "center"
 
         return ({
-            name = "textf: " .. text,
-            draw = function()
-                love.graphics.printf(text, x, y, maxalign, align)
-            end,
+            _guified = {
+                name = "textf: " .. text,
+                draw = function()
+                    love.graphics.printf(text, x, y, maxalign, align)
+                end
+            },
 
             --? changes the position of the element
             ---@param argx number
@@ -218,10 +224,12 @@ local elements = {
         end
 
         return ({
-            name = "image",
-            draw = function()
-                love.graphics.draw(image, x, y)
-            end,
+            _guified = {
+                name = "image",
+                draw = function()
+                    love.graphics.draw(image, x, y)
+                end
+            },
 
             --? changes the position of the element
             ---@param argx number
@@ -282,56 +290,58 @@ local elements = {
         local wasdownbefore = false
         local active = activebydefault or false
         return({
-            name = "textinput",
-            draw = function()
-                love.graphics.setColor(bgclr)
-                love.graphics.rectangle(mode, x, y, w, h)
+            _guified = {
+                name = "textinput",
+                draw = function()
+                    love.graphics.setColor(bgclr)
+                    love.graphics.rectangle(mode, x, y, w, h)
 
-                love.graphics.setColor(fgclr)
-                if txt ~= nil and active then
-                    love.graphics.printf(txt.."|", x, y+(h/4), x+w, "center")
-                elseif txt == nil then
-                    love.graphics.printf(placeholderTXT, x, y+(h/4), x+w, "center")
-                elseif txt ~= nil then
-                    love.graphics.printf(txt, x, y+(h/4), x+w, "center")
-                end
-            end,
-            update = function()
-                if love.mouse.isDown(1) then
-                    local mouseX, mouseY = love.mouse.getPosition()
-                    if mouseX > x and mouseX < x+w and mouseY > y and mouseY < y+h then
-                        if not(wasdownbefore) then
-                            wasdownbefore = true
-                            active = true
+                    love.graphics.setColor(fgclr)
+                    if txt ~= nil and active then
+                        love.graphics.printf(txt.."|", x, y+(h/4), x+w, "center")
+                    elseif txt == nil then
+                        love.graphics.printf(placeholderTXT, x, y+(h/4), x+w, "center")
+                    elseif txt ~= nil then
+                        love.graphics.printf(txt, x, y+(h/4), x+w, "center")
+                    end
+                end,
+                update = function()
+                    if love.mouse.isDown(1) then
+                        local mouseX, mouseY = love.mouse.getPosition()
+                        if mouseX > x and mouseX < x+w and mouseY > y and mouseY < y+h then
+                            if not(wasdownbefore) then
+                                wasdownbefore = true
+                                active = true
+                            end
+                        elseif wasdownbefore then
+                            wasdownbefore = false
+                            active = false
                         end
-                    elseif wasdownbefore then
-                        wasdownbefore = false
-                        active = false
                     end
-                end
-            end,
-            textinput = function(key)
-                if active then
-                    if txt == nil then
-                        txt = ""
+                end,
+                textinput = function(key)
+                    if active then
+                        if txt == nil then
+                            txt = ""
+                        end
+
+                        if not(#txt >= limit) then
+                            txt = txt..key
+                        end
+                    end
+                end,
+                keypressed = function(key)
+                    if key == "backspace" and txt ~= nil and active then
+                        txt = string.sub(txt, 1, #txt-1)
                     end
 
-                    if not(#txt >= limit) then
-                        txt = txt..key
+                    if txt ~= nil then
+                        if #txt == 0 then
+                            txt = nil
+                        end
                     end
                 end
-            end,
-            keypressed = function(key)
-                if key == "backspace" and txt ~= nil and active then
-                    txt = string.sub(txt, 1, #txt-1)
-                end
-
-                if txt ~= nil then
-                    if #txt == 0 then
-                        txt = nil
-                    end
-                end
-            end,
+            },
 
             ---@param argx number
             ---@param argy number
@@ -421,12 +431,13 @@ local elements = {
         clr = clr or {1, 1, 1, 1}
 
         return({
-            name = "box",
-
-            draw = function()
-                love.graphics.setColor(clr)
-                love.graphics.rectangle(mode, x, y, w, h)
-            end,
+            _guified = {
+                name = "box",
+                draw = function()
+                    love.graphics.setColor(clr)
+                    love.graphics.rectangle(mode, x, y, w, h)
+                end
+            },
 
             ---@param argx number
             ---@param argy number
@@ -520,24 +531,26 @@ local elements = {
         local quote = quotes[love.math.random(1, #quotes)]
         local done = false
         return ({
-            name = "splash element guified",
-            draw = function()
-                love.graphics.setColor(0, 0, 0, alpha or 0)
-                love.graphics.rectangle("fill", 0, 0, love.graphics.getWidth(), love.graphics.getHeight())
-                love.graphics.setColor(1, 1, 1, alpha or 0)
-                love.graphics.setFont(largefont)
-                love.graphics.printf("Guified", 0, love.graphics.getHeight() / 2, love.graphics.getWidth(), "center")
-                love.graphics.setFont(stdfont)
-                love.graphics.printf(quote, 0, (love.graphics.getHeight() / 2) + 25, love.graphics.getWidth(), "center")
-            end,
-            update = function(dt)
-                if (alpha or -1) > 0 and not (done) then
-                    alpha = alpha - 0.25 * dt
-                else
-                    done = true
-                    alpha = nil
+            _guified = {
+                name = "splash element guified",
+                draw = function()
+                    love.graphics.setColor(0, 0, 0, alpha or 0)
+                    love.graphics.rectangle("fill", 0, 0, love.graphics.getWidth(), love.graphics.getHeight())
+                    love.graphics.setColor(1, 1, 1, alpha or 0)
+                    love.graphics.setFont(largefont)
+                    love.graphics.printf("Guified", 0, love.graphics.getHeight() / 2, love.graphics.getWidth(), "center")
+                    love.graphics.setFont(stdfont)
+                    love.graphics.printf(quote, 0, (love.graphics.getHeight() / 2) + 25, love.graphics.getWidth(), "center")
+                end,
+                update = function(dt)
+                    if (alpha or -1) > 0 and not (done) then
+                        alpha = alpha - 0.25 * dt
+                    else
+                        done = true
+                        alpha = nil
+                    end
                 end
-            end,
+            },
 
             ---@return boolean is the element done
             completed = function()
@@ -558,31 +571,33 @@ local elements = {
         local toggleC = toggle
 
         return({
-            name = "toggle button",
-            draw = function()
-                local offsetX = 5
-                if toggle then
-                    offsetX = w-5-10
-                end
-
-                love.graphics.setColor(0.5, 0.5, 0.5)
-                love.graphics.rectangle("fill", x, y, w, h)
-                love.graphics.setColor(1, 1, 1)
-                love.graphics.rectangle("line", x, y, w, h)
-                love.graphics.rectangle("fill", x+offsetX, y+5, 10, 10)
-            end,
-            update = function(dt)
-                if love.mouse.isDown(1) then
-                    local mouseX, mouseY = love.mouse.getPosition()
-                    if mouseX >= x and mouseX <= x+w and mouseY >= y and mouseY <= y+h then
-                        if toggleC == toggle then
-                            toggle = not(toggle)
-                        end
+            _guified = {
+                name = "toggle button",
+                draw = function()
+                    local offsetX = 5
+                    if toggle then
+                        offsetX = w-5-10
                     end
-                else
-                    toggleC = toggle
+
+                    love.graphics.setColor(0.5, 0.5, 0.5)
+                    love.graphics.rectangle("fill", x, y, w, h)
+                    love.graphics.setColor(1, 1, 1)
+                    love.graphics.rectangle("line", x, y, w, h)
+                    love.graphics.rectangle("fill", x+offsetX, y+5, 10, 10)
+                end,
+                update = function(dt)
+                    if love.mouse.isDown(1) then
+                        local mouseX, mouseY = love.mouse.getPosition()
+                        if mouseX >= x and mouseX <= x+w and mouseY >= y and mouseY <= y+h then
+                            if toggleC == toggle then
+                                toggle = not(toggle)
+                            end
+                        end
+                    else
+                        toggleC = toggle
+                    end
                 end
-            end,
+            },
 
             getState = function()
                 return toggle
