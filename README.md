@@ -107,7 +107,7 @@ This version supports the following Love2d version(These versions are tested wit
 - 11.4 (Mysterious Mysteries)
   - Windows ✅ Full support
   - Linux ✅ Without FFI
-  - MacOS ❌ No support. Bugs on MacOS wont be fixed(Guified might still run. MacOS is not blocked)[COMING SOOM IN B-2.1.0]
+  - MacOS ❌ No support. Bugs on MacOS wont be fixed(Guified might still run. MacOS is not blocked)[COMING SOON IN B-2.1.0]
 
 ## 📍 Roadmap  
 
