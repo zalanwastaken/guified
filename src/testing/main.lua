@@ -21,9 +21,8 @@ local cb = guified.registry.registerPollingCallback(button.getState, {}, functio
 end)
 
 guified.registry.registerPollingCallback(love.keyboard.isDown, {"a"}, function(val)
-    if guified.registry.isCallbackRegistered(cb) then
-        --guified.registry.removePollingCallback(cb)
-        --ff() -- will cause a attempt to call a nil val
+    if guified.registry.isRegistered(text) then
+        guified.registry.remove(text)
     end
 end, true)
 
@@ -33,3 +32,4 @@ end)
 
 profile.stop()
 logger.info(profile.report(20))
+logger.debug("Memory (MB): "..collectgarbage("count")/1024)
