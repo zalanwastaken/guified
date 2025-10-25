@@ -125,7 +125,7 @@ local guifiedinternal = {
             textinputstack = {},
             keypressedstack = {},
             resizestack = {},
-            --mousemovedstack = {}, --TODO add this
+            mousemovedstack = {}
         },
         data = {},
         ids = {},
@@ -199,6 +199,13 @@ local guifiedinternal = {
             end
         end
     end,
+    mousemoved = function(x, y, dx, dy, istouch, mousemovedstack, idtbl)
+        for i = 1, #idtbl, 1 do
+            if mousemovedstack[idtbl[i]] ~= nil then
+                mousemovedstack[idtbl[i]](x, y, dx, dy, istouch)
+            end
+        end
+    end,
 
     callbackupdate = function(idtbl, funcs)
         for i = 1, #idtbl, 1 do
@@ -243,132 +250,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
     ---@type elements
     elements = love.filesystem.getInfo(scriptFolder.."elements.lua") and require(__GUIFIEDGLOBAL__.rootfolder..".elements") or nil,
     registry = {
-        -- * Registers an element with the internal registry.
-        -- * Validates the element's ID length, generates a unique ID, and adds it to the appropriate stacks.
-        -- * Logs errors if non-function types are found for required fields.
-        ---@param element element The element to register.
-        ---@param id_length? number Optional length of the ID to be generated (default is 16).
-        ---@return boolean Returns true on success, false on failure.
-        registerOLD = function(element, id_length)
-            if element ~= nil then
-                logger.info("registering element "..element.name)
-                if element.name == nil then
-                    logger.error("Element name missing. Aborting")
-                    return (false)
-                end
-                if id_length or 16 < 6 then
-                    warnf("ID REG for " .. element.name .. " is too short")
-                end
-                local id = idgen(id_length or 16)
-                for i = 1, #guifiedinternal.internalregistry.ids, 1 do
-                    if id == guifiedinternal.internalregistry.ids[i] then
-                        logger.error("Failed to register element " .. element.name .. " ID already exists. Aborting")
-                        return (false)
-                    end
-                end
-                element.id = id
-                id = nil
-                guifiedinternal.internalregistry.ids[#guifiedinternal.internalregistry.ids + 1] = element.id
-                if type(element.draw):lower() == "function" then
-                    guifiedinternal.internalregistry.drawstack[element.id] = element.draw
-                    logger.info("draw registered for element " .. element.name .. ":" .. element.id)
-                else
-                    logger.error("Non-function data type in function field for draw in element " .. element.name)
-                    logger.error("Critical element function draw missing. Registering element " .. element.name ..
-                                     " failed. Aborting")
-                    return (false)
-                end
-                if element.update ~= nil then
-                    if type(element.update):lower() == "function" then
-                        guifiedinternal.internalregistry.updatestack[element.id] = element.update
-                        logger.info("update registered for element " .. element.name .. ":" .. element.id)
-                    else
-                        logger.error("Non-function data type in function field for update in element " .. element.name)
-                    end
-                end
-                if element.textinput ~= nil then
-                    if type(element.textinput):lower() == "function" then
-                        guifiedinternal.internalregistry.textinputstack[element.id] = element.textinput
-                        logger.info("textinput registered for element " .. element.name .. ":" .. element.id)
-                    else
-                        logger.error("Non-function data type in function field for textinput in element " ..
-                                         element.name)
-                    end
-                end
-                if element.keypressed ~= nil then
-                    if type(element.keypressed):lower() == "function" then
-                        guifiedinternal.internalregistry.keypressedstack[element.id] = element.keypressed
-                        logger.info("keypressed registered for element " .. element.name .. ":" .. element.id)
-                    else
-                        logger.error("Non-function data type in function field for keypressed in element " ..
-                                         element.name)
-                    end
-                end
-                if element.resize ~= nil then
-                    if type(element.resize):lower() == "function" then
-                        guifiedinternal.internalregistry.resizestack[element.id] = element.resize
-                        logger.info("resize registered for element " .. element.name .. ":" .. element.id)
-                    else
-                        logger.error("Non-function data type in function field for resize in element " ..
-                            element.name)
-                    end
-                end
-                return (true)
-            else
-                logger.error("No element provided to register. Aborting")
-                return (false)
-            end
-        end,
-
-        -- * Removes an element from the internal registry.
-        -- * Supports removing by element object or ID (using ID is discouraged).
-        -- * Cleans up the element from all relevant stacks and logs the action.
-        ---@param element element The element or its ID to remove.
-        ---@return boolean Returns true on success, false on failure.
-        removeOLD = function(element)
-            if element ~= nil then
-                if type(element) == "string" then
-                    local id = element
-                    element = {
-                        name = id,
-                        id = id
-                    }
-                    logger.warn("Using a ID to remove a element is not recommended. Warning for: " .. element.name)
-                end
-                if element.id ~= nil then
-                    local idindex = getIndex(guifiedinternal.internalregistry.ids, element.id)
-                    if guifiedinternal.internalregistry.drawstack[element.id] ~= nil then
-                        guifiedinternal.internalregistry.drawstack[element.id] = nil
-                    else
-                        logger.warn("Broken element ? " .. element.name .. ":" .. element.id) -- ? this will only happen in like once in a mil
-                    end
-                    if guifiedinternal.internalregistry.updatestack[element.id] ~= nil then
-                        guifiedinternal.internalregistry.updatestack[element.id] = nil
-                    end
-                    if guifiedinternal.internalregistry.textinputstack[element.id] ~= nil then
-                        guifiedinternal.internalregistry.textinputstack[element.id] = nil
-                    end
-                    if guifiedinternal.internalregistry.keypressedstack[element.id] ~= nil then
-                        guifiedinternal.internalregistry.keypressedstack[element.id] = nil
-                    end
-                    if guifiedinternal.internalregistry.resizestack[element.id] ~= nil then
-                        guifiedinternal.internalregistry.resizestack[element.id] = nil
-                    end
-                    table.remove(guifiedinternal.internalregistry.ids, idindex)
-                    idindex = nil
-                    logger.info("Removing element " .. element.name .. ":" .. element.id)
-                    element.id = nil
-                    return (true)
-                else
-                    logger.error("Element " .. element.name .. " is not registed. Aborting")
-                    return (false)
-                end
-            else
-                logger.error("No element provided to remove. Aborting")
-                return (false)
-            end
-        end,
-
         ---@param element element
         ---@param idlen? number
         ---@return boolean true for success, false for failure
@@ -564,6 +445,15 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
             guifiedinternal.resize(w, h, guifiedinternal.internalregistry.elements.resizestack, guifiedinternal.internalregistry.ids)
         end,
 
+        ---@param x number
+        ---@param y number
+        ---@param dx number
+        ---@param dy number
+        ---@param istouch boolean
+        mousemovedf = function(x, y, dx, dy, istouch)
+            guifiedinternal.mousemoved(x, y, dx, dy, istouch, guifiedinternal.internalregistry.elements.mousemovedstack, guifiedinternal.internalregistry.ids)
+        end,
+
         -- * Returns the current drawstack.
         ---@return table The table containing drawable elements.
         getDrawStack = function()
@@ -639,7 +529,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
         ---@return boolean True if updating is enabled, false otherwise.
         getUpdateStatus = function()
             return (guifiedinternal.enableupdate)
-        end,
+        end
     },
 
     properties = {
@@ -701,11 +591,13 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
             logger.info("removed property from element "..element._guified.name..":"..(element._guified.id or ""))
         end,
 
+        ---@param element element
         deInitPropertySys = function(element)
-            setmetatable(element, nil) -- yeet the mt
+            setmetatable(element, nil) -- yeet the mt >:D
         end
     }
 }
+
 logger.ok("setting up main return table done")
 
 -- * Love functions
@@ -783,6 +675,10 @@ function love.resize(w, h)
     guified.extcalls.resizef(w, h)
 end
 logger.ok("resize hook setup done")
+
+function love.mousemoved(x, y, dx, dy, istouch)
+    guified.extcalls.mousemovedf(x, y, dx, dy, istouch)
+end
 
 -- * love quit function
 function love.quit()
