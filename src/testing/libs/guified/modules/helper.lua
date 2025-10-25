@@ -4,7 +4,7 @@ end
 
 ---@type guified
 local guified = require(__GUIFIEDGLOBAL__.rootfolder..".init")
-local logger = guified.debug.asynclogger
+local logger = guified.debug.logger
 
 ---@class helper
 local helper = {
