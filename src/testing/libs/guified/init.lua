@@ -199,6 +199,14 @@ local guifiedinternal = {
             end
         end
     end,
+
+    ---@param x number
+    ---@param y number
+    ---@param dx number
+    ---@param dy number
+    ---@param istouch boolean
+    ---@param mousemovedstack table
+    ---@param idtbl table
     mousemoved = function(x, y, dx, dy, istouch, mousemovedstack, idtbl)
         for i = 1, #idtbl, 1 do
             if mousemovedstack[idtbl[i]] ~= nil then
@@ -207,16 +215,26 @@ local guifiedinternal = {
         end
     end,
 
+    ---@param idtbl table
+    ---@param funcs table
     callbackupdate = function(idtbl, funcs)
         for i = 1, #idtbl, 1 do
             funcs[idtbl[i]]()
         end
     end,
+
+    ---@param funcs table
+    ---@param idtbl table
+    ---@param key string
     keypressedcallback = function(key, idtbl, funcs)
         for i = 1, #idtbl, 1 do
             funcs[idtbl[i]](key)
         end
     end,
+
+    ---@param funcs table
+    ---@param idtbl table
+    ---@param key string
     textinputcallback = function(key, idtbl, funcs)
         for i = 1, #idtbl, 1 do
             funcs[idtbl[i]](key)
