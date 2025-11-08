@@ -2,9 +2,10 @@
 ---@alias element table to silence warnings
 ---@alias image table to silence warnings
 
--- * functions
-
 local scriptFolder = debug.getinfo(1, "S").source:sub(2):match("(.*/)")
+local areweloaded = false
+
+-- * functions
 
 ---@return number|nil
 local function getIndex(table, val)
@@ -38,8 +39,6 @@ local function idgen(length)
     end
     return (ret)
 end
-
-local areweloaded = false
 
 -- * setup global var
 if __GUIFIEDGLOBAL__ == nil then
