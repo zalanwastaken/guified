@@ -1,4 +1,5 @@
 local loudErrors = false
+local filter = {}
 
 local logtypes = {
     info = "\x1B[38;5;7m",
@@ -14,10 +15,19 @@ local logtypes = {
 ---@class logger
 local logger = {
     channel = love.thread.getChannel("loggerdata"),
-    thread = love.thread.newThread(string.gsub(__GUIFIEDGLOBAL__.rootfolder..".dependencies.logger.thread", "[.]", "/")..".lua"),
+    thread = love.thread.newThread(string.gsub(__GUIFIEDGLOBAL__.rootfolder..".dependencies.logger.thread", "[.]", "/")..".lua")
+}
+
+---@class guifiedloggerinterface
+local guifiedloggerinterface = {
     ---@param set boolean
     setLoudErrors = function(set)
         loudErrors = set or false
+    end,
+    setfilter = function(argfilter)
+        for i = 1, #argfilter, 1 do
+            filter[argfilter[i]] = true
+        end
     end
 }
 
@@ -36,11 +46,13 @@ end
 --* build logtypes
 for k, v in pairs(logtypes) do
     logger[k] = function(X)
-        logger.channel:push("\x1B[38;5;10m ["..os.date('%Y-%m-%d %H:%M:%S').."]"..v.." ["..k:upper().."] "..X)
-        if k == "error" and loudErrors then
-            error(X)
+        if not(filter[k] == true) then
+            logger.channel:push("\x1B[38;5;10m ["..os.date('%Y-%m-%d %H:%M:%S').."]"..v.." ["..k:upper().."] "..X)
+            if k == "error" and loudErrors then
+                error(X)
+            end
         end
     end
 end
 
-return logger
+return {logger = logger, guifiedloggerinterface = guifiedloggerinterface}

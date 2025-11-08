@@ -68,13 +68,14 @@ else
 end
 
 -- ? requires
+local loggertbl = require(__GUIFIEDGLOBAL__.rootfolder .. ".dependencies.logger.init") -- * logger module
 ---@type logger
-local logger = require(__GUIFIEDGLOBAL__.rootfolder .. ".dependencies.logger.init") -- * logger module
-coroutine.wrap((function()
-    if not(logger.thread:isRunning()) and not(areweloaded) then
-        logger.startSVC()
-    end
-end))() -- idc it works
+local logger = loggertbl.logger
+---@type guifiedloggerinterface
+local guifiedloggerinterface = loggertbl.guifiedloggerinterface
+if not(logger.thread:isRunning()) and not(areweloaded) then
+    logger.startSVC()
+end
 local errorhandler = not(areweloaded) and love.filesystem.getInfo(scriptFolder.."/errorhandler.lua") and require(__GUIFIEDGLOBAL__.rootfolder..".errorhandler") or nil --? check and load error handler
 
 -- ? init stuff
@@ -414,8 +415,9 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
     },
 
     debug = {
-        -- * provided by logger module of the love2d-tools lib
-        logger = logger
+        logger = logger,
+        setLoudErrors = guifiedloggerinterface.setLoudErrors,
+        setFilter = guifiedloggerinterface.setfilter
     },
 
     extcalls = {
