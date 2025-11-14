@@ -72,9 +72,7 @@ local loggertbl = require(__GUIFIEDGLOBAL__.rootfolder .. ".dependencies.logger.
 local logger = loggertbl.logger
 ---@type guifiedloggerinterface
 local guifiedloggerinterface = loggertbl.guifiedloggerinterface
-if not(logger.thread:isRunning()) and not(areweloaded) then
-    logger.startSVC()
-end
+guifiedloggerinterface.startSVC()
 local errorhandler = not(areweloaded) and love.filesystem.getInfo(scriptFolder.."/errorhandler.lua") and require(__GUIFIEDGLOBAL__.rootfolder..".errorhandler") or nil --? check and load error handler
 
 -- ? init stuff
@@ -500,7 +498,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
         -- * Quit function, the code that needs the be executed when the application quits
         quit = function()
             logger.regular(__GUIFIEDGLOBAL__.__VER__.." bids its farewell")
-            logger.stopSVC()
+            guifiedloggerinterface.stopSVC()
             return false
         end,
     },

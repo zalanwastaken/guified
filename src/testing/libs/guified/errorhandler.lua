@@ -2,14 +2,18 @@
 
 local utf8 = require("utf8")
 
+local tbl = require(__GUIFIEDGLOBAL__.rootfolder..".dependencies.logger.init")
+
 ---@type logger
-local logger = require(__GUIFIEDGLOBAL__.rootfolder..".dependencies.logger.init")
+local logger = tbl.logger
+---@type guifiedloggerinterface
+local guifiedloggerinterface = tbl.guifiedloggerinterface
 
 local function error_printer(msg, layer)
 	logger.fatal(msg)
 	logger.trace(debug.traceback("Error: " .. tostring(msg), 1+(layer or 1)):gsub("\n[^\n]+$", ""))
 	logger.regular("Found a bug ?\nPlease report it to the Guified repo as a issue !\nThanks !")
-	logger.stopSVC()
+	guifiedloggerinterface.stopSVC()
 end
 
 local fun_messages = {

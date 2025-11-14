@@ -13,10 +13,7 @@ local logtypes = {
 }
 
 ---@class logger
-local logger = {
-    channel = love.thread.getChannel("loggerdata"),
-    thread = love.thread.newThread(string.gsub(__GUIFIEDGLOBAL__.rootfolder..".dependencies.logger.thread", "[.]", "/")..".lua")
-}
+local logger = {}
 
 ---@class guifiedloggerinterface
 local guifiedloggerinterface = {
@@ -28,18 +25,21 @@ local guifiedloggerinterface = {
         for i = 1, #argfilter, 1 do
             filter[argfilter[i]] = true
         end
-    end
+    end,
+    channel = love.thread.getChannel("loggerdata"),
+    thread = love.thread.newThread(string.gsub(__GUIFIEDGLOBAL__.rootfolder..".dependencies.logger.thread", "[.]", "/")..".lua")
 }
 
-logger.startSVC = function()
-    if not(logger.thread:isRunning()) then
-        logger.thread:start()
+guifiedloggerinterface.startSVC = function()
+    if not(guifiedloggerinterface.thread:isRunning()) then
+        guifiedloggerinterface.thread:start()
     end
 end
 
-logger.stopSVC = function()
-    if logger.thread:isRunning() then
-        logger.channel:push("STOP\n\n")
+guifiedloggerinterface.stopSVC = function()
+    if guifiedloggerinterface.thread:isRunning() then
+        guifiedloggerinterface.channel:push("STOP\n\n")
+        guifiedloggerinterface.thread:wait()
     end
 end
 
@@ -47,7 +47,7 @@ end
 for k, v in pairs(logtypes) do
     logger[k] = function(X)
         if not(filter[k] == true) then
-            logger.channel:push("\x1B[38;5;10m ["..os.date('%Y-%m-%d %H:%M:%S').."]"..v.." ["..k:upper().."] "..X)
+            guifiedloggerinterface.channel:push("\x1B[38;5;10m ["..os.date('%Y-%m-%d %H:%M:%S').."]"..v.." ["..k:upper().."] "..X)
             if k == "error" and loudErrors then
                 error(X)
             end
