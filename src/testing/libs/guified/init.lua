@@ -244,7 +244,7 @@ logger.ok("setting up internal table done")
 -- * guified return table
 ---@class guified
 local guified = {
-    -- * version licence author stuff
+    -- * version licence and author stuff
     __VER__ = __GUIFIEDGLOBAL__.__VER__,
     __VERINT__ = __GUIFIEDGLOBAL__.__VERINT__,
     __LICENCE__ = [[
@@ -711,6 +711,7 @@ if love.window.getTitle():lower() == "untitled" and not(areweloaded) then
     logger.warn("Window title was set by guified this disables love.window.setTitle To prevent this set window title before calling guified init")
 
     local setTitle = love.window.setTitle
+    --? we remove the access to the setTitle to make sure the user cant mess with the FPS update title
     love.window.setTitle = nil -- kill it >:(
     setTitle("Guified: " .. __GUIFIEDGLOBAL__.__VER__)
     local title = love.window.getTitle()
@@ -727,6 +728,8 @@ if love.window.getTitle():lower() == "untitled" and not(areweloaded) then
 end
 
 logger.ok("GUIFIED init success ! YAY!")
+
+package.loaded["guified"] = guified --? so we can do require("guified") later in modules
 
 return guified
 

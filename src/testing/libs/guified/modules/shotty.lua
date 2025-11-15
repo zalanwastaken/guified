@@ -3,7 +3,7 @@ if __GUIFIEDGLOBAL__ == nil then
 end
 
 ---@type guified
-local guified = require(__GUIFIEDGLOBAL__.rootfolder..".init")
+local guified = require("guified")
 
 ---@class shotty
 local shotty = {
