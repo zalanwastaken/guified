@@ -17,29 +17,44 @@ local elements = {
     ---@param h? number Optional
     ---@param fgclr? Color Optional
     ---@param bgclr? Color Optional
+    ---@param hoverclr? Color Optional
     ---@param activebtn? number Optional
     ---@return element
-    button = function(text, x, y, w, h, bgclr, fgclr, activebtn)
+    button = function(text, x, y, w, h, bgclr, fgclr, hoverclr, activebtn)
         elementsinternal.funcs.checkArg(text, 1, elementsinternal.types.string, "button")
         elementsinternal.funcs.checkArg(x, 2, elementsinternal.types.int, "button")
         elementsinternal.funcs.checkArg(y, 3, elementsinternal.types.int, "button")
 
         bgclr = bgclr or {1, 1, 1, 1}
         fgclr = fgclr or {0, 0, 0, 1}
+        hoverclr = hoverclr or {0.5, 0.5, 0.5, 1}
         w = w or #text * __GUIFIEDGLOBAL__.fontsize
-        h = h or __GUIFIEDGLOBAL__.fontsize * 2
+        h = h or 2 * __GUIFIEDGLOBAL__.fontsize
         activebtn = activebtn or 1
 
         local isPressed = false
+        local hover = false
 
         return ({
             _guified = {
                 name = "button",
                 draw = function()
-                    love.graphics.setColor(bgclr)
+                    if not(hover) then
+                        love.graphics.setColor(bgclr)
+                    else
+                        love.graphics.setColor(hoverclr)
+                    end
                     love.graphics.rectangle("fill", x, y, w, h)
                     love.graphics.setColor(fgclr)
                     love.graphics.printf(text, x, y + h / 5, w, "center")
+                end,
+                mousemoved = function(argx, argy, dx, dy, istouch)
+                    local mouseX, mouseY = love.mouse.getPosition()
+                    if mouseX > x and mouseX < x + w and mouseY > y and mouseY < y + h then
+                        hover = true
+                    else
+                        hover = false
+                    end
                 end
             },
 
@@ -269,7 +284,7 @@ local elements = {
     ---@param activebydefault? boolean optional is the element active(selected) by default ?
     ---@param limit? number optional limit of the enterable text
     ---@return element
-    textInput = function(x, y, w, h, mode, bgclr, fgclr, placeholderTXT, activebtn, activebydefault, limit)
+    textInput = function(x, y, w, h, mode, bgclr, fgclr, hoverclr, placeholderTXT, activebtn, activebydefault, limit)
         elementsinternal.funcs.checkArg(x, 1, elementsinternal.types.number, "textInput")
         elementsinternal.funcs.checkArg(y, 2, elementsinternal.types.number, "textInput")
         elementsinternal.funcs.checkArg(w, 3, elementsinternal.types.number, "textInput")
@@ -289,6 +304,8 @@ local elements = {
         local txt = nil
         local wasdownbefore = false
         local active = activebydefault or false
+        --local hover = false
+
         return({
             _guified = {
                 name = "textinput",
@@ -340,6 +357,9 @@ local elements = {
                             txt = nil
                         end
                     end
+                end,
+                mousemoved = function(argx, argy, dx, dy, istouch)
+                    
                 end
             },
 
@@ -472,7 +492,7 @@ local elements = {
         })
     end,
 
-    --[[
+    --[[ --! good luck
     dropDown = function(x, y, w, h, content, bgclr, fgclr, activebtn)
         fgclr = fgclr or {0, 0, 0, 1}
         bgclr = bgclr or {1, 1, 1, 1}
@@ -618,4 +638,5 @@ local elements = {
         })
     end
 }
-return (elements)
+
+return elements

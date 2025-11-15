@@ -49,6 +49,7 @@ for k, v in pairs(logtypes) do
         if not(filter[k] == true) then
             guifiedloggerinterface.channel:push("\x1B[38;5;10m ["..os.date('%Y-%m-%d %H:%M:%S').."]"..v.." ["..k:upper().."] "..X)
             if k == "error" and loudErrors then
+                guifiedloggerinterface.channel:push("\x1B[38;5;10m ["..os.date('%Y-%m-%d %H:%M:%S').."]"..v.." ["..k:upper().."] [[ERROR UPGRADED TO FATAL BY LOUD ERRORS]]")
                 error(X)
             end
         end

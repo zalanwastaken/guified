@@ -30,8 +30,11 @@ local fun_messages = {
 	"runtime error? more like runSOMETIMES error",
 	"function not found, just like my motivation",
 	"your code called, it wants a lawyer",
-	"ok but why did YOU trust me with your UI?",
-	"hello darkness my old friend"
+	"ok but why did YOU trust me with YOUR UI?",
+	"hello darkness my old friend",
+	"blue",
+	"404 stability not found",
+	"Bring back A-1.2.2"
 }
 fun_messages = fun_messages[love.math.random(1, #fun_messages)]
 
@@ -100,10 +103,9 @@ function love.errorhandler(msg)
 		love.graphics.printf(p, 0, love.graphics.getHeight() / 4, love.graphics.getWidth(), "center")
 		love.graphics.present()
 	end
-	local fullErrorText = p
 	local function copyToClipboard()
 		if not love.system then return end
-		love.system.setClipboardText(fullErrorText)
+		love.system.setClipboardText(p)
 		p = p .. "\nCopied to clipboard!"
 	end
 	if love.system then
@@ -145,8 +147,9 @@ function love.errorhandler(msg)
 end
 
 function love.threaderror(thread, errorstr)
-	if not(logger.thread:isRunning()) then
+	if not(logger.thread:isRunning()) then --? check if logger is running
 		print("Thread error!\n"..errorstr)
+		print("Logger not running\nDid it crash?")
 	else
 		logger.error("Thread error!\n"..errorstr)
 	end

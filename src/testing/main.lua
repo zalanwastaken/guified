@@ -1,13 +1,9 @@
 local guified = require("libs.guified.init")
 local logger = guified.debug.logger
 
-guified.debug.setFilter({
-    "ok",
-    "info",
-    "regular",
-    "warn"
-})
+local button = guified.elements.button("Press Me !", 0, 0)
+guified.registry.register(button)
 
-guified.registry.registerPollingCallback(love.keyboard.isDown, {"k"}, function(args)
-    print("MEOW")
-end, true)
+guified.registry.registerPollingCallback(button.released, {}, function()
+    logger.info("button was pressed")
+end, true, "equal")
