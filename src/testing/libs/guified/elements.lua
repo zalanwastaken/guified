@@ -293,6 +293,7 @@ local elements = {
         mode = mode or "fill"
         bgclr = bgclr or {1, 1, 1, 1}
         fgclr = fgclr or {0, 0, 0, 1}
+        hoverclr = hoverclr or {0.5, 0.5, 0.5, 1}
         placeholderTXT = placeholderTXT or "Place Holder :3"
         activebtn = activebtn or 1
         limit = limit or 16
@@ -304,22 +305,26 @@ local elements = {
         local txt = nil
         local wasdownbefore = false
         local active = activebydefault or false
-        --local hover = false
+        local hover = false
 
         return({
             _guified = {
                 name = "textinput",
                 draw = function()
-                    love.graphics.setColor(bgclr)
+                    if hover then
+                        love.graphics.setColor(hoverclr)
+                    else
+                        love.graphics.setColor(bgclr)
+                    end
                     love.graphics.rectangle(mode, x, y, w, h)
 
                     love.graphics.setColor(fgclr)
                     if txt ~= nil and active then
-                        love.graphics.printf(txt.."|", x, y+(h/4), x+w, "center")
+                        love.graphics.printf(txt.."|", x, y+(h/4), w, "center")
                     elseif txt == nil then
-                        love.graphics.printf(placeholderTXT, x, y+(h/4), x+w, "center")
+                        love.graphics.printf(placeholderTXT, x, y+(h/4), w, "center")
                     elseif txt ~= nil then
-                        love.graphics.printf(txt, x, y+(h/4), x+w, "center")
+                        love.graphics.printf(txt, x, y+(h/4), w, "center")
                     end
                 end,
                 update = function()
@@ -359,7 +364,12 @@ local elements = {
                     end
                 end,
                 mousemoved = function(argx, argy, dx, dy, istouch)
-                    
+                    local mouseX, mouseY = love.mouse.getPosition()
+                    if mouseX > x and mouseX < x+w and mouseY > y and mouseY < y+h then
+                        hover = true
+                    else
+                        hover = false
+                    end
                 end
             },
 
