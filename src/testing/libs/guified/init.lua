@@ -123,7 +123,8 @@ local guifiedinternal = {
             textinputstack = {},
             keypressedstack = {},
             resizestack = {},
-            mousemovedstack = {}
+            mousemovedstack = {},
+            mousepressedstack = {}
         },
         data = {},
         ids = {},
@@ -136,6 +137,7 @@ local guifiedinternal = {
             keypressedIDS = {},
             textinputIDS = {}
         },
+        events = {}, --TODO start here
 
         fclr = {1, 1, 1, 1}, -- white and opaque
         fclrenable = true
@@ -156,6 +158,7 @@ local guifiedinternal = {
         end
         return (data)
     end,
+
     ---@param drawstack table
     ---@param data table
     ---@param idtbl table
@@ -166,6 +169,7 @@ local guifiedinternal = {
             drawstack[idtbl[i]](data[i])
         end
     end,
+
     ---@param key string
     ---@param textinputstack table
     ---@param idtbl table
@@ -176,6 +180,7 @@ local guifiedinternal = {
             end
         end
     end,
+
     ---@param key string
     ---@param keypressedstack table
     ---@param idtbl table
@@ -186,6 +191,7 @@ local guifiedinternal = {
             end
         end
     end,
+
     ---@param w number
     ---@param h number
     ---@param resizestack table
@@ -212,6 +218,23 @@ local guifiedinternal = {
             end
         end
     end,
+
+    ---@param x number
+    ---@param y number
+    ---@param btn number
+    ---@param istouch boolean
+    ---@param presses number
+    ---@param mousepressedstack table
+    ---@param idtbl table
+    mousepressed = function(x, y, btn, istouch, presses, mousepressedstack, idtbl)
+        for i = 1, #idtbl, 1 do
+            if mousepressedstack[idtbl[i]] ~= nil then
+                mousepressedstack[idtbl[i]](x, y, btn, istouch, presses)
+            end
+        end
+    end,
+
+    --*CALLBACKS*--
 
     ---@param idtbl table
     ---@param funcs table
@@ -277,6 +300,10 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
             local id = idgen(idlen or 16)
             local hooks = element._guified
+            if hooks.draw == nil then
+                logger.error("draw hook is mandatory in all elements !\nNot found in element"..(hooks.name or "Unnamed element"))
+                return false
+            end
             for k, v in pairs(hooks) do
                 if guifiedinternal.internalregistry.elements[k.."stack"] == nil then
                     if k ~= "name" and k ~= "id" then
@@ -398,6 +425,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
             return (getIndex(guifiedinternal.internalregistry.pollingcallbackids, id) or false) and true -- basically a if true return true if false return false
         end,
 
+        --[[
         --TODO fix this
         registerCallback = function(cbtype, run)
             local cbreg = guifiedinternal.internalregistry.callbacks[cbtype]
@@ -408,7 +436,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
             else
                 logger.error("Attempt to register unknown callback")
             end
-        end
+        end,
+        --]]
     },
 
     debug = {
@@ -469,6 +498,15 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
         ---@param istouch boolean
         mousemovedf = function(x, y, dx, dy, istouch)
             guifiedinternal.mousemoved(x, y, dx, dy, istouch, guifiedinternal.internalregistry.elements.mousemovedstack, guifiedinternal.internalregistry.ids)
+        end,
+
+        ---@param x number
+        ---@param y number
+        ---@param btn number
+        ---@param istouch boolean
+        ---@param presses number
+        mousepressedf = function(x, y, btn, istouch, presses)
+            guifiedinternal.mousepressed(x, y, btn, istouch, presses, guifiedinternal.internalregistry.elements.mousepressedstack, guifiedinternal.internalregistry.ids)
         end,
 
         -- * Returns the current drawstack.
@@ -640,6 +678,7 @@ function love.run()
                         return a or 0
                     end
                 end
+                guifiedinternal.eventhandler(name, a, b, c, d, e, f)
                 love.handlers[name](a, b, c, d, e, f)
             end
         end
@@ -695,6 +734,10 @@ logger.ok("resize hook setup done")
 
 function love.mousemoved(x, y, dx, dy, istouch)
     guified.extcalls.mousemovedf(x, y, dx, dy, istouch)
+end
+
+function love.mousemoved(x, y, btn, istouch, presses)
+    guified.extcalls.mousepressedf(x, y, btn, istouch, presses)
 end
 
 -- * love quit function
