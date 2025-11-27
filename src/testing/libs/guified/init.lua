@@ -330,7 +330,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
                 return false
             end
 
-            table.remove(guifiedinternal.internalregistry.ids, getIndex(guifiedinternal.internalregistry.ids, element.id)) -- bye bye :)
+            table.remove(guifiedinternal.internalregistry.ids, getIndex(guifiedinternal.internalregistry.ids, element._guified.id)) -- bye bye :)
 
             local hooks = element._guified
             for k, v in pairs(hooks) do
@@ -678,7 +678,7 @@ function love.run()
                         return a or 0
                     end
                 end
-                guifiedinternal.eventhandler(name, a, b, c, d, e, f)
+                --guifiedinternal.eventhandler(name, a, b, c, d, e, f)
                 love.handlers[name](a, b, c, d, e, f)
             end
         end
@@ -736,7 +736,7 @@ function love.mousemoved(x, y, dx, dy, istouch)
     guified.extcalls.mousemovedf(x, y, dx, dy, istouch)
 end
 
-function love.mousemoved(x, y, btn, istouch, presses)
+function love.mousepressed(x, y, btn, istouch, presses)
     guified.extcalls.mousepressedf(x, y, btn, istouch, presses)
 end
 
