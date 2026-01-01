@@ -170,70 +170,8 @@ local guifiedinternal = {
         end
     end,
 
-    ---@param key string
-    ---@param textinputstack table
+    ---@param stack table
     ---@param idtbl table
-    textinput = function(key, textinputstack, idtbl)
-        for i = 1, #idtbl, 1 do
-            if textinputstack[idtbl[i]] ~= nil then
-                textinputstack[idtbl[i]](key)
-            end
-        end
-    end,
-
-    ---@param key string
-    ---@param keypressedstack table
-    ---@param idtbl table
-    keypressed = function(key, keypressedstack, idtbl)
-        for i = 1, #idtbl, 1 do
-            if keypressedstack[idtbl[i]] ~= nil then
-                keypressedstack[idtbl[i]](key)
-            end
-        end
-    end,
-
-    ---@param w number
-    ---@param h number
-    ---@param resizestack table
-    ---@param idtbl table
-    resize = function(w, h, resizestack, idtbl)
-        for i = 1, #idtbl, 1 do
-            if resizestack[idtbl[i]] ~= nil then
-                resizestack[idtbl[i]](w, h)
-            end
-        end
-    end,
-
-    ---@param x number
-    ---@param y number
-    ---@param dx number
-    ---@param dy number
-    ---@param istouch boolean
-    ---@param mousemovedstack table
-    ---@param idtbl table
-    mousemoved = function(x, y, dx, dy, istouch, mousemovedstack, idtbl)
-        for i = 1, #idtbl, 1 do
-            if mousemovedstack[idtbl[i]] ~= nil then
-                mousemovedstack[idtbl[i]](x, y, dx, dy, istouch)
-            end
-        end
-    end,
-
-    ---@param x number
-    ---@param y number
-    ---@param btn number
-    ---@param istouch boolean
-    ---@param presses number
-    ---@param mousepressedstack table
-    ---@param idtbl table
-    mousepressed = function(x, y, btn, istouch, presses, mousepressedstack, idtbl)
-        for i = 1, #idtbl, 1 do
-            if mousepressedstack[idtbl[i]] ~= nil then
-                mousepressedstack[idtbl[i]](x, y, btn, istouch, presses)
-            end
-        end
-    end,
-
     commonhandler = function(stack, idtbl, ...)
         for i = 1, #idtbl, 1 do
             if stack[idtbl[i]] ~= nil then
