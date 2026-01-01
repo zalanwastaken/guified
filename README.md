@@ -98,16 +98,16 @@ local guified = require(<path to guified>)
 ### Done! ✨ Enjoy creating with Guified! 😎
 
 ## Latest Guified version
-Latest Guified version is currently B-2.0.3 "Repressed Memory Edition".<br>
+Latest Guified version is currently B-3.0.0 "Segfault Chic Edition".<br>
 This version supports the following Love2d version(These versions are tested with Guifed other versions might also run Guified fine):-
 - 11.5 (Mysterious Mysteries)
   - Windows ✅ Full support
-  - Linux ✅ Without FFI
-  - MacOS ❌ No support. Bugs on MacOS wont be fixed(Guified might still run. MacOS is not blocked)[COMING SOON IN B-2.1.0+]
+  - Linux ✅ Full support
+  - MacOS ✅ Watch out for bugs
 - 11.4 (Mysterious Mysteries)
   - Windows ✅ Full support
-  - Linux ✅ Without FFI
-  - MacOS ❌ No support. Bugs on MacOS wont be fixed(Guified might still run. MacOS is not blocked)[COMING SOON IN B-2.1.0+]
+  - Linux ✅ Full support
+  - MacOS ✅ Watch out for bugs
 
 ## 📍 Roadmap  
 
@@ -116,17 +116,15 @@ This version supports the following Love2d version(These versions are tested wit
 ✔ **Dynamic Registry System:** Easily register and manage UI components.  
 ✔ **Minimal Boilerplate:** Write less code, do more.  
 ✔ **Custom Error Handling:** No more cryptic errors.  
-✔ **Debugging Tools:** Built-in logger for easy debugging.    
+✔ **Debugging Tools:** Built-in logger for easy debugging. 
+✔ **Callback System for UI Events**     
+✔ **Modular Design: Use only the features you need.**
 
 ### 🚀 **Planned Features**  
-🔹 **State Management (like React useState, but for LÖVE)**  
 🔹 **Scene Management (UI "sets" to switch views easily)**  
-🔹 **Callback System for UI Events**  
 🔹 **Better Input Handling (keyboard, mouse, and maybe gamepad support?)**  
-🔹 **Performance Optimizations & Code Cleanup**  
 🔹 **More UI Components (Dropdowns, Sliders, etc.)**  
 🔹 **Make a studio for LOVE2D using Guified** <br>
-🔹 **Modular Design: Use only the features you need.**
 
 ### 🔮 **Future Goals**  
 ✨ Make Guified the **go-to UI framework for LÖVE**(TRY)<br>
@@ -141,4 +139,3 @@ This version supports the following Love2d version(These versions are tested wit
 ## Notes
 1. ⚙️ Encountered bugs? Report them to help speed up development and improve the library for everyone.
 2. 🔢 Check out the examples folder to quickly familiarize yourself with Guified's capabilities and jumpstart your project.
-3. ❄ **Features that use FFI are not supported on Linux due to FFI features using os dependent code**
