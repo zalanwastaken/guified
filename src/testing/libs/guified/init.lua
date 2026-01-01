@@ -153,7 +153,7 @@ local guifiedinternal = {
         local data = {}
         for i = 1, #idtbl, 1 do
             if updatestack[idtbl[i]] ~= nil then
-                data[i] = updatestack[idtbl[i]](dt)
+                data[idtbl[i]] = updatestack[idtbl[i]](dt)
             end
         end
         return (data)
@@ -166,7 +166,7 @@ local guifiedinternal = {
         for i = 1, #idtbl, 1 do
             love.graphics.setColor(fclr or {1, 1, 1, 1})
             love.graphics.setFont(__GUIFIEDGLOBAL__.font or font)
-            drawstack[idtbl[i]](data[i])
+            drawstack[idtbl[i]](data[idtbl[i]])
         end
     end,
 
@@ -230,6 +230,14 @@ local guifiedinternal = {
         for i = 1, #idtbl, 1 do
             if mousepressedstack[idtbl[i]] ~= nil then
                 mousepressedstack[idtbl[i]](x, y, btn, istouch, presses)
+            end
+        end
+    end,
+
+    commonhandler = function(stack, idtbl, ...)
+        for i = 1, #idtbl, 1 do
+            if stack[idtbl[i]] ~= nil then
+                stack[idtbl[i]](...)
             end
         end
     end,
@@ -452,9 +460,10 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
         --* draw handler
         drawf = function()
             guifiedinternal.draw(guifiedinternal.internalregistry.elements.drawstack, guifiedinternal.internalregistry.data, guifiedinternal.internalregistry.ids, guifiedinternal.internalregistry.fclrenable and guifiedinternal.internalregistry.fclr)
+            --guifiedinternal.commonhandler(guifiedinternal.internalregistry.elements.drawstack, guifiedinternal.internalregistry.ids, guifiedinternal.internalregistry.fclrenable and guifiedinternal.internalregistry.fclr)
         end,
 
-        --* Handles update event
+        --* Handles update event and polling callbacks
         --* Calls guifiedinternal.update
         --* update handler
         updatef = function()
@@ -470,7 +479,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
         -- * textinput handler
         textinputf = function(key)
             guifiedinternal.textinputcallback(key, guifiedinternal.internalregistry.callbacks.textinput, guifiedinternal.internalregistry.callbacks.keypressedIDS)
-            guifiedinternal.textinput(key, guifiedinternal.internalregistry.elements.textinputstack, guifiedinternal.internalregistry.ids)
+            --guifiedinternal.textinput(key, guifiedinternal.internalregistry.elements.textinputstack, guifiedinternal.internalregistry.ids)
+            guifiedinternal.commonhandler(guifiedinternal.internalregistry.elements.textinputstack, guifiedinternal.internalregistry.ids, key)
         end,
 
         -- * handles keypressed events
@@ -479,7 +489,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
         -- * keypressed handler
         keypressedf = function(key)
             guifiedinternal.keypressedcallback(key, guifiedinternal.internalregistry.callbacks.keypressedIDS, guifiedinternal.internalregistry.callbacks.keypressed)
-            guifiedinternal.keypressed(key, guifiedinternal.internalregistry.elements.keypressedstack, guifiedinternal.internalregistry.ids)
+            --guifiedinternal.keypressed(key, guifiedinternal.internalregistry.elements.keypressedstack, guifiedinternal.internalregistry.ids)
+            guifiedinternal.commonhandler(guifiedinternal.internalregistry.elements.keypressedstack, guifiedinternal.internalregistry.ids, key)
         end,
 
         --* Handles resize event.
@@ -488,7 +499,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
         --* Passes input to guifiedinternal.resize methord
         --* resize handler
         resizef = function(w, h)
-            guifiedinternal.resize(w, h, guifiedinternal.internalregistry.elements.resizestack, guifiedinternal.internalregistry.ids)
+            --guifiedinternal.resize(w, h, guifiedinternal.internalregistry.elements.resizestack, guifiedinternal.internalregistry.ids)
+            guifiedinternal.commonhandler(guifiedinternal.internalregistry.elements.resizestack, guifiedinternal.internalregistry.ids, w, h)
         end,
 
         ---@param x number
@@ -497,7 +509,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
         ---@param dy number
         ---@param istouch boolean
         mousemovedf = function(x, y, dx, dy, istouch)
-            guifiedinternal.mousemoved(x, y, dx, dy, istouch, guifiedinternal.internalregistry.elements.mousemovedstack, guifiedinternal.internalregistry.ids)
+            --guifiedinternal.mousemoved(x, y, dx, dy, istouch, guifiedinternal.internalregistry.elements.mousemovedstack, guifiedinternal.internalregistry.ids)
+            guifiedinternal.commonhandler(guifiedinternal.internalregistry.elements.mousemovedstack, guifiedinternal.internalregistry.ids, x, y, dx, dy, istouch)
         end,
 
         ---@param x number
@@ -506,13 +519,14 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
         ---@param istouch boolean
         ---@param presses number
         mousepressedf = function(x, y, btn, istouch, presses)
-            guifiedinternal.mousepressed(x, y, btn, istouch, presses, guifiedinternal.internalregistry.elements.mousepressedstack, guifiedinternal.internalregistry.ids)
+            --guifiedinternal.mousepressed(x, y, btn, istouch, presses, guifiedinternal.internalregistry.elements.mousepressedstack, guifiedinternal.internalregistry.ids)
+            guifiedinternal.commonhandler(guifiedinternal.internalregistry.elements.mousepressedstack, guifiedinternal.internalregistry.ids, x, y, btn, istouch, presses)
         end,
 
         -- * Returns the current drawstack.
         ---@return table The table containing drawable elements.
         getDrawStack = function()
-            return (guifiedinternal.internalregistry.drawstack)
+            return (guifiedinternal.internalregistry.elements.drawstack)
         end,
 
         -- * Returns the current updatestack.
