@@ -502,54 +502,6 @@ local elements = {
         })
     end,
 
-    --[[ --! good luck
-    dropDown = function(x, y, w, h, content, bgclr, fgclr, activebtn)
-        fgclr = fgclr or {0, 0, 0, 1}
-        bgclr = bgclr or {1, 1, 1, 1}
-        activebtn = activebtn or 1
-
-        local selcont = content[1]
-        local active = false
-        local wasdownbefore = false
-
-        return({
-            name = "dropdown",
-            draw = function()
-                if active then
-                    for i = 1, #content, 1 do
-                        love.graphics.setColor(bgclr)
-                        love.graphics.rectangle("fill", x, (y+h)*i, w, h)
-
-                        love.graphics.setColor(fgclr)
-                        love.graphics.printf(content[i], x, ((y+h)*i)+__GUIFIEDGLOBAL__.fontsize/4, x+w, "center")
-                    end
-                else
-                    love.graphics.setColor(bgclr)
-                    love.graphics.rectangle("fill", x, y, w, h)
-
-                    love.graphics.setColor(fgclr)
-                    love.graphics.printf(selcont, x, y+(h/4), x+w, "center")
-                end
-            end,
-
-            update = function()
-                if love.mouse.isDown(activebtn) then
-                    local mouseX, mouseY = love.mouse.getPosition()
-                    if mouseX > x and mouseX < x+w and mouseY > y and mouseY < y+h then
-                        if not(wasdownbefore) then
-                            wasdownbefore = true
-                            active = true
-                        end
-                    elseif wasdownbefore then
-                        wasdownbefore = false
-                        active = false
-                    end
-                end
-            end
-        })
-    end,
-    --]]
-
     ---@return element
     guifiedsplash = function()
         local largefont = love.graphics.newFont(20)
@@ -564,6 +516,9 @@ local elements = {
             _guified = {
                 name = "splash element guified",
                 draw = function()
+                    if done then
+                        return
+                    end
                     love.graphics.setColor(0, 0, 0, alpha or 0)
                     love.graphics.rectangle("fill", 0, 0, love.graphics.getWidth(), love.graphics.getHeight())
                     love.graphics.setColor(1, 1, 1, alpha or 0)
@@ -579,13 +534,19 @@ local elements = {
                         done = true
                         alpha = nil
                     end
+                end,
+                keypressed = function()
+                    done = true
+                end,
+                mousepressed = function()
+                    done = true
                 end
             },
 
             ---@return boolean is the element done
             completed = function()
                 return (done)
-            end
+            end,
         })
     end,
 
@@ -646,7 +607,33 @@ local elements = {
                 y = argy
             end
         })
+    end,
+
+    --[[
+    dropDown = function(x, y, disp, list, mx, my)
+        local isDropped = false
+        return({
+            _guified = {
+                name = "drop down",
+                draw = function()
+                    if isDropped then
+                        for i = 1, #list, 1 do
+                            love.graphics.rectangle("line", x, y+i*__GUIFIEDGLOBAL__.fontsize, #list[i]*__GUIFIEDGLOBAL__.fontsize, #list[i]*__GUIFIEDGLOBAL__.fontsize)
+                            love.graphics.print(list[i], 0, i*__GUIFIEDGLOBAL__.fontsize)
+                        end
+                    else
+                        love.graphics.rectangle("line", x, y, mx, my)
+                    end
+                end,
+                mousepressed = function(argx, argy, btn)
+                    if argx >= x and argy >= y and argx < mx and argy < my then
+                        isDropped = not(isDropped)
+                    end
+                end
+            }
+        })
     end
+    --]]
 }
 
 return elements
