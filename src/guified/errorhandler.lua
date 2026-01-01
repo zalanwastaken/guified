@@ -1,16 +1,42 @@
 --* Error handling
+
 local utf8 = require("utf8")
 
+local tbl = require(__GUIFIEDGLOBAL__.rootfolder..".dependencies.logger.init")
+
 ---@type logger
-local logger = require(__GUIFIEDGLOBAL__.rootfolder..".dependencies.logger.init")
+local logger = tbl.logger
+---@type guifiedloggerinterface
+local guifiedloggerinterface = tbl.guifiedloggerinterface
 
 local function error_printer(msg, layer)
-	--print((debug.traceback("Error: " .. tostring(msg), 1+(layer or 1)):gsub("\n[^\n]+$", "")))
 	logger.fatal(msg)
 	logger.trace(debug.traceback("Error: " .. tostring(msg), 1+(layer or 1)):gsub("\n[^\n]+$", ""))
 	logger.regular("Found a bug ?\nPlease report it to the Guified repo as a issue !\nThanks !")
-	logger.stopSVC()
+	guifiedloggerinterface.stopSVC()
 end
+
+local fun_messages = {
+	"oops !",
+	"did i do this?",
+	"meow",
+	"hi im guified i LOVE to crash",
+	"Crashaholic edition",
+	"Ayooo",
+	"hmmm",
+	"*villager noises*",
+	"huh?",
+	"not my fault!",
+	"runtime error? more like runSOMETIMES error",
+	"function not found, just like my motivation",
+	"your code called, it wants a lawyer",
+	"ok but why did YOU trust me with YOUR UI?",
+	"hello darkness my old friend",
+	"blue",
+	"404 stability not found",
+	"Bring back A-1.2.2"
+}
+fun_messages = fun_messages[love.math.random(1, #fun_messages)]
 
 function love.errorhandler(msg)
 	msg = tostring(msg)
@@ -73,23 +99,24 @@ function love.errorhandler(msg)
         love.graphics.setFont(largefont)
         love.graphics.printf("GUIFIED", 0, 44, love.graphics.getWidth(), "center")
         love.graphics.setFont(font)
-		love.graphics.printf(__GUIFIEDGLOBAL__.__VER__ or "Unknown version", 0, 88, love.graphics.getWidth(), "center")
+		love.graphics.printf((__GUIFIEDGLOBAL__.__VER__ or "Unknown version").."\n"..fun_messages, 0, 88, love.graphics.getWidth(), "center")
 		love.graphics.printf(p, 0, love.graphics.getHeight() / 4, love.graphics.getWidth(), "center")
 		love.graphics.present()
 	end
-	local fullErrorText = p
 	local function copyToClipboard()
 		if not love.system then return end
-		love.system.setClipboardText(fullErrorText)
+		love.system.setClipboardText(p)
 		p = p .. "\nCopied to clipboard!"
 	end
 	if love.system then
 		p = p .. "\n\nPress Ctrl+C or tap to copy this error"
 	end
-    local name = love.window.getTitle()
+	local name = love.window.getTitle()
+	--[[
     if #name == 0 or name == "Untitled" then 
         love.window.setTitle("Guified error")
     end
+	--]]
 	return function()
 		love.event.pump()
 		for e, a, b, c in love.event.poll() do
@@ -120,11 +147,12 @@ function love.errorhandler(msg)
 end
 
 function love.threaderror(thread, errorstr)
-	if not(logger.thread:isRunning()) then
-		logger.startSVC()
+	if not(logger.thread:isRunning()) then --? check if logger is running
+		print("Thread error!\n"..errorstr)
+		print("Logger not running\nDid it crash?")
+	else
+		logger.error("Thread error!\n"..errorstr)
 	end
-	logger.error("Thread error!\n"..errorstr)
-	thread:start()
 end
 
 return true

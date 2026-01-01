@@ -23,7 +23,8 @@ local funcs = {
         dict = "table",
         table = "table",
         null = "nil",
-        nil_val = "nil"
+        nil_val = "nil",
+        bool = "boolean"
     }
 }
 return funcs

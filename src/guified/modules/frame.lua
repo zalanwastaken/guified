@@ -3,7 +3,7 @@ if __GUIFIEDGLOBAL__ == nil then --? check if guified is loaded
 end
 
 ---@type guified
-local guified = require(__GUIFIEDGLOBAL__.rootfolder..".init") --? guified api
+local guified = require("guified") --? guified api
 local logger = guified.debug.logger
 
 local function createSlider(x, y) --TODO

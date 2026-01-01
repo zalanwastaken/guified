@@ -1,12 +1,13 @@
---! THIS WILL BE REMOVED
+---@deprecated
+--! THIS MODULE IS DEPRECATED AND WILL BE REMOVED
 
 if __GUIFIEDGLOBAL__ == nil then
     return nil
 end
 
 ---@type guified
-local guified = require(__GUIFIEDGLOBAL__.rootfolder..".init")
-local logger = guified.debug.logger
+local guified = require("guified")
+local logger = guified.debug.asynclogger
 
 local callbacks = {
     addCallback = function(element, eventname, callback)

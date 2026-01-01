@@ -3,7 +3,7 @@ if __GUIFIEDGLOBAL__ == nil then
 end
 
 ---@type guified
-local guified = require(__GUIFIEDGLOBAL__.rootfolder..".init")
+local guified = require("guified")
 local logger = guified.debug.logger
 
 ---@class helper
@@ -57,8 +57,5 @@ local helper = {
             guified.registry.register(element)
             return true
         end
-    end,
-
-    ---@type math
-    math = require(__GUIFIEDGLOBAL__.rootfolder..".dependencies.love2d-tools.modules.math")
+    end
 }

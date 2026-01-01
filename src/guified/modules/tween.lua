@@ -3,7 +3,7 @@ if __GUIFIEDGLOBAL__ == nil then
 end
 
 ---@type guified
-local guified = require(__GUIFIEDGLOBAL__.rootfolder..".init")
+local guified = require("guified")
 local logger = guified.debug.logger
 
 local tween = {}
@@ -25,33 +25,35 @@ function tween.newElementTween(element, targetX, targetY, duration)
     local hidden = false
 
     local tweenObject = {
-        name = "tween SVC for " .. element.name,
-        draw = function()
-        end,
-        update = function(dt)
-            if completed then
-                return
+        _guified = {
+            name = "tween SVC for " .. element._guified.name,
+            draw = function()
+            end,
+            update = function(dt)
+                if completed then
+                    return
+                end
+
+                local t = math.min(elapsedTime / duration, 1) -- Clamp between 0 and 1
+
+                local newX = startX + (targetX - startX) * t
+                local newY = startY + (targetY - startY) * t
+                elapsedTime = elapsedTime + dt
+                element.setPOS(math.floor(newX), math.floor(newY)) --! might cause the tween to be shakey
+
+                if t >= 1 then
+                    completed = true
+                end
+
+                if not(guified.registry.isRegistered(element)) then
+                    guified.registry.register(element)
+                end
             end
-
-            local t = math.min(elapsedTime / duration, 1) -- Clamp between 0 and 1
-
-            local newX = startX + (targetX - startX) * t
-            local newY = startY + (targetY - startY) * t
-            elapsedTime = elapsedTime + dt
-            element.setPOS(math.floor(newX), math.floor(newY)) --! might cause the tween to be shakey
-
-            if t >= 1 then
-                completed = true
-            end
-
-            if element.id == nil and not(hidden) then
-                guified.registry.register(element)
-            end
-        end,
+        },
 
         --* returns if the tween completed
         ---@return boolean
-        isCompleted = function(self)
+        isCompleted = function()
             return completed
         end,
 
@@ -65,7 +67,7 @@ function tween.newElementTween(element, targetX, targetY, duration)
             completed = true
         end,
 
-        --* shows the element(element is shown be default)
+        --* shows the element(element is shown by default)
         show = function()
             guified.registry.register(element)
             hidden = false
