@@ -58,8 +58,8 @@ if __GUIFIEDGLOBAL__ == nil then
         rootfolder = rootfolder,
         fontsize = 12, -- * default font size
         os = love.system.getOS():lower(),
-        __VERINT__ = "B-3.0.0", -- ! GUIFIED VERSION
-        __VER__ = "B-3.0.0: Segfault Chic Edition" -- ! GUIFIED VERSION AND CODENAME
+        __VERINT__ = "B-3.1.0", -- ! GUIFIED VERSION
+        __VER__ = "B-3.1.0: Segfault Chic Edition" -- ! GUIFIED VERSION AND CODENAME
     }
     rootfolder = nil
 else
@@ -252,7 +252,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
             end
             for k, v in pairs(hooks) do
                 if guifiedinternal.internalregistry.elements[k.."stack"] == nil then
-                    if k ~= "name" and k ~= "id" then
+                    if k ~= "name" and k ~= "id" and k ~= "onremove" and k ~= "onregister" then
                         logger.error("unknown hook: "..k.." in element: "..hooks.name)
                     end
                 else
@@ -262,6 +262,10 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
             guifiedinternal.internalregistry.ids[#guifiedinternal.internalregistry.ids + 1] = id
             element._guified.id = id
+
+            if element._guified.onregister then
+                element._guified.onregister()
+            end
 
             logger.info("Element "..element._guified.name..":"..element._guified.id.." registered")
 
@@ -281,12 +285,16 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
             local hooks = element._guified
             for k, v in pairs(hooks) do
                 if guifiedinternal.internalregistry.elements[k.."stack"] == nil then
-                    if k ~= "name" and k ~= "id" then
+                    if k ~= "name" and k ~= "id" and k ~= "onremove" and k ~= "onregister" then
                         logger.error("unknown hook: "..k.." in element: "..hooks.name)
                     end
                 else
                     guifiedinternal.internalregistry.elements[k.."stack"][hooks.id] = nil
                 end
+            end
+
+            if element._guified.onremove then
+                element._guified.onremove()
             end
 
             element._guified.id = nil
@@ -367,7 +375,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
         -- * checks if callback is registered
         ---@param id string
         ---@return boolean
-        isCallbackRegistered = function(id)
+        isPollingCallbackRegistered = function(id)
             return (getIndex(guifiedinternal.internalregistry.pollingcallbackids, id) or false) and true -- basically a if true return true if false return false
         end,
 
