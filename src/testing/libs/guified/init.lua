@@ -114,6 +114,7 @@ local guifiedinternal = {
     -- ? vars
     enableupdate = true,
     enabledraw = true,
+    enablelimit = true,
 
     ---@class internalregistry
     internalregistry = {
@@ -406,7 +407,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
         --* draw handler
         drawf = function()
             guifiedinternal.draw(guifiedinternal.internalregistry.elements.drawstack, guifiedinternal.internalregistry.data, guifiedinternal.internalregistry.ids, guifiedinternal.internalregistry.fclrenable and guifiedinternal.internalregistry.fclr)
-            --guifiedinternal.commonhandler(guifiedinternal.internalregistry.elements.drawstack, guifiedinternal.internalregistry.ids, guifiedinternal.internalregistry.fclrenable and guifiedinternal.internalregistry.fclr)
         end,
 
         --* Handles update event and polling callbacks
@@ -544,6 +544,12 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
         ---@return boolean True if updating is enabled, false otherwise.
         getUpdateStatus = function()
             return (guifiedinternal.enableupdate)
+        end,
+
+        -- * This disables the internal sleep call in love.run making the loop run as fast as possible
+        ---@param set boolean
+        setFPSlimiter = function(set)
+            guifiedinternal.enablelimit = set or false
         end
     },
 
@@ -668,7 +674,7 @@ function love.run()
             -- * guified code end
             love.graphics.present()
         end
-        if love.timer then
+        if love.timer and guifiedinternal.enablelimit then
             love.timer.sleep(0.001)
         end
     end
@@ -724,7 +730,7 @@ if love.window.getTitle():lower() == "untitled" and not(areweloaded) then
             name = "guified internal title SVC",
             draw = function()end,
             update = function()
-                setTitle(title .. " FPS:" .. love.timer.getFPS())
+                setTitle(" FPS:" .. love.timer.getFPS())
             end
         }
     })
