@@ -425,7 +425,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
         -- * textinput handler
         textinputf = function(key)
             guifiedinternal.textinputcallback(key, guifiedinternal.internalregistry.callbacks.textinput, guifiedinternal.internalregistry.callbacks.keypressedIDS)
-            --guifiedinternal.textinput(key, guifiedinternal.internalregistry.elements.textinputstack, guifiedinternal.internalregistry.ids)
             guifiedinternal.commonhandler(guifiedinternal.internalregistry.elements.textinputstack, guifiedinternal.internalregistry.ids, key)
         end,
 
@@ -435,7 +434,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
         -- * keypressed handler
         keypressedf = function(key)
             guifiedinternal.keypressedcallback(key, guifiedinternal.internalregistry.callbacks.keypressedIDS, guifiedinternal.internalregistry.callbacks.keypressed)
-            --guifiedinternal.keypressed(key, guifiedinternal.internalregistry.elements.keypressedstack, guifiedinternal.internalregistry.ids)
             guifiedinternal.commonhandler(guifiedinternal.internalregistry.elements.keypressedstack, guifiedinternal.internalregistry.ids, key)
         end,
 
@@ -445,7 +443,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
         --* Passes input to guifiedinternal.resize methord
         --* resize handler
         resizef = function(w, h)
-            --guifiedinternal.resize(w, h, guifiedinternal.internalregistry.elements.resizestack, guifiedinternal.internalregistry.ids)
             guifiedinternal.commonhandler(guifiedinternal.internalregistry.elements.resizestack, guifiedinternal.internalregistry.ids, w, h)
         end,
 
@@ -455,7 +452,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
         ---@param dy number
         ---@param istouch boolean
         mousemovedf = function(x, y, dx, dy, istouch)
-            --guifiedinternal.mousemoved(x, y, dx, dy, istouch, guifiedinternal.internalregistry.elements.mousemovedstack, guifiedinternal.internalregistry.ids)
             guifiedinternal.commonhandler(guifiedinternal.internalregistry.elements.mousemovedstack, guifiedinternal.internalregistry.ids, x, y, dx, dy, istouch)
         end,
 
@@ -465,7 +461,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
         ---@param istouch boolean
         ---@param presses number
         mousepressedf = function(x, y, btn, istouch, presses)
-            --guifiedinternal.mousepressed(x, y, btn, istouch, presses, guifiedinternal.internalregistry.elements.mousepressedstack, guifiedinternal.internalregistry.ids)
             guifiedinternal.commonhandler(guifiedinternal.internalregistry.elements.mousepressedstack, guifiedinternal.internalregistry.ids, x, y, btn, istouch, presses)
         end,
 
