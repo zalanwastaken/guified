@@ -100,6 +100,18 @@ local elements = {
             ---@return number The position. x, y
             getPOS = function()
                 return x, y
+            end,
+
+            ---@return string
+            getText = function()
+                return text
+            end,
+
+            ---@param argtext string
+            setText = function(argtext)
+                elementsinternal.funcs.checkArg(argtext, 1, elementsinternal.types.string, "setText")
+
+                text = argtext
             end
         })
     end,
@@ -128,6 +140,11 @@ local elements = {
                 elementsinternal.funcs.checkArg(argtext, 1, elementsinternal.types.string, "setText")
 
                 text = argtext
+            end,
+
+            ---@return string
+            getText = function()
+                return text
             end,
 
             --? changes the position of the element
