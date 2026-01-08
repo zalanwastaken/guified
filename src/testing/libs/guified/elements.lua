@@ -563,7 +563,7 @@ local elements = {
             ---@return boolean is the element done
             completed = function()
                 return (done)
-            end,
+            end
         })
     end,
 
