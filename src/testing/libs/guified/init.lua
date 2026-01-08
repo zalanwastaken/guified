@@ -186,7 +186,7 @@ local guifiedinternal = {
     ---@param idtbl table
     ---@param funcs table
     callbackupdate = function(idtbl, funcs)
-        for i = 1, #idtbl, 1 do
+        for i = #idtbl, 1, -1 do
             funcs[idtbl[i]]()
         end
     end,
@@ -332,10 +332,11 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
             local id = idgen(16)
             local opr
             chkvaltype = (chkvaltype or "equal"):lower()
+            args = args or {}
 
             logger.info("registering callback callback:"..id)
 
-            if chkval then
+            if chkval ~= nil then
                 if chkvaltype == "equal" then
                     opr = function(val)
                         return chkval == val
@@ -354,7 +355,14 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
             guifiedinternal.internalregistry.pollingcallbacks[id] = function()
                 local k = firefunc(unpack(args, 1, #args))
                 if opr(k) then
-                    func(k)
+                    local ret = func(k)
+
+                    if ret == false then
+                        logger.info("[SELF REMOVE]removing callback callback"..id)
+                        guifiedinternal.internalregistry.pollingcallbacks[id] = nil
+                        local idx = getIndex(guifiedinternal.internalregistry.pollingcallbackids, id)
+                        table.remove(guifiedinternal.internalregistry.pollingcallbackids, idx)
+                    end
                 end
             end
 
