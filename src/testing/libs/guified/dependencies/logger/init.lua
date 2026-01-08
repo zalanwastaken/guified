@@ -45,7 +45,12 @@ end
 
 --* build logtypes
 for k, v in pairs(logtypes) do
-    logger[k] = function(X)
+    logger[k] = function(...)
+        local args = {...}
+        local X = ""
+        for i = 1, #args, 1 do
+            X = X..tostring(args[i]).."   "
+        end
         if not(filter[k] == true) then
             guifiedloggerinterface.channel:push("\x1B[38;5;10m ["..os.date('%Y-%m-%d %H:%M:%S').."]"..v.." ["..k:upper().."] "..X)
             if k == "error" and loudErrors then
