@@ -21,9 +21,9 @@ local elements = {
     ---@param activebtn? number Optional
     ---@return element
     button = function(text, x, y, w, h, bgclr, fgclr, hoverclr, activebtn)
-        elementsinternal.funcs.checkArg(text, 1, elementsinternal.types.string, "button")
-        elementsinternal.funcs.checkArg(x, 2, elementsinternal.types.int, "button")
-        elementsinternal.funcs.checkArg(y, 3, elementsinternal.types.int, "button")
+        elementsinternal.funcs.checkArg(text, 1, elementsinternal.types.string)
+        elementsinternal.funcs.checkArg(x, 2, elementsinternal.types.int)
+        elementsinternal.funcs.checkArg(y, 3, elementsinternal.types.int)
 
         bgclr = bgclr or {1, 1, 1, 1}
         fgclr = fgclr or {0, 0, 0, 1}
@@ -89,8 +89,8 @@ local elements = {
             ---@param argx number
             ---@param argy number
             setPOS = function(argx, argy)
-                elementsinternal.funcs.checkArg(argx, 1, elementsinternal.types.number, "SetPOS")
-                elementsinternal.funcs.checkArg(argy, 2, elementsinternal.types.number, "setPOS")
+                elementsinternal.funcs.checkArg(argx, 1, elementsinternal.types.number)
+                elementsinternal.funcs.checkArg(argy, 2, elementsinternal.types.number)
 
                 x = argx
                 y = argy
@@ -109,7 +109,7 @@ local elements = {
 
             ---@param argtext string
             setText = function(argtext)
-                elementsinternal.funcs.checkArg(argtext, 1, elementsinternal.types.string, "setText")
+                elementsinternal.funcs.checkArg(argtext, 1, elementsinternal.types.string)
 
                 text = argtext
             end
@@ -121,7 +121,7 @@ local elements = {
     ---@param y? number Optional
     ---@return element
     text = function(text, x, y)
-        elementsinternal.funcs.checkArg(text, 1, elementsinternal.types.string, "text")
+        elementsinternal.funcs.checkArg(text, 1, elementsinternal.types.string)
 
         x = x or 0
         y = y or 0
@@ -137,7 +137,7 @@ local elements = {
             --? changes the text to display
             ---@param argtext string
             setText = function(argtext)
-                elementsinternal.funcs.checkArg(argtext, 1, elementsinternal.types.string, "setText")
+                elementsinternal.funcs.checkArg(argtext, 1, elementsinternal.types.string)
 
                 text = argtext
             end,
@@ -151,8 +151,8 @@ local elements = {
             ---@param argx number
             ---@param argy number
             setPOS = function(argx, argy)
-                elementsinternal.funcs.checkArg(argx, 1, elementsinternal.types.number, "SetPOS")
-                elementsinternal.funcs.checkArg(argy, 2, elementsinternal.types.number, "setPOS")
+                elementsinternal.funcs.checkArg(argx, 1, elementsinternal.types.number)
+                elementsinternal.funcs.checkArg(argy, 2, elementsinternal.types.number)
 
                 x = argx
                 y = argy
@@ -173,7 +173,7 @@ local elements = {
     ---@param maxalign? number Optional
     ---@return element
     textf = function(text, x, y, align, maxalign)
-        elementsinternal.funcs.checkArg(text, 1, elementsinternal.types.string, "textf")
+        elementsinternal.funcs.checkArg(text, 1, elementsinternal.types.string)
 
         maxalign = maxalign or love.graphics.getWidth()
         x = x or 0
@@ -192,8 +192,8 @@ local elements = {
             ---@param argx number
             ---@param argy number
             setPOS = function(argx, argy)
-                elementsinternal.funcs.checkArg(argx, 1, elementsinternal.types.number, "SetPOS")
-                elementsinternal.funcs.checkArg(argy, 2, elementsinternal.types.number, "setPOS")
+                elementsinternal.funcs.checkArg(argx, 1, elementsinternal.types.number)
+                elementsinternal.funcs.checkArg(argy, 2, elementsinternal.types.number)
 
                 x = argx
                 y = argy
@@ -207,7 +207,7 @@ local elements = {
 
             ---@param argtext string
             setText = function(argtext)
-                elementsinternal.funcs.checkArg(argtext, 1, elementsinternal.types.number, "setText")
+                elementsinternal.funcs.checkArg(argtext, 1, elementsinternal.types.number)
 
                 text = argtext
             end,
@@ -219,14 +219,14 @@ local elements = {
 
             ---@param argalign string
             setAlign = function(argalign)
-                elementsinternal.funcs.checkArg(argalign, 1, elementsinternal.types.string, "setAlign")
+                elementsinternal.funcs.checkArg(argalign, 1, elementsinternal.types.string)
 
                 align = argalign
             end,
 
             ---@param argmaxalign number
             setMaxAlign = function(argmaxalign)
-                elementsinternal.funcs.checkArg(argmaxalign, 1, elementsinternal.types.number, "setMaxAlign")
+                elementsinternal.funcs.checkArg(argmaxalign, 1, elementsinternal.types.number)
 
                 maxalign = argmaxalign
             end,
@@ -248,8 +248,8 @@ local elements = {
     ---@param image string|image image or the path to the image file
     ---@return element
     image = function(x, y, image)
-        elementsinternal.funcs.checkArg(x, 1, elementsinternal.types.number, "image")
-        elementsinternal.funcs.checkArg(y, 2, elementsinternal.types.number, "image")
+        elementsinternal.funcs.checkArg(x, 1, elementsinternal.types.number)
+        elementsinternal.funcs.checkArg(y, 2, elementsinternal.types.number)
 
         if type(image):lower() == "string" then --? check if the image path was given
             image = love.graphics.newImage(image)
@@ -267,8 +267,8 @@ local elements = {
             ---@param argx number
             ---@param argy number
             setPOS = function(argx, argy)
-                elementsinternal.funcs.checkArg(argx, 1, elementsinternal.types.number, "SetPOS")
-                elementsinternal.funcs.checkArg(argy, 2, elementsinternal.types.number, "setPOS")
+                elementsinternal.funcs.checkArg(argx, 1, elementsinternal.types.number)
+                elementsinternal.funcs.checkArg(argy, 2, elementsinternal.types.number)
 
                 x = argx
                 y = argy
@@ -302,10 +302,10 @@ local elements = {
     ---@param limit? number optional limit of the enterable text
     ---@return element
     textInput = function(x, y, w, h, mode, bgclr, fgclr, hoverclr, placeholderTXT, activebtn, activebydefault, limit)
-        elementsinternal.funcs.checkArg(x, 1, elementsinternal.types.number, "textInput")
-        elementsinternal.funcs.checkArg(y, 2, elementsinternal.types.number, "textInput")
-        elementsinternal.funcs.checkArg(w, 3, elementsinternal.types.number, "textInput")
-        elementsinternal.funcs.checkArg(h, 4, elementsinternal.types.number, "textInput")
+        elementsinternal.funcs.checkArg(x, 1, elementsinternal.types.number)
+        elementsinternal.funcs.checkArg(y, 2, elementsinternal.types.number)
+        elementsinternal.funcs.checkArg(w, 3, elementsinternal.types.number)
+        elementsinternal.funcs.checkArg(h, 4, elementsinternal.types.number)
 
         mode = mode or "fill"
         bgclr = bgclr or {1, 1, 1, 1}
@@ -393,8 +393,8 @@ local elements = {
             ---@param argx number
             ---@param argy number
             setPOS = function(argx, argy)
-                elementsinternal.funcs.checkArg(argx, 1, elementsinternal.types.number, "setPOS")
-                elementsinternal.funcs.checkArg(argy, 2, elementsinternal.types.number, "setPOS")
+                elementsinternal.funcs.checkArg(argx, 1, elementsinternal.types.number)
+                elementsinternal.funcs.checkArg(argy, 2, elementsinternal.types.number)
 
                 x = argx
                 y = argy
@@ -403,8 +403,8 @@ local elements = {
             ---@param argbgclr Color
             ---@param argfgclr Color
             setClr = function(argbgclr, argfgclr)
-                elementsinternal.funcs.checkArg(argfgclr, 1, elementsinternal.types.table, "setClr")
-                elementsinternal.funcs.checkArg(argbgclr, 2, elementsinternal.types.table, "setClr")
+                elementsinternal.funcs.checkArg(argfgclr, 1, elementsinternal.types.table)
+                elementsinternal.funcs.checkArg(argbgclr, 2, elementsinternal.types.table)
 
                 bgclr = argbgclr
                 fgclr = argfgclr
@@ -412,14 +412,14 @@ local elements = {
 
             ---@param arglimit number
             setLimit = function(arglimit)
-                elementsinternal.funcs.checkArg(arglimit, 1, elementsinternal.types.number, "setLimit")
+                elementsinternal.funcs.checkArg(arglimit, 1, elementsinternal.types.number)
 
                 limit = arglimit
             end,
 
             ---@param argmode string
             setMode = function(argmode)
-                elementsinternal.funcs.checkArg(argmode, 1, elementsinternal.types.string, "setMode")
+                elementsinternal.funcs.checkArg(argmode, 1, elementsinternal.types.string)
                 if argmode ~= "fill" and argmode ~= "line" then
                     error("Unknown mode please use:-\nline\nOR\nfill")
                 end
@@ -449,7 +449,7 @@ local elements = {
 
             ---@param argtext string
             setText = function(argtext)
-                elementsinternal.funcs.checkArg(argtext, 1, elementsinternal.types.string, "setText")
+                elementsinternal.funcs.checkArg(argtext, 1, elementsinternal.types.string)
 
                 txt = argtext
             end,
@@ -469,8 +469,8 @@ local elements = {
     ---@param clr? Color Optional
     ---@return element
     box = function(x, y, w, h, mode, clr)
-        elementsinternal.funcs.checkArg(x, 2, elementsinternal.types.number, "box")
-        elementsinternal.funcs.checkArg(y, 3, elementsinternal.types.number, "box")
+        elementsinternal.funcs.checkArg(x, 2, elementsinternal.types.number)
+        elementsinternal.funcs.checkArg(y, 3, elementsinternal.types.number)
 
         mode = mode or "line"
         w = w or 40
@@ -489,8 +489,8 @@ local elements = {
             ---@param argx number
             ---@param argy number
             setPOS = function(argx, argy)
-                elementsinternal.funcs.checkArg(argx, 1, elementsinternal.types.number, "setPOS")
-                elementsinternal.funcs.checkArg(argy, 2, elementsinternal.types.number, "setPOS")
+                elementsinternal.funcs.checkArg(argx, 1, elementsinternal.types.number)
+                elementsinternal.funcs.checkArg(argy, 2, elementsinternal.types.number)
 
                 x = argx
                 y = argy
@@ -504,15 +504,15 @@ local elements = {
             ---@param argh number
             ---@param argw number
             setWH = function(argw, argh)
-                elementsinternal.funcs.checkArg(argw, 1, elementsinternal.types.number, "setWH")
-                elementsinternal.funcs.checkArg(argh, 2, elementsinternal.types.number, "setWH")
+                elementsinternal.funcs.checkArg(argw, 1, elementsinternal.types.number)
+                elementsinternal.funcs.checkArg(argh, 2, elementsinternal.types.number)
 
                 w = argw
                 h = argh
             end,
 
             setColor = function(argclr)
-                elementsinternal.funcs.checkArg(argclr, 1, elementsinternal.types.table, "setColor")
+                elementsinternal.funcs.checkArg(argclr, 1, elementsinternal.types.table)
 
                 clr = argclr
             end
@@ -571,8 +571,8 @@ local elements = {
     ---@param y number
     ---@param defaultstate? boolean Optional
     toggleButton = function(x, y, defaultstate)
-        elementsinternal.funcs.checkArg(x, 1, elementsinternal.types.number, "toggleButton")
-        elementsinternal.funcs.checkArg(y, 2, elementsinternal.types.number, "toggleButton")
+        elementsinternal.funcs.checkArg(x, 1, elementsinternal.types.number)
+        elementsinternal.funcs.checkArg(y, 2, elementsinternal.types.number)
 
         local w, h = 50, 20
         local toggle = defaultstate or false

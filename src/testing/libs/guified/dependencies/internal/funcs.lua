@@ -4,16 +4,12 @@ local funcs = {
     ---@param argnum number
     ---@param expected string
     ---@param name string
-    checkArg = function(arg, argnum, expected, name)
+    checkArg = function(arg, argnum, expected)
+        local info = debug.getinfo(2, "n")
         local argtyp = type(arg)
         if argtyp:lower() ~= expected then
-            error("Argument #" .. argnum .. " to " .. name .. " expected " .. expected .. " got " .. argtyp)
+            error("Argument #" .. argnum .. " to " .. (info.name or "<Unknown function>") .. " expected " .. expected .. " got " .. argtyp)
         end
-    end,
-    ---@param element element
-    ---@return string
-    formatElementForLogging = function(element)
-        return(element.name..":"..element.id or "NO ID")
     end,
 
     types = {
