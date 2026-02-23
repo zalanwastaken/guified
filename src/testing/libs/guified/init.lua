@@ -58,8 +58,8 @@ if __GUIFIEDGLOBAL__ == nil then
         rootfolder = rootfolder,
         fontsize = 12, -- * default font size
         os = love.system.getOS():lower(),
-        __VERINT__ = "B-3.0.0", -- ! GUIFIED VERSION
-        __VER__ = "B-3.0.0: Segfault Chic Edition" -- ! GUIFIED VERSION AND CODENAME
+        __VERINT__ = "B-3.0.1", -- ! GUIFIED VERSION
+        __VER__ = "B-3.0.1: Segfault Chic Edition" -- ! GUIFIED VERSION AND CODENAME
     }
     rootfolder = nil
 else
