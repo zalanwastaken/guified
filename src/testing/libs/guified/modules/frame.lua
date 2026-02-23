@@ -29,7 +29,7 @@ local function newFrameObj(x, y, w, h, bgclr, fgclr, borderclr, title, elements)
         y = 0
     }
 
-    return {
+    return ({
         _guified = {
             name = "Frame SVC",
             draw = function()
@@ -120,7 +120,7 @@ local function newFrameObj(x, y, w, h, bgclr, fgclr, borderclr, title, elements)
             x = argx
             y = argy
         end
-    }
+    })
 end
 
 local frame = {

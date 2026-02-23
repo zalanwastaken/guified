@@ -604,15 +604,24 @@ local elements = {
                 return toggle
             end,
 
+            ---@param state boolean
             setState = function(state)
+                funcs.checkArg(state, 1, funcs.types.bool)
+
                 toggle = state
             end,
 
+            ---@return number
             getPOS = function()
                 return x, y
             end,
 
+            ---@param argx number
+            ---@param argy number
             setPOS = function(argx, argy)
+                funcs.checkArg(argx, 1, funcs.types.number)
+                funcs.checkArg(argy, 2, funcs.types.number)
+
                 x = argx
                 y = argy
             end
