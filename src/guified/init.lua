@@ -58,8 +58,8 @@ if __GUIFIEDGLOBAL__ == nil then
         rootfolder = rootfolder,
         fontsize = 12, -- * default font size
         os = love.system.getOS():lower(),
-        __VERINT__ = "B-3.0.0", -- ! GUIFIED VERSION
-        __VER__ = "B-3.0.0: Segfault Chic Edition" -- ! GUIFIED VERSION AND CODENAME
+        __VERINT__ = "B-3.0.1", -- ! GUIFIED VERSION
+        __VER__ = "B-3.0.1: Segfault Chic Edition" -- ! GUIFIED VERSION AND CODENAME
     }
     rootfolder = nil
 else
@@ -246,10 +246,17 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
             local id = idgen(idlen or 16)
             local hooks = element._guified
-            if hooks.draw == nil then
-                logger.error("draw hook is mandatory in all elements !\nNot found in element"..(hooks.name or "Unnamed element"))
+
+            if hooks == nil then
+                logger.error("Bad element unable to register name: "..(element.name or "???"))
                 return false
             end
+
+            if hooks.draw == nil then
+                logger.error("draw hook is mandatory in all elements !\nNot found in element"..(hooks.name or "???"))
+                return false
+            end
+
             for k, v in pairs(hooks) do
                 if guifiedinternal.internalregistry.elements[k.."stack"] == nil then
                     if k ~= "name" and k ~= "id" then
