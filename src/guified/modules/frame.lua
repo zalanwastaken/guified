@@ -77,7 +77,6 @@ local function newFrameObj(x, y, w, h, bgclr, fgclr, borderclr, title, elements)
                 end
             end
         },
-
         ---@param argh number
         ---@param argw number
         changeWH = function(argw, argh)

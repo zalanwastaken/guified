@@ -11,11 +11,6 @@ local funcs = {
             error("Argument #" .. argnum .. " to " .. info.name .. " expected " .. expected .. " got " .. argtyp)
         end
     end,
-    ---@param element element
-    ---@return string
-    formatElementForLogging = function(element)
-        return(element.name..":"..element.id or "NO ID")
-    end,
 
     types = {
         string = "string",

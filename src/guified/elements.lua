@@ -93,6 +93,18 @@ local elements = {
             ---@return number The position. x, y
             getPOS = function()
                 return x, y
+            end,
+
+            ---@return string
+            getText = function()
+                return text
+            end,
+
+            ---@param argtext string
+            setText = function(argtext)
+                funcs.checkArg(argtext, 1, funcs.types.string)
+
+                text = argtext
             end
         })
     end,
@@ -121,6 +133,11 @@ local elements = {
                 funcs.checkArg(argtext, 1, funcs.types.string)
 
                 text = argtext
+            end,
+
+            ---@return string
+            getText = function()
+                return text
             end,
 
             --? changes the position of the element
@@ -395,7 +412,7 @@ local elements = {
 
             ---@param argmode string
             setMode = function(argmode)
-                funcs.checkArg(argmode, 1, funcs.types.string, "setMode")
+                funcs.checkArg(argmode, 1, funcs.types.string)
                 if argmode ~= "fill" and argmode ~= "line" then
                     error("Unknown mode please use:-\nline\nOR\nfill")
                 end
@@ -539,7 +556,7 @@ local elements = {
             ---@return boolean is the element done
             completed = function()
                 return (done)
-            end,
+            end
         })
     end,
 
@@ -609,33 +626,7 @@ local elements = {
                 y = argy
             end
         })
-    end,
-
-    --[[
-    dropDown = function(x, y, disp, list, mx, my)
-        local isDropped = false
-        return({
-            _guified = {
-                name = "drop down",
-                draw = function()
-                    if isDropped then
-                        for i = 1, #list, 1 do
-                            love.graphics.rectangle("line", x, y+i*__GUIFIEDGLOBAL__.fontsize, #list[i]*__GUIFIEDGLOBAL__.fontsize, #list[i]*__GUIFIEDGLOBAL__.fontsize)
-                            love.graphics.print(list[i], 0, i*__GUIFIEDGLOBAL__.fontsize)
-                        end
-                    else
-                        love.graphics.rectangle("line", x, y, mx, my)
-                    end
-                end,
-                mousepressed = function(argx, argy, btn)
-                    if argx >= x and argy >= y and argx < mx and argy < my then
-                        isDropped = not(isDropped)
-                    end
-                end
-            }
-        })
     end
-    --]]
 }
 
 return elements

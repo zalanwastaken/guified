@@ -58,8 +58,8 @@ if __GUIFIEDGLOBAL__ == nil then
         rootfolder = rootfolder,
         fontsize = 12, -- * default font size
         os = love.system.getOS():lower(),
-        __VERINT__ = "B-3.0.1", -- ! GUIFIED VERSION
-        __VER__ = "B-3.0.1: Segfault Chic Edition" -- ! GUIFIED VERSION AND CODENAME
+        __VERINT__ = "B-3.0.2", -- ! GUIFIED VERSION
+        __VER__ = "B-3.0.2: Segfault Chic Edition" -- ! GUIFIED VERSION AND CODENAME
     }
     rootfolder = nil
 else
@@ -114,6 +114,7 @@ local guifiedinternal = {
     -- ? vars
     enableupdate = true,
     enabledraw = true,
+    enablelimit = true,
 
     ---@class internalregistry
     internalregistry = {
@@ -185,7 +186,7 @@ local guifiedinternal = {
     ---@param idtbl table
     ---@param funcs table
     callbackupdate = function(idtbl, funcs)
-        for i = 1, #idtbl, 1 do
+        for i = #idtbl, 1, -1 do
             funcs[idtbl[i]]()
         end
     end,
@@ -244,7 +245,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
                 return false
             end
 
-            local id = idgen(idlen or 16)
             local hooks = element._guified
 
             if hooks == nil then
@@ -253,13 +253,20 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
             end
 
             if hooks.draw == nil then
-                logger.error("draw hook is mandatory in all elements !\nNot found in element"..(hooks.name or "???"))
+                logger.error("draw hook is mandatory in all elements !\nNot found in element "..(hooks.name or "???"))
                 return false
             end
 
+            if hooks.name == nil then
+                logger.error("name is mandatory in all elements !\nNot found in element")
+                return false
+            end
+
+            local id = idgen(idlen or 16)
+
             for k, v in pairs(hooks) do
                 if guifiedinternal.internalregistry.elements[k.."stack"] == nil then
-                    if k ~= "name" and k ~= "id" then
+                    if k ~= "name" and k ~= "id" and k ~= "onremove" and k ~= "onregister" then
                         logger.error("unknown hook: "..k.." in element: "..hooks.name)
                     end
                 else
@@ -269,6 +276,10 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
             guifiedinternal.internalregistry.ids[#guifiedinternal.internalregistry.ids + 1] = id
             element._guified.id = id
+
+            if element._guified.onregister then
+                element._guified.onregister()
+            end
 
             logger.info("Element "..element._guified.name..":"..element._guified.id.." registered")
 
@@ -288,12 +299,16 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
             local hooks = element._guified
             for k, v in pairs(hooks) do
                 if guifiedinternal.internalregistry.elements[k.."stack"] == nil then
-                    if k ~= "name" and k ~= "id" then
+                    if k ~= "name" and k ~= "id" and k ~= "onremove" and k ~= "onregister" then
                         logger.error("unknown hook: "..k.." in element: "..hooks.name)
                     end
                 else
                     guifiedinternal.internalregistry.elements[k.."stack"][hooks.id] = nil
                 end
+            end
+
+            if element._guified.onremove then
+                element._guified.onremove()
             end
 
             element._guified.id = nil
@@ -330,10 +345,11 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
             local id = idgen(16)
             local opr
             chkvaltype = (chkvaltype or "equal"):lower()
+            args = args or {}
 
             logger.info("registering callback callback:"..id)
 
-            if chkval then
+            if chkval ~= nil then
                 if chkvaltype == "equal" then
                     opr = function(val)
                         return chkval == val
@@ -352,7 +368,14 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
             guifiedinternal.internalregistry.pollingcallbacks[id] = function()
                 local k = firefunc(unpack(args, 1, #args))
                 if opr(k) then
-                    func(k)
+                    local ret = func(k)
+
+                    if ret == false then
+                        logger.info("[SELF REMOVE]removing callback callback"..id)
+                        guifiedinternal.internalregistry.pollingcallbacks[id] = nil
+                        local idx = getIndex(guifiedinternal.internalregistry.pollingcallbackids, id)
+                        table.remove(guifiedinternal.internalregistry.pollingcallbackids, idx)
+                    end
                 end
             end
 
@@ -374,7 +397,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
         -- * checks if callback is registered
         ---@param id string
         ---@return boolean
-        isCallbackRegistered = function(id)
+        isPollingCallbackRegistered = function(id)
             return (getIndex(guifiedinternal.internalregistry.pollingcallbackids, id) or false) and true -- basically a if true return true if false return false
         end,
 
@@ -405,7 +428,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
         --* draw handler
         drawf = function()
             guifiedinternal.draw(guifiedinternal.internalregistry.elements.drawstack, guifiedinternal.internalregistry.data, guifiedinternal.internalregistry.ids, guifiedinternal.internalregistry.fclrenable and guifiedinternal.internalregistry.fclr)
-            --guifiedinternal.commonhandler(guifiedinternal.internalregistry.elements.drawstack, guifiedinternal.internalregistry.ids, guifiedinternal.internalregistry.fclrenable and guifiedinternal.internalregistry.fclr)
         end,
 
         --* Handles update event and polling callbacks
@@ -424,7 +446,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
         -- * textinput handler
         textinputf = function(key)
             guifiedinternal.textinputcallback(key, guifiedinternal.internalregistry.callbacks.textinput, guifiedinternal.internalregistry.callbacks.keypressedIDS)
-            --guifiedinternal.textinput(key, guifiedinternal.internalregistry.elements.textinputstack, guifiedinternal.internalregistry.ids)
             guifiedinternal.commonhandler(guifiedinternal.internalregistry.elements.textinputstack, guifiedinternal.internalregistry.ids, key)
         end,
 
@@ -434,7 +455,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
         -- * keypressed handler
         keypressedf = function(key)
             guifiedinternal.keypressedcallback(key, guifiedinternal.internalregistry.callbacks.keypressedIDS, guifiedinternal.internalregistry.callbacks.keypressed)
-            --guifiedinternal.keypressed(key, guifiedinternal.internalregistry.elements.keypressedstack, guifiedinternal.internalregistry.ids)
             guifiedinternal.commonhandler(guifiedinternal.internalregistry.elements.keypressedstack, guifiedinternal.internalregistry.ids, key)
         end,
 
@@ -444,7 +464,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
         --* Passes input to guifiedinternal.resize methord
         --* resize handler
         resizef = function(w, h)
-            --guifiedinternal.resize(w, h, guifiedinternal.internalregistry.elements.resizestack, guifiedinternal.internalregistry.ids)
             guifiedinternal.commonhandler(guifiedinternal.internalregistry.elements.resizestack, guifiedinternal.internalregistry.ids, w, h)
         end,
 
@@ -454,7 +473,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
         ---@param dy number
         ---@param istouch boolean
         mousemovedf = function(x, y, dx, dy, istouch)
-            --guifiedinternal.mousemoved(x, y, dx, dy, istouch, guifiedinternal.internalregistry.elements.mousemovedstack, guifiedinternal.internalregistry.ids)
             guifiedinternal.commonhandler(guifiedinternal.internalregistry.elements.mousemovedstack, guifiedinternal.internalregistry.ids, x, y, dx, dy, istouch)
         end,
 
@@ -464,7 +482,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
         ---@param istouch boolean
         ---@param presses number
         mousepressedf = function(x, y, btn, istouch, presses)
-            --guifiedinternal.mousepressed(x, y, btn, istouch, presses, guifiedinternal.internalregistry.elements.mousepressedstack, guifiedinternal.internalregistry.ids)
             guifiedinternal.commonhandler(guifiedinternal.internalregistry.elements.mousepressedstack, guifiedinternal.internalregistry.ids, x, y, btn, istouch, presses)
         end,
 
@@ -543,71 +560,12 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
         ---@return boolean True if updating is enabled, false otherwise.
         getUpdateStatus = function()
             return (guifiedinternal.enableupdate)
-        end
-    },
-
-    properties = {
-        --* Inits the property system for a element
-        --! This must be run on a element before adding properties to it
-        ---@param element element
-        initPropertySys = function(element)
-            local mt = {
-                __index = {},
-                __newindex = function(tbl, key, val)
-                    local mt = getmetatable(tbl)
-                    if mt.__index[key] then
-                        mt.__index[key] = val
-                        mt.funcs[key](val)
-                    else
-                        rawset(tbl, key, val) --? rawset so we dont cause stack overflow
-                    end
-                end,
-                funcs = {}
-            }
-            setmetatable(element, mt)
-
-            logger.info("property system init for "..element._guified.name..":"..(element._guified.id or ""))
         end,
 
-        --* adds a property to a element
-        ---@param element element
-        ---@param property string
-        ---@param initialVAL any
-        ---@param onchange function
-        newProperty = function(element, property, initialVAL, onchange)
-            local mt = getmetatable(element)
-            mt.__index[property] = initialVAL
-            mt.funcs[property] = onchange
-
-            logger.info("property added in element"..element._guified.name..":"..(element._guified.id or ""))
-        end,
-
-        --* returns the value of a property
-        ---@param element element
-        getProperty = function(element, property)
-            return getmetatable(element).__index[property]
-        end,
-
-        --* returns all properties as a dict.
-        ---@param element element
-        getAllProperties = function(element)
-            return getmetatable(element).__index
-        end,
-
-        --* removes a property from a element
-        ---@param element element
-        ---@param property string
-        removeProperty = function(element, property)
-            local mt = getmetatable(element)
-            mt.__index[property] = nil
-            mt.funcs[property] = nil
-
-            logger.info("removed property from element "..element._guified.name..":"..(element._guified.id or ""))
-        end,
-
-        ---@param element element
-        deInitPropertySys = function(element)
-            setmetatable(element, nil) -- yeet the mt >:D
+        -- * This disables the internal sleep call in love.run making the loop run as fast as possible
+        ---@param set boolean
+        setFPSlimiter = function(set)
+            guifiedinternal.enablelimit = set or false
         end
     }
 }
@@ -667,7 +625,7 @@ function love.run()
             -- * guified code end
             love.graphics.present()
         end
-        if love.timer then
+        if love.timer and guifiedinternal.enablelimit then
             love.timer.sleep(0.001)
         end
     end
@@ -723,7 +681,7 @@ if love.window.getTitle():lower() == "untitled" and not(areweloaded) then
             name = "guified internal title SVC",
             draw = function()end,
             update = function()
-                setTitle(title .. " FPS:" .. love.timer.getFPS())
+                setTitle(" FPS:" .. love.timer.getFPS())
             end
         }
     })
